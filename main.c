@@ -20,13 +20,6 @@ int main()
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
-	// load an image
-	SDL_Surface* bmp = SDL_LoadBMP("cb.bmp");
-	if (!bmp) {
-		printf("Unable to load bitmap: %s\n", SDL_GetError());
-		return 1;
-	}
-
 	// program main loop
 	int done = 0;
 	while (!done) {
@@ -76,9 +69,6 @@ int main()
 
 		// DRAWING ENDS HERE
 	} // end main loop
-
-	// free loaded bitmap
-	SDL_FreeSurface(bmp);
 
 	// all is well ;)
 	printf("Exited cleanly\n");
