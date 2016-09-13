@@ -1,5 +1,6 @@
-TARGET := floodit
-TARGETDIST := $(TARGET).opk
+NAME := floodit
+TARGET := $(NAME)
+TARGETDIST := $(NAME).opk
 OBJS := main.c
 OPTS := -g -O2 -Wall
 LIB := -lSDL2
