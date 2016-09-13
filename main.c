@@ -11,18 +11,11 @@ SDL_Window* g_window = 0;
  */
 SDL_Renderer* g_renderer = 0;
 
-int initSDL(
-	const char* title,
-	const int x,
-	const int y,
-	const int w,
-	const int h,
-	const int fullScreen
-);
+int initSDL(const char* title, const int x, const int y, const int w, const int h);
 
 int main()
 {
-	initSDL("Floodit", 0, 0, 320, 240, 1);
+	initSDL("Floodit", 0, 0, 320, 240);
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
@@ -73,20 +66,9 @@ int main()
 	return 0;
 }
 
-int initSDL(
-	const char* title,
-	const int x,
-	const int y,
-	const int w,
-	const int h,
-	const int fullScreen
-) {
+int initSDL(const char* title, const int x, const int y, const int w, const int h) {
 	int l_bReturn = 1;
-	int flags = 0;
-
-	if (fullScreen) {
-		flags |= SDL_WINDOW_FULLSCREEN;
-	}
+	int flags = SDL_WINDOW_FULLSCREEN;
 
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
