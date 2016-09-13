@@ -1,4 +1,5 @@
 TARGET := floodit
+TARGETDIST := $(TARGET).opk
 OBJS := main.c
 OPTS := -g -O2 -Wall
 LIB := -lSDL2
@@ -11,6 +12,9 @@ LDFLAGS += $(shell $(SYSROOT)/usr/bin/sdl2-config --libs)
 $(TARGET): $(OBJS)
 	    $(CC) $(OPTS) $(CFLAGS) $^ -o $@ $(LIB)
 
-clean:
-	rm -f $(TARGET)
+opk:
+	cp floodit dist/
+	mksquashfs dist $(TARGETDIST) -all-root -noappend -no-exports -no-xattrs
 
+clean:
+	rm -f dist/$(TARGET) $(TARGET) $(TARGETDIST)

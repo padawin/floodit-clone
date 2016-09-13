@@ -1,0 +1,8 @@
+[Desktop Entry]
+
+Type=Application
+Name=Floodit
+Comment=Fill the screen before the end of the countdown
+Exec=floodit
+Icon=floodit
+Categories=games;
