@@ -71,7 +71,7 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	int flags = SDL_WINDOW_FULLSCREEN;
 
 	// initialize SDL
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("SDL Init failed\n");
 		l_bReturn = 0;
 	}
