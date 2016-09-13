@@ -54,8 +54,6 @@ int main()
 
 		// DRAWING ENDS HERE
 
-		// finally, update the screen :)
-		SDL_Flip(screen);
 	} // end main loop
 
 	// free loaded bitmap
