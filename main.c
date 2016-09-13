@@ -52,8 +52,29 @@ int main()
 
 		// DRAWING STARTS HERE
 
-		// DRAWING ENDS HERE
+		// Set render color to red ( background will be rendered in this color )
+		SDL_SetRenderDrawColor( g_renderer, 0, 0, 0, 255 );
 
+		// Clear winow
+		SDL_RenderClear( g_renderer );
+
+		// Creat a rect at pos ( 50, 50 ) that's 50 pixels wide and 50 pixels high.
+		SDL_Rect r;
+		r.x = 50;
+		r.y = 50;
+		r.w = 50;
+		r.h = 50;
+
+		// Set render color to blue ( rect will be rendered in this color )
+		SDL_SetRenderDrawColor( g_renderer, 0, 0, 255, 255 );
+
+		// Render rect
+		SDL_RenderFillRect( g_renderer, &r );
+
+		// Render the rect to the screen
+		SDL_RenderPresent(g_renderer);
+
+		// DRAWING ENDS HERE
 	} // end main loop
 
 	// free loaded bitmap
