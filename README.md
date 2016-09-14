@@ -12,3 +12,8 @@ console's website), then:
 To package for the gcw zero, you will need the package squashfs-tools, then run
 
 	make opk
+
+Finally, to use your opk, copy it in your GCW-Zero. I use scp for that, but via
+ftp or on a memory card should work as well:
+
+	scp floodit.opk root@[gcwIp]:/media/data/apps/
