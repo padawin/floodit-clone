@@ -128,5 +128,4 @@ void generateGrid() {
 			g_grid[j][i] = rand() % NB_COLORS;
 		}
 	}
-
 }
