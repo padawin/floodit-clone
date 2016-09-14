@@ -35,6 +35,8 @@ int main()
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
+	generateGrid();
+
 	// program main loop
 	int done = 0;
 	while (!done) {
