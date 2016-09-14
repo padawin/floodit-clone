@@ -125,7 +125,7 @@ void generateGrid() {
 	int i, j;
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
-			g_grid[j][i] = rand() % NB_COLORS + 1;
+			g_grid[j][i] = rand() % NB_COLORS;
 		}
 	}
 
