@@ -1,6 +1,10 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 
+#define WIDTH_GRID 14
+#define HEIGHT_GRID 14
+#define NB_COLORS 6
+
 /**
  * The game's window
  */
@@ -11,7 +15,18 @@ SDL_Window* g_window = 0;
  */
 SDL_Renderer* g_renderer = 0;
 
+int g_grid[HEIGHT_GRID][WIDTH_GRID];
+int g_colors[NB_COLORS][3] = {
+	{255, 0, 0},
+	{0, 255, 0},
+	{0, 0, 255},
+	{255, 255, 0},
+	{255, 0, 255},
+	{0, 255, 255}
+};
+
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
+void generateGrid();
 
 int main()
 {
@@ -102,4 +117,14 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	}
 
 	return l_bReturn;
+}
+
+void generateGrid() {
+	int i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j){
+		for (i = 0; i < WIDTH_GRID; ++i){
+			g_grid[j][i] = rand() % NB_COLORS + 1;
+		}
+	}
+
 }
