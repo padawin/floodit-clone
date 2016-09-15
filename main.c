@@ -38,6 +38,7 @@ void handleEvents(char *flags);
 void generateGrid();
 void renderGrid();
 void renderControls();
+char selectColor();
 
 int main()
 {
@@ -136,6 +137,12 @@ void handleEvents(char *flags) {
 					g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
 					(*flags) |= FLAG_NEEDS_REFRESH;
 				}
+				// 'A' pressed, select color
+				else if (event.key.keysym.sym == SDLK_LCTRL) {
+					if (selectColor()) {
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+				}
 				break;
 		}
 		// end switch
@@ -199,4 +206,13 @@ void renderControls() {
 			SDL_RenderDrawRect(g_renderer, &r);
 		}
 	}
+}
+
+char selectColor() {
+	if (g_selectedColor == g_grid[0][0]) {
+		return 0;
+	}
+
+	g_grid[0][0] = g_selectedColor;
+	return 1;
 }
