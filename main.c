@@ -55,12 +55,12 @@ int main()
 
 				// check for keypresses
 				case SDL_KEYDOWN:
-						// exit if ESCAPE is pressed
-						if (event.key.keysym.sym == SDLK_ESCAPE)
-							done = 1;
-						break;
-					}
-				// end switch
+					// exit if ESCAPE is pressed
+					if (event.key.keysym.sym == SDLK_ESCAPE)
+						done = 1;
+					break;
+			}
+			// end switch
 		} // end of message processing
 
 		// DRAWING STARTS HERE
