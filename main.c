@@ -60,8 +60,25 @@ int main()
 				// check for keypresses
 				case SDL_KEYDOWN:
 					// exit if ESCAPE is pressed
-					if (event.key.keysym.sym == SDLK_ESCAPE)
+					if (event.key.keysym.sym == SDLK_ESCAPE) {
 						done = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_UP) {
+						g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
+						needsRefresh = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_DOWN) {
+						g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
+						needsRefresh = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_LEFT) {
+						g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
+						needsRefresh = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_RIGHT) {
+						g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
+						needsRefresh = 1;
+					}
 					break;
 			}
 			// end switch
