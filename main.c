@@ -188,11 +188,10 @@ void renderControls() {
 		SDL_RenderFillRect(g_renderer, &r);
 
 		if (c == g_selectedColor) {
-			SDL_Rect r;
-			r.x = 240 + (c % 2) * 40 + 2;
-			r.y = (c / 2) * 40 + 2;
-			r.w = WIDTH_CONTROL_PX + 4;
-			r.h = HEIGHT_CONTROL_PX + 4;
+			r.x -= 2;
+			r.y -= 2;
+			r.w += 4;
+			r.h += 4;
 			SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
 			SDL_RenderDrawRect(g_renderer, &r);
 		}
