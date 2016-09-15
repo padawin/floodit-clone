@@ -140,9 +140,9 @@ void renderGrid() {
 
 			// Render rect
 			SDL_RenderFillRect(g_renderer, &r);
-
-			// Render the rect to the screen
-			SDL_RenderPresent(g_renderer);
 		}
 	}
+
+	// Render the rect to the screen
+	SDL_RenderPresent(g_renderer);
 }
