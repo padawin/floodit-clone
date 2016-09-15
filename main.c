@@ -65,7 +65,15 @@ int main()
 
 		// DRAWING STARTS HERE
 		if (needsRefresh) {
+			// Set render color to red (background will be rendered in this color)
+			SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+
+			// Clear window
+			SDL_RenderClear(g_renderer);
 			renderGrid();
+			renderControls();
+			// Render the rect to the screen
+			SDL_RenderPresent(g_renderer);
 			needsRefresh = 0;
 		}
 		// DRAWING ENDS HERE
@@ -118,11 +126,6 @@ void generateGrid() {
 }
 
 void renderGrid() {
-	// Set render color to red (background will be rendered in this color)
-	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
-
-	// Clear winow
-	SDL_RenderClear(g_renderer);
 	int i, j, margin = 1;
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
@@ -145,7 +148,4 @@ void renderGrid() {
 			SDL_RenderFillRect(g_renderer, &r);
 		}
 	}
-
-	// Render the rect to the screen
-	SDL_RenderPresent(g_renderer);
 }
