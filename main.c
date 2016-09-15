@@ -107,6 +107,9 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 
 void generateGrid() {
 	int i, j;
+	time_t t;
+
+	srand((unsigned) time(&t));
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
 			g_grid[j][i] = rand() % NB_COLORS;
