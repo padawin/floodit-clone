@@ -31,6 +31,7 @@ int g_colors[NB_COLORS][3] = {
 int g_selectedColor = 0;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
+void handleEvents();
 void generateGrid();
 void renderGrid();
 void renderControls();
@@ -47,42 +48,7 @@ int main()
 	// program main loop
 	int done = 0, needsRefresh = 1;
 	while (!done) {
-		// message processing loop
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			// check for messages
-			switch (event.type) {
-				// exit if the window is closed
-				case SDL_QUIT:
-					done = 1;
-					break;
-
-				// check for keypresses
-				case SDL_KEYDOWN:
-					// exit if ESCAPE is pressed
-					if (event.key.keysym.sym == SDLK_ESCAPE) {
-						done = 1;
-					}
-					else if (event.key.keysym.sym == SDLK_UP) {
-						g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
-						needsRefresh = 1;
-					}
-					else if (event.key.keysym.sym == SDLK_DOWN) {
-						g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
-						needsRefresh = 1;
-					}
-					else if (event.key.keysym.sym == SDLK_LEFT) {
-						g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
-						needsRefresh = 1;
-					}
-					else if (event.key.keysym.sym == SDLK_RIGHT) {
-						g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
-						needsRefresh = 1;
-					}
-					break;
-			}
-			// end switch
-		} // end of message processing
+		handleEvents(&needsRefresh, &done);
 
 		// DRAWING STARTS HERE
 		if (needsRefresh) {
@@ -132,6 +98,45 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	}
 
 	return l_bReturn;
+}
+
+void handleEvents(int *needsRefresh, int *done) {
+	// message processing loop
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		// check for messages
+		switch (event.type) {
+			// exit if the window is closed
+			case SDL_QUIT:
+				(*done) = 1;
+				break;
+
+			// check for keypresses
+			case SDL_KEYDOWN:
+				// exit if ESCAPE is pressed
+				if (event.key.keysym.sym == SDLK_ESCAPE) {
+					(*done) = 1;
+				}
+				else if (event.key.keysym.sym == SDLK_UP) {
+					g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
+					(*needsRefresh) = 1;
+				}
+				else if (event.key.keysym.sym == SDLK_DOWN) {
+					g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
+					(*needsRefresh) = 1;
+				}
+				else if (event.key.keysym.sym == SDLK_LEFT) {
+					g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
+					(*needsRefresh) = 1;
+				}
+				else if (event.key.keysym.sym == SDLK_RIGHT) {
+					g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
+					(*needsRefresh) = 1;
+				}
+				break;
+		}
+		// end switch
+	} // end of message processing
 }
 
 void generateGrid() {
