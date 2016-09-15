@@ -5,6 +5,8 @@
 #define HEIGHT_GRID 14
 #define WIDTH_GRID_PX 17
 #define HEIGHT_GRID_PX 17
+#define WIDTH_CONTROL_PX 32
+#define HEIGHT_CONTROL_PX 32
 #define NB_COLORS 6
 
 /**
@@ -26,10 +28,12 @@ int g_colors[NB_COLORS][3] = {
 	{255, 0, 255},
 	{0, 255, 255}
 };
+int g_selectedColor = 0;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void generateGrid();
 void renderGrid();
+void renderControls();
 
 int main()
 {
@@ -141,6 +145,34 @@ void renderGrid() {
 
 			SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
 			SDL_RenderFillRect(g_renderer, &r);
+		}
+	}
+}
+
+void renderControls() {
+	int c;
+	for (c = 0; c < NB_COLORS; ++c){
+		SDL_Rect r;
+		int cR, cG,cB;
+		r.x = 240 + (c % 2) * 40 + 4;
+		r.y = (c / 2) * 40 + 4;
+		r.w = WIDTH_CONTROL_PX;
+		r.h = HEIGHT_CONTROL_PX;
+		cR = g_colors[c][0];
+		cG = g_colors[c][1];
+		cB = g_colors[c][2];
+
+		SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
+		SDL_RenderFillRect(g_renderer, &r);
+
+		if (c == g_selectedColor) {
+			SDL_Rect r;
+			r.x = 240 + (c % 2) * 40 + 2;
+			r.y = (c / 2) * 40 + 2;
+			r.w = WIDTH_CONTROL_PX + 4;
+			r.h = HEIGHT_CONTROL_PX + 4;
+			SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
+			SDL_RenderDrawRect(g_renderer, &r);
 		}
 	}
 }
