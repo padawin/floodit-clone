@@ -129,8 +129,6 @@ void renderGrid() {
 	int i, j, margin = 1;
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
-			// Creat a rect at pos (50, 50) that's 50 pixels wide and 50 pixels
-			// high.
 			SDL_Rect r;
 			int cR, cG,cB;
 			r.x = margin + i * WIDTH_GRID_PX;
@@ -141,10 +139,7 @@ void renderGrid() {
 			cG = g_colors[g_grid[j][i]][1];
 			cB = g_colors[g_grid[j][i]][2];
 
-			// Set render color to blue (rect will be rendered in this color)
 			SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
-
-			// Render rect
 			SDL_RenderFillRect(g_renderer, &r);
 		}
 	}
