@@ -46,7 +46,7 @@ int main()
 	generateGrid();
 
 	// program main loop
-	int done = 0, needsRefresh = 1;
+	char done = 0, needsRefresh = 1;
 	while (!done) {
 		handleEvents(&needsRefresh, &done);
 
@@ -72,7 +72,7 @@ int main()
 }
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h) {
-	int l_bReturn = 1;
+	char l_bReturn = 1;
 	int flags = SDL_WINDOW_FULLSCREEN;
 
 	// initialize SDL
@@ -100,7 +100,7 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	return l_bReturn;
 }
 
-void handleEvents(int *needsRefresh, int *done) {
+void handleEvents(char *needsRefresh, char *done) {
 	// message processing loop
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
