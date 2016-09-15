@@ -5,6 +5,8 @@
 #define HEIGHT_GRID 14
 #define WIDTH_GRID_PX 17
 #define HEIGHT_GRID_PX 17
+#define WIDTH_CONTROL_PX 32
+#define HEIGHT_CONTROL_PX 32
 #define NB_COLORS 6
 
 /**
@@ -26,10 +28,12 @@ int g_colors[NB_COLORS][3] = {
 	{255, 0, 255},
 	{0, 255, 255}
 };
+int g_selectedColor = 0;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void generateGrid();
 void renderGrid();
+void renderControls();
 
 int main()
 {
@@ -56,8 +60,25 @@ int main()
 				// check for keypresses
 				case SDL_KEYDOWN:
 					// exit if ESCAPE is pressed
-					if (event.key.keysym.sym == SDLK_ESCAPE)
+					if (event.key.keysym.sym == SDLK_ESCAPE) {
 						done = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_UP) {
+						g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
+						needsRefresh = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_DOWN) {
+						g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
+						needsRefresh = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_LEFT) {
+						g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
+						needsRefresh = 1;
+					}
+					else if (event.key.keysym.sym == SDLK_RIGHT) {
+						g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
+						needsRefresh = 1;
+					}
 					break;
 			}
 			// end switch
@@ -65,7 +86,15 @@ int main()
 
 		// DRAWING STARTS HERE
 		if (needsRefresh) {
+			// Set render color to red (background will be rendered in this color)
+			SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+
+			// Clear window
+			SDL_RenderClear(g_renderer);
 			renderGrid();
+			renderControls();
+			// Render the rect to the screen
+			SDL_RenderPresent(g_renderer);
 			needsRefresh = 0;
 		}
 		// DRAWING ENDS HERE
@@ -118,16 +147,9 @@ void generateGrid() {
 }
 
 void renderGrid() {
-	// Set render color to red (background will be rendered in this color)
-	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
-
-	// Clear winow
-	SDL_RenderClear(g_renderer);
 	int i, j, margin = 1;
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
-			// Creat a rect at pos (50, 50) that's 50 pixels wide and 50 pixels
-			// high.
 			SDL_Rect r;
 			int cR, cG,cB;
 			r.x = margin + i * WIDTH_GRID_PX;
@@ -138,14 +160,36 @@ void renderGrid() {
 			cG = g_colors[g_grid[j][i]][1];
 			cB = g_colors[g_grid[j][i]][2];
 
-			// Set render color to blue (rect will be rendered in this color)
 			SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
-
-			// Render rect
 			SDL_RenderFillRect(g_renderer, &r);
 		}
 	}
+}
 
-	// Render the rect to the screen
-	SDL_RenderPresent(g_renderer);
+void renderControls() {
+	int c;
+	for (c = 0; c < NB_COLORS; ++c){
+		SDL_Rect r;
+		int cR, cG,cB;
+		r.x = 240 + (c % 2) * 40 + 4;
+		r.y = (c / 2) * 40 + 4;
+		r.w = WIDTH_CONTROL_PX;
+		r.h = HEIGHT_CONTROL_PX;
+		cR = g_colors[c][0];
+		cG = g_colors[c][1];
+		cB = g_colors[c][2];
+
+		SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
+		SDL_RenderFillRect(g_renderer, &r);
+
+		if (c == g_selectedColor) {
+			SDL_Rect r;
+			r.x = 240 + (c % 2) * 40 + 2;
+			r.y = (c / 2) * 40 + 2;
+			r.w = WIDTH_CONTROL_PX + 4;
+			r.h = HEIGHT_CONTROL_PX + 4;
+			SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
+			SDL_RenderDrawRect(g_renderer, &r);
+		}
+	}
 }
