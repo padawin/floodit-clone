@@ -175,7 +175,7 @@ void renderControls() {
 	int c;
 	for (c = 0; c < NB_COLORS; ++c){
 		SDL_Rect r;
-		int cR, cG,cB;
+		int cR, cG, cB;
 		r.x = 240 + (c % 2) * 40 + 4;
 		r.y = (c / 2) * 40 + 4;
 		r.w = WIDTH_CONTROL_PX;
