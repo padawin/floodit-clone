@@ -9,6 +9,9 @@
 #define HEIGHT_CONTROL_PX 32
 #define NB_COLORS 6
 
+#define FLAG_DONE 0x1
+#define FLAG_NEEDS_REFRESH 0x2
+
 /**
  * The game's window
  */
@@ -31,7 +34,7 @@ int g_colors[NB_COLORS][3] = {
 int g_selectedColor = 0;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
-void handleEvents();
+void handleEvents(char *flags);
 void generateGrid();
 void renderGrid();
 void renderControls();
@@ -46,12 +49,12 @@ int main()
 	generateGrid();
 
 	// program main loop
-	char done = 0, needsRefresh = 1;
-	while (!done) {
-		handleEvents(&needsRefresh, &done);
+	char flags = FLAG_NEEDS_REFRESH;
+	while (!(flags & FLAG_DONE)) {
+		handleEvents(&flags);
 
 		// DRAWING STARTS HERE
-		if (needsRefresh) {
+		if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
 			// Set render color to red (background will be rendered in this color)
 			SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
 
@@ -61,7 +64,7 @@ int main()
 			renderControls();
 			// Render the rect to the screen
 			SDL_RenderPresent(g_renderer);
-			needsRefresh = 0;
+			flags &= ~FLAG_NEEDS_REFRESH;
 		}
 		// DRAWING ENDS HERE
 	} // end main loop
@@ -100,7 +103,7 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	return l_bReturn;
 }
 
-void handleEvents(char *needsRefresh, char *done) {
+void handleEvents(char *flags) {
 	// message processing loop
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -108,30 +111,30 @@ void handleEvents(char *needsRefresh, char *done) {
 		switch (event.type) {
 			// exit if the window is closed
 			case SDL_QUIT:
-				(*done) = 1;
+				(*flags) |= FLAG_DONE;
 				break;
 
 			// check for keypresses
 			case SDL_KEYDOWN:
 				// exit if ESCAPE is pressed
 				if (event.key.keysym.sym == SDLK_ESCAPE) {
-					(*done) = 1;
+					(*flags) |= FLAG_DONE;
 				}
 				else if (event.key.keysym.sym == SDLK_UP) {
 					g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
-					(*needsRefresh) = 1;
+					(*flags) |= FLAG_NEEDS_REFRESH;
 				}
 				else if (event.key.keysym.sym == SDLK_DOWN) {
 					g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
-					(*needsRefresh) = 1;
+					(*flags) |= FLAG_NEEDS_REFRESH;
 				}
 				else if (event.key.keysym.sym == SDLK_LEFT) {
 					g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
-					(*needsRefresh) = 1;
+					(*flags) |= FLAG_NEEDS_REFRESH;
 				}
 				else if (event.key.keysym.sym == SDLK_RIGHT) {
 					g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
-					(*needsRefresh) = 1;
+					(*flags) |= FLAG_NEEDS_REFRESH;
 				}
 				break;
 		}
