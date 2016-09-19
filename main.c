@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define WIDTH_GRID 14
 #define HEIGHT_GRID 14
