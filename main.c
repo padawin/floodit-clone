@@ -137,29 +137,30 @@ void handleEvents(char *flags) {
 
 			// check for keypresses
 			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_LCTRL) {
+					play(flags);
+				}
 				// exit if ESCAPE is pressed
-				if (event.key.keysym.sym == SDLK_ESCAPE) {
+				else if (event.key.keysym.sym == SDLK_ESCAPE) {
 					(*flags) |= FLAG_DONE;
 				}
-				else if (event.key.keysym.sym == SDLK_UP) {
-					g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				else if (event.key.keysym.sym == SDLK_DOWN) {
-					g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				else if (event.key.keysym.sym == SDLK_LEFT) {
-					g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				else if (event.key.keysym.sym == SDLK_RIGHT) {
-					g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				// 'A' pressed, select color
-				else if (event.key.keysym.sym == SDLK_LCTRL) {
-					play(flags);
+				else if (g_state == STATE_PLAY) {
+					if (event.key.keysym.sym == SDLK_UP) {
+						g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+					else if (event.key.keysym.sym == SDLK_DOWN) {
+						g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+					else if (event.key.keysym.sym == SDLK_LEFT) {
+						g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+					else if (event.key.keysym.sym == SDLK_RIGHT) {
+						g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
 				}
 				break;
 		}
