@@ -325,13 +325,14 @@ void renderEndScreen(const char won) {
 }
 
 char selectColor() {
+	char toVisitFlag = 0x1,
+		 visitedFlag = 0x2;
 	int oldColor = g_grid[0][0];
-	int i, j;
+	int i, j, nbToVisit;
 	if (g_selectedColor == oldColor) {
 		return 0;
 	}
 
-	int nbToVisit;
 	int *toVisit;
 	int **visited;
 
@@ -350,6 +351,7 @@ char selectColor() {
 	}
 
 	toVisit[0] = 0;
+	visited[0][0] |= toVisitFlag;
 	nbToVisit = 1;
 
 	while (nbToVisit > 0) {
@@ -357,7 +359,7 @@ char selectColor() {
 
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
-		visited[y][x] = 1;
+		visited[y][x] |= visitedFlag;
 		g_grid[y][x] = g_selectedColor;
 
 		int neighbours[4][2];
@@ -369,6 +371,7 @@ char selectColor() {
 				&& g_grid[neighbours[i][1]][neighbours[i][0]] == oldColor
 			) {
 				toVisit[nbToVisit++] = neighbours[i][1] * WIDTH_GRID + neighbours[i][0];
+				visited[neighbours[i][1]][neighbours[i][0]] = toVisitFlag;
 			}
 		}
 	}
