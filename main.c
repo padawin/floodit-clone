@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define WIDTH_GRID 14
 #define HEIGHT_GRID 14
@@ -38,6 +39,9 @@ void handleEvents(char *flags);
 void generateGrid();
 void renderGrid();
 void renderControls();
+char selectColor();
+int popArray(int* array, int* arrayLength);
+void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 
 int main()
 {
@@ -136,6 +140,12 @@ void handleEvents(char *flags) {
 					g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
 					(*flags) |= FLAG_NEEDS_REFRESH;
 				}
+				// 'A' pressed, select color
+				else if (event.key.keysym.sym == SDLK_LCTRL) {
+					if (selectColor()) {
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+				}
 				break;
 		}
 		// end switch
@@ -198,5 +208,104 @@ void renderControls() {
 			SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
 			SDL_RenderDrawRect(g_renderer, &r);
 		}
+	}
+}
+
+char selectColor() {
+	int oldColor = g_grid[0][0];
+	int i, j;
+	if (g_selectedColor == oldColor) {
+		return 0;
+	}
+
+	int nbToVisit;
+	int *toVisit;
+	int **visited;
+
+	visited = (int **) malloc(HEIGHT_GRID * sizeof(int *));
+	for (i = 0; i < HEIGHT_GRID; i++) {
+		visited[i] = (int *) malloc(WIDTH_GRID * sizeof(int));
+	}
+
+	toVisit = (int *) malloc(WIDTH_GRID * HEIGHT_GRID * sizeof(int *));
+
+	for (j = 0; j < HEIGHT_GRID; ++j){
+		for (i = 0; i < WIDTH_GRID; ++i){
+			visited[j][i] = 0;
+			toVisit[j * WIDTH_GRID + i] = 0;
+		}
+	}
+
+	toVisit[0] = 0;
+	nbToVisit = 1;
+
+	while (nbToVisit > 0) {
+		int x, y, next = popArray(toVisit, &nbToVisit);
+
+		x = next % WIDTH_GRID;
+		y = next / WIDTH_GRID;
+		visited[y][x] = 1;
+		g_grid[y][x] = g_selectedColor;
+
+		int neighbours[4][2];
+		int nbNeighbours;
+		getNeighbours(x, y, neighbours, &nbNeighbours);
+		for (i = 0; i < nbNeighbours; ++i) {
+			if (
+				visited[neighbours[i][1]][neighbours[i][0]] == 0
+				&& g_grid[neighbours[i][1]][neighbours[i][0]] == oldColor
+			) {
+				toVisit[nbToVisit++] = neighbours[i][1] * WIDTH_GRID + neighbours[i][0];
+			}
+		}
+	}
+
+	for (i = 0; i < HEIGHT_GRID; i++) {
+		free(visited[i]);
+	}
+	free(visited);
+	free(toVisit);
+	return 1;
+}
+
+int popArray(int* array, int* arrayLength) {
+	// swap the first element with the last, reduce the length, return the old
+	// first element
+	if (arrayLength == 0) {
+		return -1;
+	}
+
+	int elem = array[0];
+	int tmp = array[(*arrayLength) - 1];
+	array[(*arrayLength) - 1] = elem;
+	array[0] = tmp;
+	(*arrayLength) -= 1;
+	return elem;
+}
+
+void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
+	(*nbNeighbours) = 0;
+	if (x > 0) {
+		neighbours[*nbNeighbours][0] = x - 1;
+		neighbours[*nbNeighbours][1] = y;
+		(*nbNeighbours) += 1;
+	}
+
+	if (x < WIDTH_GRID - 1) {
+		neighbours[*nbNeighbours][0] = x + 1;
+		neighbours[*nbNeighbours][1] = y;
+		(*nbNeighbours) += 1;
+	}
+
+	if (y > 0) {
+		neighbours[*nbNeighbours][0] = x;
+		neighbours[*nbNeighbours][1] = y - 1;
+		(*nbNeighbours) += 1;
+	}
+
+	if (y < HEIGHT_GRID - 1) {
+		neighbours[*nbNeighbours][0] = x;
+		neighbours[*nbNeighbours][1] = y + 1;
+		(*nbNeighbours) += 1;
 	}
 }
