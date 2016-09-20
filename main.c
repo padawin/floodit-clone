@@ -51,6 +51,7 @@ SDL_Color g_White = {255, 255, 255};
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(char *flags);
 void generateGrid();
+void play(char* flags);
 void renderGrid();
 void render(char *flags);
 void renderCurrentTurn();
@@ -158,16 +159,7 @@ void handleEvents(char *flags) {
 				}
 				// 'A' pressed, select color
 				else if (event.key.keysym.sym == SDLK_LCTRL) {
-					if (selectColor()) {
-						if (g_turns == MAX_TURNS) {
-							g_state = STATE_FINISH_LOST;
-						}
-						else {
-							g_turns++;
-						}
-
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
+					play(flags);
 				}
 				break;
 		}
@@ -184,6 +176,19 @@ void generateGrid() {
 		for (i = 0; i < WIDTH_GRID; ++i){
 			g_grid[j][i] = rand() % NB_COLORS;
 		}
+	}
+}
+
+void play(char* flags) {
+	if (selectColor()) {
+		if (g_turns == MAX_TURNS) {
+			g_state = STATE_FINISH_LOST;
+		}
+		else {
+			g_turns++;
+		}
+
+		(*flags) |= FLAG_NEEDS_REFRESH;
 	}
 }
 
