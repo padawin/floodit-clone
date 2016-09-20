@@ -15,6 +15,7 @@
 
 #define FLAG_DONE 0x1
 #define FLAG_NEEDS_REFRESH 0x2
+#define FLAG_NEEDS_RESTART 0x4
 
 #define STATE_PLAY 1
 #define STATE_FINISH_WON 2
@@ -39,8 +40,8 @@ int g_colors[NB_COLORS][3] = {
 	{255, 0, 255},
 	{0, 255, 255}
 };
-int g_selectedColor = 0;
-int g_turns = 1;
+int g_selectedColor;
+int g_turns;
 int g_state;
 
 /**
@@ -53,6 +54,7 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 void handleEvents(char *flags);
 void generateGrid();
 void play(char* flags);
+char checkBoard();
 void renderGrid();
 void render(char *flags);
 void renderCurrentTurn();
@@ -72,19 +74,25 @@ int main()
 
 	g_state = STATE_PLAY;
 
-	generateGrid();
+	char flags = FLAG_NEEDS_RESTART;
+	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
+		generateGrid();
 
-	// program main loop
-	char flags = FLAG_NEEDS_REFRESH;
-	while (!(flags & FLAG_DONE)) {
-		handleEvents(&flags);
+		// program main loop
+		g_selectedColor = 0;
+		g_turns = 1;
+		flags ^= FLAG_NEEDS_RESTART;
+		flags |= FLAG_NEEDS_REFRESH;
+		while (!(flags & FLAG_DONE) && !(flags & FLAG_NEEDS_RESTART)) {
+			handleEvents(&flags);
 
-		// DRAWING STARTS HERE
-		if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
-			render(&flags);
-		}
-		// DRAWING ENDS HERE
-	} // end main loop
+			// DRAWING STARTS HERE
+			if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
+				render(&flags);
+			}
+			// DRAWING ENDS HERE
+		} // end main loop
+	}
 
 	// all is well ;)
 	printf("Exited cleanly\n");
@@ -182,7 +190,12 @@ void generateGrid() {
 }
 
 void play(char* flags) {
-	if (selectColor()) {
+	if (g_state != STATE_PLAY) {
+		g_state = STATE_PLAY;
+		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
+		return;
+	}
+	else if (selectColor()) {
 		char finished = checkBoard();
 		if (finished) {
 			g_state = STATE_FINISH_WON;
