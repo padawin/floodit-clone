@@ -16,6 +16,9 @@
 #define FLAG_DONE 0x1
 #define FLAG_NEEDS_REFRESH 0x2
 
+#define STATE_PLAY 1
+#define STATE_FINISH_LOST 3
+
 /**
  * The game's window
  */
@@ -37,6 +40,7 @@ int g_colors[NB_COLORS][3] = {
 };
 int g_selectedColor = 0;
 int g_turns = 1;
+int g_state;
 
 /**
  * Game font
@@ -61,6 +65,8 @@ int main()
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
+
+	g_state = STATE_PLAY;
 
 	generateGrid();
 
@@ -162,6 +168,10 @@ void handleEvents(char *flags) {
 				else if (event.key.keysym.sym == SDLK_LCTRL) {
 					if (selectColor()) {
 						g_turns++;
+						if (g_turns > MAX_TURNS) {
+							g_state = STATE_FINISH_LOST;
+						}
+
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 				}
