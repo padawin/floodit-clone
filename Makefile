@@ -3,7 +3,7 @@ TARGET := $(NAME)
 TARGETDIST := $(NAME).opk
 OBJS := main.c
 OPTS := -g -O2 -Wall
-LIB := -lSDL2
+LIB := -lSDL2 -lSDL2_ttf
 CC := $(CROSS_COMPILE)gcc
 
 SYSROOT := $(shell $(CC) --print-sysroot)
