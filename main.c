@@ -10,6 +10,8 @@
 #define HEIGHT_CONTROL_PX 32
 #define NB_COLORS 6
 
+#define MAX_TURNS 25
+
 #define FLAG_DONE 0x1
 #define FLAG_NEEDS_REFRESH 0x2
 
@@ -33,11 +35,13 @@ int g_colors[NB_COLORS][3] = {
 	{0, 255, 255}
 };
 int g_selectedColor = 0;
+int g_turns = 1;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(char *flags);
 void generateGrid();
 void renderGrid();
+void renderCurrentTurn();
 void renderControls();
 char selectColor();
 int popArray(int* array, int* arrayLength);
@@ -65,6 +69,7 @@ int main()
 			// Clear window
 			SDL_RenderClear(g_renderer);
 			renderGrid();
+			renderCurrentTurn();
 			renderControls();
 			// Render the rect to the screen
 			SDL_RenderPresent(g_renderer);
@@ -143,6 +148,7 @@ void handleEvents(char *flags) {
 				// 'A' pressed, select color
 				else if (event.key.keysym.sym == SDLK_LCTRL) {
 					if (selectColor()) {
+						g_turns++;
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 				}
@@ -162,6 +168,11 @@ void generateGrid() {
 			g_grid[j][i] = rand() % NB_COLORS;
 		}
 	}
+}
+
+void renderCurrentTurn() {
+	printf("%d / %d\n", g_turns, MAX_TURNS);
+
 }
 
 void renderGrid() {
