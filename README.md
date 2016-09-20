@@ -17,3 +17,8 @@ Finally, to use your opk, copy it in your GCW-Zero. I use scp for that, but via
 ftp or on a memory card should work as well:
 
 	scp floodit.opk root@[gcwIp]:/media/data/apps/
+
+## Credits
+
+Font ClearSans from
+https://01.org/clear-sans/blogs/2013/clear-sans-new-font-optimized-small-screen-readability
