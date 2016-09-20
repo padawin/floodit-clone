@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -9,6 +10,8 @@
 #define WIDTH_CONTROL_PX 32
 #define HEIGHT_CONTROL_PX 32
 #define NB_COLORS 6
+
+#define MAX_TURNS 25
 
 #define FLAG_DONE 0x1
 #define FLAG_NEEDS_REFRESH 0x2
@@ -33,11 +36,19 @@ int g_colors[NB_COLORS][3] = {
 	{0, 255, 255}
 };
 int g_selectedColor = 0;
+int g_turns = 1;
+
+/**
+ * Game font
+ */
+TTF_Font* g_Sans = 0;
+SDL_Color g_White = {255, 255, 255};
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(char *flags);
 void generateGrid();
 void renderGrid();
+void renderCurrentTurn();
 void renderControls();
 char selectColor();
 int popArray(int* array, int* arrayLength);
@@ -46,6 +57,7 @@ void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 int main()
 {
 	initSDL("Floodit", 0, 0, 320, 240);
+	g_Sans = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
@@ -65,6 +77,7 @@ int main()
 			// Clear window
 			SDL_RenderClear(g_renderer);
 			renderGrid();
+			renderCurrentTurn();
 			renderControls();
 			// Render the rect to the screen
 			SDL_RenderPresent(g_renderer);
@@ -102,6 +115,11 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 				l_bReturn = 0;
 			}
 		}
+	}
+
+	if (TTF_Init() == -1) {
+		printf("TTF_Init: %s\n", TTF_GetError());
+		l_bReturn = 0;
 	}
 
 	return l_bReturn;
@@ -143,6 +161,7 @@ void handleEvents(char *flags) {
 				// 'A' pressed, select color
 				else if (event.key.keysym.sym == SDLK_LCTRL) {
 					if (selectColor()) {
+						g_turns++;
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 				}
@@ -161,6 +180,28 @@ void generateGrid() {
 		for (i = 0; i < WIDTH_GRID; ++i){
 			g_grid[j][i] = rand() % NB_COLORS;
 		}
+	}
+}
+
+void renderCurrentTurn() {
+	char score[8];
+	int textWidth, textHeight, textX, textY;
+	snprintf(score, 8, "%d / %d", g_turns, MAX_TURNS);
+
+	SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, score, g_White);
+	if( textSurface == NULL ) {
+		printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+	}
+	else {
+		SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
+		textWidth = textSurface->w;
+		textHeight = textSurface->h;
+		textX = 320 - 10 - (g_turns < 10 ? 52 : 63);
+		textY = 240 - 30;
+		SDL_FreeSurface(textSurface);
+		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
+		SDL_RenderCopy(g_renderer, text, NULL, &renderQuad);
+		SDL_DestroyTexture(text);
 	}
 }
 
