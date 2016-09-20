@@ -124,7 +124,11 @@ int main()
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h) {
 	char l_bReturn = 1;
+#if GCW
 	int flags = SDL_WINDOW_FULLSCREEN;
+#else
+	int flags = 0;
+#endif
 
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
