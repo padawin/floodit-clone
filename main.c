@@ -15,6 +15,11 @@
 
 #define FLAG_DONE 0x1
 #define FLAG_NEEDS_REFRESH 0x2
+#define FLAG_NEEDS_RESTART 0x4
+
+#define STATE_PLAY 1
+#define STATE_FINISH_WON 2
+#define STATE_FINISH_LOST 3
 
 /**
  * The game's window
@@ -35,8 +40,9 @@ int g_colors[NB_COLORS][3] = {
 	{255, 0, 255},
 	{0, 255, 255}
 };
-int g_selectedColor = 0;
-int g_turns = 1;
+int g_selectedColor;
+int g_turns;
+int g_state;
 
 /**
  * Game font
@@ -47,9 +53,13 @@ SDL_Color g_White = {255, 255, 255};
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(char *flags);
 void generateGrid();
+void play(char* flags);
+char checkBoard();
 void renderGrid();
+void render(char *flags);
 void renderCurrentTurn();
 void renderControls();
+void renderEndScreen(const char won);
 char selectColor();
 int popArray(int* array, int* arrayLength);
 void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
@@ -62,29 +72,27 @@ int main()
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
-	generateGrid();
+	g_state = STATE_PLAY;
 
-	// program main loop
-	char flags = FLAG_NEEDS_REFRESH;
-	while (!(flags & FLAG_DONE)) {
-		handleEvents(&flags);
+	char flags = FLAG_NEEDS_RESTART;
+	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
+		generateGrid();
 
-		// DRAWING STARTS HERE
-		if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
-			// Set render color to red (background will be rendered in this color)
-			SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+		// program main loop
+		g_selectedColor = 0;
+		g_turns = 1;
+		flags ^= FLAG_NEEDS_RESTART;
+		flags |= FLAG_NEEDS_REFRESH;
+		while (!(flags & FLAG_DONE) && !(flags & FLAG_NEEDS_RESTART)) {
+			handleEvents(&flags);
 
-			// Clear window
-			SDL_RenderClear(g_renderer);
-			renderGrid();
-			renderCurrentTurn();
-			renderControls();
-			// Render the rect to the screen
-			SDL_RenderPresent(g_renderer);
-			flags &= ~FLAG_NEEDS_REFRESH;
-		}
-		// DRAWING ENDS HERE
-	} // end main loop
+			// DRAWING STARTS HERE
+			if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
+				render(&flags);
+			}
+			// DRAWING ENDS HERE
+		} // end main loop
+	}
 
 	// all is well ;)
 	printf("Exited cleanly\n");
@@ -138,30 +146,28 @@ void handleEvents(char *flags) {
 
 			// check for keypresses
 			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_LCTRL) {
+					play(flags);
+				}
 				// exit if ESCAPE is pressed
-				if (event.key.keysym.sym == SDLK_ESCAPE) {
+				else if (event.key.keysym.sym == SDLK_ESCAPE) {
 					(*flags) |= FLAG_DONE;
 				}
-				else if (event.key.keysym.sym == SDLK_UP) {
-					g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				else if (event.key.keysym.sym == SDLK_DOWN) {
-					g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				else if (event.key.keysym.sym == SDLK_LEFT) {
-					g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				else if (event.key.keysym.sym == SDLK_RIGHT) {
-					g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
-					(*flags) |= FLAG_NEEDS_REFRESH;
-				}
-				// 'A' pressed, select color
-				else if (event.key.keysym.sym == SDLK_LCTRL) {
-					if (selectColor()) {
-						g_turns++;
+				else if (g_state == STATE_PLAY) {
+					if (event.key.keysym.sym == SDLK_UP) {
+						g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+					else if (event.key.keysym.sym == SDLK_DOWN) {
+						g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+					else if (event.key.keysym.sym == SDLK_LEFT) {
+						g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
+						(*flags) |= FLAG_NEEDS_REFRESH;
+					}
+					else if (event.key.keysym.sym == SDLK_RIGHT) {
+						g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 				}
@@ -183,14 +189,81 @@ void generateGrid() {
 	}
 }
 
+void play(char* flags) {
+	if (g_state != STATE_PLAY) {
+		g_state = STATE_PLAY;
+		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
+		return;
+	}
+	else if (selectColor()) {
+		char finished = checkBoard();
+		if (finished) {
+			g_state = STATE_FINISH_WON;
+		}
+		else if (g_turns == MAX_TURNS) {
+			g_state = STATE_FINISH_LOST;
+		}
+		else {
+			g_turns++;
+		}
+
+		(*flags) |= FLAG_NEEDS_REFRESH;
+	}
+}
+
+char checkBoard() {
+	signed char color = -1;
+	int i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j){
+		for (i = 0; i < WIDTH_GRID; ++i){
+			if (color != -1 && g_grid[j][i] != color) {
+				return 0;
+			}
+			else {
+				color = g_grid[j][i];
+			}
+		}
+	}
+
+	return 1;
+}
+
+void render(char *flags) {
+	// Set render color to red (background will be rendered in this color)
+	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+
+	// Clear window
+	SDL_RenderClear(g_renderer);
+
+	if (
+		g_state == STATE_PLAY ||
+		g_state == STATE_FINISH_WON ||
+		g_state == STATE_FINISH_LOST
+	) {
+		renderGrid();
+		renderCurrentTurn();
+		renderControls();
+
+		if (g_state == STATE_FINISH_WON) {
+			renderEndScreen(1);
+		}
+		else if (g_state == STATE_FINISH_LOST) {
+			renderEndScreen(0);
+		}
+	}
+	// Render the rect to the screen
+	SDL_RenderPresent(g_renderer);
+	(*flags) &= ~FLAG_NEEDS_REFRESH;
+}
+
 void renderCurrentTurn() {
 	char score[8];
 	int textWidth, textHeight, textX, textY;
 	snprintf(score, 8, "%d / %d", g_turns, MAX_TURNS);
 
 	SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, score, g_White);
-	if( textSurface == NULL ) {
-		printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+	if (textSurface == NULL) {
+		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 	}
 	else {
 		SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
@@ -252,14 +325,53 @@ void renderControls() {
 	}
 }
 
+void renderEndScreen(const char won) {
+	const char *messages[2];
+	int textWidth, textHeight, textX, textY, line;
+
+	SDL_Rect bgRect = {0, 0, 320, 240};
+
+	SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 224);
+	SDL_RenderFillRect(g_renderer, &bgRect);
+
+	if (won) {
+		messages[0] = "Congratulation!";
+	}
+	else {
+		messages[0] = "You lost.";
+	}
+
+	messages[1] = "Click A to restart";
+
+	for (line = 0; line < 2; ++line) {
+		SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, messages[line], g_White);
+		if (textSurface == NULL) {
+			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
+		}
+		else {
+			SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
+			textWidth = textSurface->w;
+			textHeight = textSurface->h;
+			textX = (320 - textWidth) / 2;
+			textY = 50 + line * (textHeight + 5);
+			SDL_FreeSurface(textSurface);
+			SDL_Rect textRect = {textX, textY, textWidth, textHeight};
+			SDL_RenderCopy(g_renderer, text, NULL, &textRect);
+			SDL_DestroyTexture(text);
+		}
+	}
+}
+
 char selectColor() {
+	char toVisitFlag = 0x1,
+		 visitedFlag = 0x2;
 	int oldColor = g_grid[0][0];
-	int i, j;
+	int i, j, nbToVisit;
 	if (g_selectedColor == oldColor) {
 		return 0;
 	}
 
-	int nbToVisit;
 	int *toVisit;
 	int **visited;
 
@@ -278,6 +390,7 @@ char selectColor() {
 	}
 
 	toVisit[0] = 0;
+	visited[0][0] |= toVisitFlag;
 	nbToVisit = 1;
 
 	while (nbToVisit > 0) {
@@ -285,7 +398,7 @@ char selectColor() {
 
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
-		visited[y][x] = 1;
+		visited[y][x] |= visitedFlag;
 		g_grid[y][x] = g_selectedColor;
 
 		int neighbours[4][2];
@@ -297,6 +410,7 @@ char selectColor() {
 				&& g_grid[neighbours[i][1]][neighbours[i][0]] == oldColor
 			) {
 				toVisit[nbToVisit++] = neighbours[i][1] * WIDTH_GRID + neighbours[i][0];
+				visited[neighbours[i][1]][neighbours[i][0]] = toVisitFlag;
 			}
 		}
 	}
