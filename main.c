@@ -52,6 +52,7 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 void handleEvents(char *flags);
 void generateGrid();
 void renderGrid();
+void render(char *flags);
 void renderCurrentTurn();
 void renderControls();
 char selectColor();
@@ -77,17 +78,7 @@ int main()
 
 		// DRAWING STARTS HERE
 		if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
-			// Set render color to red (background will be rendered in this color)
-			SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
-
-			// Clear window
-			SDL_RenderClear(g_renderer);
-			renderGrid();
-			renderCurrentTurn();
-			renderControls();
-			// Render the rect to the screen
-			SDL_RenderPresent(g_renderer);
-			flags &= ~FLAG_NEEDS_REFRESH;
+			render(&flags);
 		}
 		// DRAWING ENDS HERE
 	} // end main loop
@@ -191,6 +182,21 @@ void generateGrid() {
 			g_grid[j][i] = rand() % NB_COLORS;
 		}
 	}
+}
+
+void render(char *flags) {
+	// Set render color to red (background will be rendered in this color)
+	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+
+	// Clear window
+	SDL_RenderClear(g_renderer);
+
+	renderGrid();
+	renderCurrentTurn();
+	renderControls();
+	// Render the rect to the screen
+	SDL_RenderPresent(g_renderer);
+	(*flags) &= ~FLAG_NEEDS_REFRESH;
 }
 
 void renderCurrentTurn() {
