@@ -159,9 +159,11 @@ void handleEvents(char *flags) {
 				// 'A' pressed, select color
 				else if (event.key.keysym.sym == SDLK_LCTRL) {
 					if (selectColor()) {
-						g_turns++;
-						if (g_turns > MAX_TURNS) {
+						if (g_turns == MAX_TURNS) {
 							g_state = STATE_FINISH_LOST;
+						}
+						else {
+							g_turns++;
 						}
 
 						(*flags) |= FLAG_NEEDS_REFRESH;
