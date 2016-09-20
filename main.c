@@ -17,6 +17,7 @@
 #define FLAG_NEEDS_REFRESH 0x2
 
 #define STATE_PLAY 1
+#define STATE_FINISH_WON 2
 #define STATE_FINISH_LOST 3
 
 /**
@@ -182,7 +183,11 @@ void generateGrid() {
 
 void play(char* flags) {
 	if (selectColor()) {
-		if (g_turns == MAX_TURNS) {
+		char finished = checkBoard();
+		if (finished) {
+			g_state = STATE_FINISH_WON;
+		}
+		else if (g_turns == MAX_TURNS) {
 			g_state = STATE_FINISH_LOST;
 		}
 		else {
@@ -191,6 +196,23 @@ void play(char* flags) {
 
 		(*flags) |= FLAG_NEEDS_REFRESH;
 	}
+}
+
+char checkBoard() {
+	signed char color = -1;
+	int i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j){
+		for (i = 0; i < WIDTH_GRID; ++i){
+			if (color != -1 && g_grid[j][i] != color) {
+				return 0;
+			}
+			else {
+				color = g_grid[j][i];
+			}
+		}
+	}
+
+	return 1;
 }
 
 void render(char *flags) {
@@ -202,13 +224,17 @@ void render(char *flags) {
 
 	if (
 		g_state == STATE_PLAY ||
+		g_state == STATE_FINISH_WON ||
 		g_state == STATE_FINISH_LOST
 	) {
 		renderGrid();
 		renderCurrentTurn();
 		renderControls();
 
-		if (g_state == STATE_FINISH_LOST) {
+		if (g_state == STATE_FINISH_WON) {
+			renderEndScreen(1);
+		}
+		else if (g_state == STATE_FINISH_LOST) {
 			renderEndScreen(0);
 		}
 	}
