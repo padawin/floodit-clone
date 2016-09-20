@@ -55,6 +55,7 @@ void renderGrid();
 void render(char *flags);
 void renderCurrentTurn();
 void renderControls();
+void renderEndScreen(const char won);
 char selectColor();
 int popArray(int* array, int* arrayLength);
 void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
@@ -191,9 +192,18 @@ void render(char *flags) {
 	// Clear window
 	SDL_RenderClear(g_renderer);
 
-	renderGrid();
-	renderCurrentTurn();
-	renderControls();
+	if (
+		g_state == STATE_PLAY ||
+		g_state == STATE_FINISH_LOST
+	) {
+		renderGrid();
+		renderCurrentTurn();
+		renderControls();
+
+		if (g_state == STATE_FINISH_LOST) {
+			renderEndScreen(0);
+		}
+	}
 	// Render the rect to the screen
 	SDL_RenderPresent(g_renderer);
 	(*flags) &= ~FLAG_NEEDS_REFRESH;
@@ -264,6 +274,44 @@ void renderControls() {
 			r.h += 4;
 			SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
 			SDL_RenderDrawRect(g_renderer, &r);
+		}
+	}
+}
+
+void renderEndScreen(const char won) {
+	const char *messages[2];
+	int textWidth, textHeight, textX, textY, line;
+
+	SDL_Rect bgRect = {0, 0, 320, 240};
+
+	SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 224);
+	SDL_RenderFillRect(g_renderer, &bgRect);
+
+	if (won) {
+		messages[0] = "Congratulation!";
+	}
+	else {
+		messages[0] = "You lost.";
+	}
+
+	messages[1] = "Click A to restart";
+
+	for (line = 0; line < 2; ++line) {
+		SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, messages[line], g_White);
+		if (textSurface == NULL) {
+			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
+		}
+		else {
+			SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
+			textWidth = textSurface->w;
+			textHeight = textSurface->h;
+			textX = (320 - textWidth) / 2;
+			textY = 50 + line * (textHeight + 5);
+			SDL_FreeSurface(textSurface);
+			SDL_Rect textRect = {textX, textY, textWidth, textHeight};
+			SDL_RenderCopy(g_renderer, text, NULL, &textRect);
+			SDL_DestroyTexture(text);
 		}
 	}
 }
