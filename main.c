@@ -5,10 +5,33 @@
 
 #define WIDTH_GRID 14
 #define HEIGHT_GRID 14
+
+#if GCW
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
 #define WIDTH_GRID_PX 17
 #define HEIGHT_GRID_PX 17
-#define WIDTH_CONTROL_PX 32
-#define HEIGHT_CONTROL_PX 32
+
+#define WIDTH_CONTROL_PX 30
+#define HEIGHT_CONTROL_PX 30
+#define SELECTED_WIDTH_CONTROL_PX 36
+#define SELECTED_HEIGHT_CONTROL_PX 36
+#define CONTROL_MARGIN_X 4
+#define CONTROL_MARGIN_Y 4
+#else
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+#define WIDTH_GRID_PX 34
+#define HEIGHT_GRID_PX 34
+
+#define WIDTH_CONTROL_PX 64
+#define HEIGHT_CONTROL_PX 64
+#define SELECTED_WIDTH_CONTROL_PX 76
+#define SELECTED_HEIGHT_CONTROL_PX 76
+#define CONTROL_MARGIN_X 4
+#define CONTROL_MARGIN_Y 4
+#endif
+
 #define NB_COLORS 6
 
 #define MAX_TURNS 25
@@ -66,7 +89,7 @@ void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 
 int main()
 {
-	initSDL("Floodit", 0, 0, 320, 240);
+	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	g_Sans = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 
 	// make sure SDL cleans up before exit
@@ -258,7 +281,22 @@ void render(char *flags) {
 
 void renderCurrentTurn() {
 	char score[8];
-	int textWidth, textHeight, textX, textY;
+	int textWidth, textHeight,
+		textX, textY,
+		widthTextSmall, widthTextLong,
+		textMarginRight, textMarginBottom;
+
+#if GCW
+	widthTextSmall = 52;
+	widthTextLong = 63;
+	textMarginRight = 10;
+	textMarginBottom = 30;
+#else
+	widthTextSmall = 52;
+	widthTextLong = 63;
+	textMarginRight = 10;
+	textMarginBottom = 30;
+#endif
 	snprintf(score, 8, "%d / %d", g_turns, MAX_TURNS);
 
 	SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, score, g_White);
@@ -269,8 +307,8 @@ void renderCurrentTurn() {
 		SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
 		textWidth = textSurface->w;
 		textHeight = textSurface->h;
-		textX = 320 - 10 - (g_turns < 10 ? 52 : 63);
-		textY = 240 - 30;
+		textX = SCREEN_WIDTH - textMarginRight - (g_turns < 10 ? widthTextSmall : widthTextLong);
+		textY = SCREEN_HEIGHT - textMarginBottom;
 		SDL_FreeSurface(textSurface);
 		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
 		SDL_RenderCopy(g_renderer, text, NULL, &renderQuad);
@@ -299,29 +337,33 @@ void renderGrid() {
 }
 
 void renderControls() {
-	int c;
+	int c,
+		thicknessSelectedX = (SELECTED_WIDTH_CONTROL_PX - WIDTH_CONTROL_PX) / 2,
+		thicknessSelectedY = (SELECTED_HEIGHT_CONTROL_PX - HEIGHT_CONTROL_PX) / 2;
 	for (c = 0; c < NB_COLORS; ++c){
 		SDL_Rect r;
 		int cR, cG, cB;
-		r.x = 240 + (c % 2) * 40 + 4;
-		r.y = (c / 2) * 40 + 4;
-		r.w = WIDTH_CONTROL_PX;
-		r.h = HEIGHT_CONTROL_PX;
+		if (c == g_selectedColor) {
+			// 480 + 0 +
+			r.x = SCREEN_HEIGHT + CONTROL_MARGIN_X + (c % 2) * SELECTED_WIDTH_CONTROL_PX;
+			r.y = CONTROL_MARGIN_Y + (c / 2) * SELECTED_HEIGHT_CONTROL_PX;
+			r.w = SELECTED_WIDTH_CONTROL_PX;
+			r.h = SELECTED_HEIGHT_CONTROL_PX;
+		}
+		else {
+			r.x = SCREEN_HEIGHT + CONTROL_MARGIN_X + (c % 2) * SELECTED_WIDTH_CONTROL_PX
+				+ thicknessSelectedX;
+			r.y = CONTROL_MARGIN_Y + (c / 2) * SELECTED_HEIGHT_CONTROL_PX
+				+ thicknessSelectedY;
+			r.w = WIDTH_CONTROL_PX;
+			r.h = HEIGHT_CONTROL_PX;
+		}
 		cR = g_colors[c][0];
 		cG = g_colors[c][1];
 		cB = g_colors[c][2];
 
 		SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
 		SDL_RenderFillRect(g_renderer, &r);
-
-		if (c == g_selectedColor) {
-			r.x -= 2;
-			r.y -= 2;
-			r.w += 4;
-			r.h += 4;
-			SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
-			SDL_RenderDrawRect(g_renderer, &r);
-		}
 	}
 }
 
@@ -329,7 +371,7 @@ void renderEndScreen(const char won) {
 	const char *messages[2];
 	int textWidth, textHeight, textX, textY, line;
 
-	SDL_Rect bgRect = {0, 0, 320, 240};
+	SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
 	SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 224);
@@ -353,7 +395,7 @@ void renderEndScreen(const char won) {
 			SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
 			textWidth = textSurface->w;
 			textHeight = textSurface->h;
-			textX = (320 - textWidth) / 2;
+			textX = (SCREEN_WIDTH - textWidth) / 2;
 			textY = 50 + line * (textHeight + 5);
 			SDL_FreeSurface(textSurface);
 			SDL_Rect textRect = {textX, textY, textWidth, textHeight};
