@@ -173,7 +173,11 @@ void handleEvents(char *flags) {
 
 			// check for keypresses
 			case SDL_KEYDOWN:
+#if GCW
 				if (event.key.keysym.sym == SDLK_LCTRL) {
+#else
+				if (event.key.keysym.sym == SDLK_SPACE) {
+#endif
 					play(flags);
 				}
 				// exit if ESCAPE is pressed
@@ -388,7 +392,11 @@ void renderEndScreen(const char won) {
 		messages[0] = "You lost.";
 	}
 
+#if GCW
 	messages[1] = "Click A to restart";
+#else
+	messages[1] = "Click SPACE to restart";
+#endif
 
 	for (line = 0; line < 2; ++line) {
 		SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, messages[line], g_White);
