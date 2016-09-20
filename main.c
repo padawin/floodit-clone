@@ -262,8 +262,8 @@ void renderCurrentTurn() {
 	snprintf(score, 8, "%d / %d", g_turns, MAX_TURNS);
 
 	SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, score, g_White);
-	if( textSurface == NULL ) {
-		printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+	if (textSurface == NULL) {
+		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 	}
 	else {
 		SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
