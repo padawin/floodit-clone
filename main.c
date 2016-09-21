@@ -7,6 +7,7 @@
 #define HEIGHT_GRID 14
 
 #if GCW
+#define IS_GCW 1
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define WIDTH_GRID_PX 17
@@ -19,6 +20,7 @@
 #define CONTROL_MARGIN_X 4
 #define CONTROL_MARGIN_Y 4
 #else
+#define IS_GCW 0
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 #define WIDTH_GRID_PX 34
@@ -124,11 +126,14 @@ int main()
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h) {
 	char l_bReturn = 1;
-#if GCW
-	int flags = SDL_WINDOW_FULLSCREEN;
-#else
-	int flags = 0;
-#endif
+	int flags;
+
+	if (IS_GCW) {
+		flags = 0;
+	}
+	else {
+		flags = 0;
+	}
 
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -173,11 +178,10 @@ void handleEvents(char *flags) {
 
 			// check for keypresses
 			case SDL_KEYDOWN:
-#if GCW
-				if (event.key.keysym.sym == SDLK_LCTRL) {
-#else
-				if (event.key.keysym.sym == SDLK_SPACE) {
-#endif
+				if (
+					(IS_GCW && event.key.keysym.sym == SDLK_LCTRL)
+					|| (!IS_GCW && event.key.keysym.sym == SDLK_SPACE)
+				) {
 					play(flags);
 				}
 				// exit if ESCAPE is pressed
@@ -294,17 +298,19 @@ void renderCurrentTurn() {
 		widthTextSmall, widthTextLong,
 		textMarginRight, textMarginBottom;
 
-#if GCW
-	widthTextSmall = 52;
-	widthTextLong = 63;
-	textMarginRight = 10;
-	textMarginBottom = 30;
-#else
-	widthTextSmall = 52;
-	widthTextLong = 63;
-	textMarginRight = 10;
-	textMarginBottom = 30;
-#endif
+	if (IS_GCW) {
+		widthTextSmall = 52;
+		widthTextLong = 63;
+		textMarginRight = 10;
+		textMarginBottom = 30;
+	}
+	else {
+		widthTextSmall = 52;
+		widthTextLong = 63;
+		textMarginRight = 10;
+		textMarginBottom = 30;
+	}
+
 	snprintf(score, 8, "%d / %d", g_turns, MAX_TURNS);
 
 	SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, score, g_White);
@@ -392,11 +398,12 @@ void renderEndScreen(const char won) {
 		messages[0] = "You lost.";
 	}
 
-#if GCW
-	messages[1] = "Click A to restart";
-#else
-	messages[1] = "Click SPACE to restart";
-#endif
+	if (IS_GCW) {
+		messages[1] = "Click A to restart";
+	}
+	else {
+		messages[1] = "Click SPACE to restart";
+	}
 
 	for (line = 0; line < 2; ++line) {
 		SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, messages[line], g_White);
