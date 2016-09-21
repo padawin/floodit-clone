@@ -11,7 +11,10 @@ CFLAGS += $(shell $(SYSROOT)/usr/bin/sdl2-config --cflags)
 LDFLAGS += $(shell $(SYSROOT)/usr/bin/sdl2-config --libs)
 
 $(TARGET): $(OBJS)
-	    $(CC) $(OPTS) $(CFLAGS) $^ -o $@ $(LIB)
+	    $(CC) $(OPTS) $(CFLAGS) $^ -o $(NAME) $(LIB)
+
+gcw: $(OBJS)
+	$(CC) $(OPTS) $(CFLAGS) -DGCW $^ -o $(NAME) $(LIB)
 
 opk:
 	cp floodit dist/
