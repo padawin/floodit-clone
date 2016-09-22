@@ -46,16 +46,6 @@
 #define STATE_FINISH_WON 2
 #define STATE_FINISH_LOST 3
 
-/**
- * The game's window
- */
-SDL_Window* g_window = 0;
-
-/**
- * The game's renderer. Used to render graphics in the window
- */
-SDL_Renderer* g_renderer = 0;
-
 int g_grid[HEIGHT_GRID][WIDTH_GRID];
 int g_colors[NB_COLORS][3] = {
 	{255, 0, 0},
@@ -65,9 +55,15 @@ int g_colors[NB_COLORS][3] = {
 	{255, 0, 255},
 	{0, 255, 255}
 };
-int g_selectedColor;
-int g_turns;
-int g_state;
+
+typedef struct {
+	SDL_Renderer* renderer;
+	SDL_Window* window;
+	TTF_Font* font;
+	int iTurns;
+	int iState;
+	int iSelectedColor;
+} s_Game;
 
 /**
  * Game font
@@ -75,45 +71,46 @@ int g_state;
 TTF_Font* g_Sans = 0;
 SDL_Color g_White = {255, 255, 255};
 
-int initSDL(const char* title, const int x, const int y, const int w, const int h);
-void handleEvents(char *flags);
+int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
+void handleEvents(s_Game* game, char *flags);
 void generateGrid();
-void play(char* flags);
+void play(s_Game* game, char* flags);
 char checkBoard();
-void renderGrid();
-void render(char *flags);
-void renderCurrentTurn();
-void renderControls();
-void renderEndScreen(const char won);
-char selectColor();
+void renderGrid(s_Game* game);
+void render(s_Game* game, char *flags);
+void renderCurrentTurn(s_Game* game);
+void renderControls(s_Game* game);
+void renderEndScreen(s_Game* game, const char won);
+char selectColor(const int selectedColor);
 int popArray(int* array, int* arrayLength);
 void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 
 int main()
 {
-	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	s_Game game;
+	initSDL(&game, "Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	g_Sans = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
-	g_state = STATE_PLAY;
+	game.iState = STATE_PLAY;
 
 	char flags = FLAG_NEEDS_RESTART;
 	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
 		generateGrid();
 
 		// program main loop
-		g_selectedColor = 0;
-		g_turns = 1;
+		game.iSelectedColor = 0;
+		game.iTurns = 1;
 		flags ^= FLAG_NEEDS_RESTART;
 		flags |= FLAG_NEEDS_REFRESH;
 		while (!(flags & FLAG_DONE) && !(flags & FLAG_NEEDS_RESTART)) {
-			handleEvents(&flags);
+			handleEvents(&game, &flags);
 
 			// DRAWING STARTS HERE
 			if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
-				render(&flags);
+				render(&game, &flags);
 			}
 			// DRAWING ENDS HERE
 		} // end main loop
@@ -124,7 +121,7 @@ int main()
 	return 0;
 }
 
-int initSDL(const char* title, const int x, const int y, const int w, const int h) {
+int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h) {
 	char l_bReturn = 1;
 	int flags;
 
@@ -142,15 +139,15 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	}
 	else {
 		// if succeeded create our window
-		g_window = SDL_CreateWindow(title, x, y, w, h, flags);
+		game->window = SDL_CreateWindow(title, x, y, w, h, flags);
 		// if the window creation succeeded create our renderer
-		if (g_window == 0) {
+		if (game->window == 0) {
 			printf("Window creation failed\n");
 			l_bReturn = 0;
 		}
 		else {
-			g_renderer = SDL_CreateRenderer(g_window, -1, 0);
-			if (g_renderer == 0) {
+			game->renderer = SDL_CreateRenderer(game->window, -1, 0);
+			if (game->renderer == 0) {
 				printf("Renderer creation failed\n");
 				l_bReturn = 0;
 			}
@@ -165,7 +162,7 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	return l_bReturn;
 }
 
-void handleEvents(char *flags) {
+void handleEvents(s_Game* game, char *flags) {
 	// message processing loop
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -182,27 +179,27 @@ void handleEvents(char *flags) {
 					(IS_GCW && event.key.keysym.sym == SDLK_LCTRL)
 					|| (!IS_GCW && event.key.keysym.sym == SDLK_SPACE)
 				) {
-					play(flags);
+					play(game, flags);
 				}
 				// exit if ESCAPE is pressed
 				else if (event.key.keysym.sym == SDLK_ESCAPE) {
 					(*flags) |= FLAG_DONE;
 				}
-				else if (g_state == STATE_PLAY) {
+				else if (game->iState == STATE_PLAY) {
 					if (event.key.keysym.sym == SDLK_UP) {
-						g_selectedColor = (g_selectedColor - 2 + NB_COLORS) % NB_COLORS;
+						game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 					else if (event.key.keysym.sym == SDLK_DOWN) {
-						g_selectedColor = (g_selectedColor + 2) % NB_COLORS;
+						game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 					else if (event.key.keysym.sym == SDLK_LEFT) {
-						g_selectedColor = (g_selectedColor - 1 + NB_COLORS) % NB_COLORS;
+						game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 					else if (event.key.keysym.sym == SDLK_RIGHT) {
-						g_selectedColor = (g_selectedColor + 1) % NB_COLORS;
+						game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
 						(*flags) |= FLAG_NEEDS_REFRESH;
 					}
 				}
@@ -224,22 +221,22 @@ void generateGrid() {
 	}
 }
 
-void play(char* flags) {
-	if (g_state != STATE_PLAY) {
-		g_state = STATE_PLAY;
+void play(s_Game* game, char* flags) {
+	if (game->iState != STATE_PLAY) {
+		game->iState = STATE_PLAY;
 		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
 		return;
 	}
-	else if (selectColor()) {
+	else if (selectColor(game->iSelectedColor)) {
 		char finished = checkBoard();
 		if (finished) {
-			g_state = STATE_FINISH_WON;
+			game->iState = STATE_FINISH_WON;
 		}
-		else if (g_turns == MAX_TURNS) {
-			g_state = STATE_FINISH_LOST;
+		else if (game->iTurns == MAX_TURNS) {
+			game->iState = STATE_FINISH_LOST;
 		}
 		else {
-			g_turns++;
+			game->iTurns++;
 		}
 
 		(*flags) |= FLAG_NEEDS_REFRESH;
@@ -263,35 +260,35 @@ char checkBoard() {
 	return 1;
 }
 
-void render(char *flags) {
+void render(s_Game* game, char *flags) {
 	// Set render color to red (background will be rendered in this color)
-	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+	SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
 
 	// Clear window
-	SDL_RenderClear(g_renderer);
+	SDL_RenderClear(game->renderer);
 
 	if (
-		g_state == STATE_PLAY ||
-		g_state == STATE_FINISH_WON ||
-		g_state == STATE_FINISH_LOST
+		game->iState == STATE_PLAY ||
+		game->iState == STATE_FINISH_WON ||
+		game->iState == STATE_FINISH_LOST
 	) {
-		renderGrid();
-		renderCurrentTurn();
-		renderControls();
+		renderGrid(game);
+		renderCurrentTurn(game);
+		renderControls(game);
 
-		if (g_state == STATE_FINISH_WON) {
-			renderEndScreen(1);
+		if (game->iState == STATE_FINISH_WON) {
+			renderEndScreen(game, 1);
 		}
-		else if (g_state == STATE_FINISH_LOST) {
-			renderEndScreen(0);
+		else if (game->iState == STATE_FINISH_LOST) {
+			renderEndScreen(game, 0);
 		}
 	}
 	// Render the rect to the screen
-	SDL_RenderPresent(g_renderer);
+	SDL_RenderPresent(game->renderer);
 	(*flags) &= ~FLAG_NEEDS_REFRESH;
 }
 
-void renderCurrentTurn() {
+void renderCurrentTurn(s_Game* game) {
 	char score[8];
 	int textWidth, textHeight,
 		textX, textY,
@@ -311,26 +308,26 @@ void renderCurrentTurn() {
 		textMarginBottom = 30;
 	}
 
-	snprintf(score, 8, "%d / %d", g_turns, MAX_TURNS);
+	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
 
 	SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, score, g_White);
 	if (textSurface == NULL) {
 		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 	}
 	else {
-		SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
+		SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
 		textWidth = textSurface->w;
 		textHeight = textSurface->h;
-		textX = SCREEN_WIDTH - textMarginRight - (g_turns < 10 ? widthTextSmall : widthTextLong);
+		textX = SCREEN_WIDTH - textMarginRight - (game->iTurns < 10 ? widthTextSmall : widthTextLong);
 		textY = SCREEN_HEIGHT - textMarginBottom;
 		SDL_FreeSurface(textSurface);
 		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
-		SDL_RenderCopy(g_renderer, text, NULL, &renderQuad);
+		SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
 		SDL_DestroyTexture(text);
 	}
 }
 
-void renderGrid() {
+void renderGrid(s_Game* game) {
 	int i, j, margin = 1;
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
@@ -344,20 +341,20 @@ void renderGrid() {
 			cG = g_colors[g_grid[j][i]][1];
 			cB = g_colors[g_grid[j][i]][2];
 
-			SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
-			SDL_RenderFillRect(g_renderer, &r);
+			SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
+			SDL_RenderFillRect(game->renderer, &r);
 		}
 	}
 }
 
-void renderControls() {
+void renderControls(s_Game* game) {
 	int c,
 		thicknessSelectedX = (SELECTED_WIDTH_CONTROL_PX - WIDTH_CONTROL_PX) / 2,
 		thicknessSelectedY = (SELECTED_HEIGHT_CONTROL_PX - HEIGHT_CONTROL_PX) / 2;
 	for (c = 0; c < NB_COLORS; ++c){
 		SDL_Rect r;
 		int cR, cG, cB;
-		if (c == g_selectedColor) {
+		if (c == game->iSelectedColor) {
 			// 480 + 0 +
 			r.x = SCREEN_HEIGHT + CONTROL_MARGIN_X + (c % 2) * SELECTED_WIDTH_CONTROL_PX;
 			r.y = CONTROL_MARGIN_Y + (c / 2) * SELECTED_HEIGHT_CONTROL_PX;
@@ -376,20 +373,20 @@ void renderControls() {
 		cG = g_colors[c][1];
 		cB = g_colors[c][2];
 
-		SDL_SetRenderDrawColor(g_renderer, cR, cG, cB, 255);
-		SDL_RenderFillRect(g_renderer, &r);
+		SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
+		SDL_RenderFillRect(game->renderer, &r);
 	}
 }
 
-void renderEndScreen(const char won) {
+void renderEndScreen(s_Game* game, const char won) {
 	const char *messages[2];
 	int textWidth, textHeight, textX, textY, line;
 
 	SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
-	SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 224);
-	SDL_RenderFillRect(g_renderer, &bgRect);
+	SDL_SetRenderDrawBlendMode(game->renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 224);
+	SDL_RenderFillRect(game->renderer, &bgRect);
 
 	if (won) {
 		messages[0] = "Congratulation!";
@@ -411,25 +408,25 @@ void renderEndScreen(const char won) {
 			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 		}
 		else {
-			SDL_Texture* text = SDL_CreateTextureFromSurface(g_renderer, textSurface);
+			SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
 			textWidth = textSurface->w;
 			textHeight = textSurface->h;
 			textX = (SCREEN_WIDTH - textWidth) / 2;
 			textY = 50 + line * (textHeight + 5);
 			SDL_FreeSurface(textSurface);
 			SDL_Rect textRect = {textX, textY, textWidth, textHeight};
-			SDL_RenderCopy(g_renderer, text, NULL, &textRect);
+			SDL_RenderCopy(game->renderer, text, NULL, &textRect);
 			SDL_DestroyTexture(text);
 		}
 	}
 }
 
-char selectColor() {
+char selectColor(const int selectedColor) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
 	int oldColor = g_grid[0][0];
 	int i, j, nbToVisit;
-	if (g_selectedColor == oldColor) {
+	if (selectedColor == oldColor) {
 		return 0;
 	}
 
@@ -460,7 +457,7 @@ char selectColor() {
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
 		visited[y][x] |= visitedFlag;
-		g_grid[y][x] = g_selectedColor;
+		g_grid[y][x] = selectedColor;
 
 		int neighbours[4][2];
 		int nbNeighbours;
