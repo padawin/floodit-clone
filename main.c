@@ -7,7 +7,6 @@
 
 int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(s_Game* game, char *flags);
-void play(s_Game* game, char* flags);
 void render(s_Game* game, char *flags);
 
 int main() {
@@ -149,28 +148,6 @@ void handleEvents(s_Game* game, char *flags) {
 		}
 		// end switch
 	} // end of message processing
-}
-
-void play(s_Game* game, char* flags) {
-	if (game->iState != STATE_PLAY) {
-		game->iState = STATE_PLAY;
-		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
-		return;
-	}
-	else if (game_selectColor(game)) {
-		char finished = game_checkBoard(game);
-		if (finished) {
-			game->iState = STATE_FINISH_WON;
-		}
-		else if (game->iTurns == MAX_TURNS) {
-			game->iState = STATE_FINISH_LOST;
-		}
-		else {
-			game->iTurns++;
-		}
-
-		(*flags) |= FLAG_NEEDS_REFRESH;
-	}
 }
 
 void render(s_Game* game, char *flags) {
