@@ -16,8 +16,7 @@ char selectColor(s_Game* game);
 int popArray(int* array, int* arrayLength);
 void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 
-int main()
-{
+int main() {
 	s_Game game;
 	initSDL(&game, "Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	game.font = TTF_OpenFont("ClearSans-Medium.ttf", 18);
