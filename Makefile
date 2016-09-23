@@ -1,7 +1,7 @@
 NAME := floodit
 TARGET := $(NAME)
 TARGETDIST := $(NAME).opk
-OBJS := main.c
+OBJS := *.c
 OPTS := -g -O2 -Wall
 LIB := -lSDL2 -lSDL2_ttf
 CC := $(CROSS_COMPILE)gcc
