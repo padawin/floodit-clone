@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "globals.h"
+#include "game.h"
 
 int g_colors[NB_COLORS][3] = {
 	{255, 0, 0},
@@ -12,16 +13,6 @@ int g_colors[NB_COLORS][3] = {
 	{255, 0, 255},
 	{0, 255, 255}
 };
-
-typedef struct {
-	SDL_Renderer* renderer;
-	SDL_Window* window;
-	TTF_Font* font;
-	int grid[HEIGHT_GRID][WIDTH_GRID];
-	int iTurns;
-	int iState;
-	int iSelectedColor;
-} s_Game;
 SDL_Color g_White = {255, 255, 255};
 
 int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
