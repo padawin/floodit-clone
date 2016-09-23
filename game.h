@@ -6,6 +6,7 @@ typedef struct {
 	SDL_Window* window;
 	TTF_Font* font;
 	int grid[HEIGHT_GRID][WIDTH_GRID];
+	int colors[NB_COLORS][3];
 	int iTurns;
 	int iState;
 	int iSelectedColor;

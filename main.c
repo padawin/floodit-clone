@@ -4,15 +4,6 @@
 #include <time.h>
 #include "globals.h"
 #include "game.h"
-
-int g_colors[NB_COLORS][3] = {
-	{255, 0, 0},
-	{0, 255, 0},
-	{0, 0, 255},
-	{255, 255, 0},
-	{255, 0, 255},
-	{0, 255, 255}
-};
 SDL_Color g_White = {255, 255, 255};
 
 int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
@@ -35,6 +26,24 @@ int main()
 	s_Game game;
 	initSDL(&game, "Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	game.font = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	game.colors[0][0] = 255;
+	game.colors[0][1] = 0;
+	game.colors[0][2] = 0;
+	game.colors[1][0] = 0;
+	game.colors[1][1] = 255;
+	game.colors[1][2] = 0;
+	game.colors[2][0] = 0;
+	game.colors[2][1] = 0;
+	game.colors[2][2] = 255;
+	game.colors[3][0] = 255;
+	game.colors[3][1] = 255;
+	game.colors[3][2] = 0;
+	game.colors[4][0] = 255;
+	game.colors[4][1] = 0;
+	game.colors[4][2] = 255;
+	game.colors[5][0] = 0;
+	game.colors[5][1] = 255;
+	game.colors[5][2] = 255;
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
