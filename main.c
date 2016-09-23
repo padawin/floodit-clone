@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "game.h"
 #include "play_state.h"
+#include "utils.h"
 
 int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(s_Game* game, char *flags);
@@ -13,7 +14,6 @@ void play(s_Game* game, char* flags);
 char checkBoard(s_Game* game);
 void render(s_Game* game, char *flags);
 char selectColor(s_Game* game);
-int popArray(int* array, int* arrayLength);
 void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 
 int main() {
@@ -286,21 +286,6 @@ char selectColor(s_Game* game) {
 	free(visited);
 	free(toVisit);
 	return 1;
-}
-
-int popArray(int* array, int* arrayLength) {
-	// swap the first element with the last, reduce the length, return the old
-	// first element
-	if (arrayLength == 0) {
-		return -1;
-	}
-
-	int elem = array[0];
-	int tmp = array[(*arrayLength) - 1];
-	array[(*arrayLength) - 1] = elem;
-	array[0] = tmp;
-	(*arrayLength) -= 1;
-	return elem;
 }
 
 void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
