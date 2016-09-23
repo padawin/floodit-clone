@@ -2,50 +2,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdlib.h>
 #include <time.h>
-
-#define WIDTH_GRID 14
-#define HEIGHT_GRID 14
-
-#if GCW
-#define IS_GCW 1
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
-#define WIDTH_GRID_PX 17
-#define HEIGHT_GRID_PX 17
-
-#define WIDTH_CONTROL_PX 30
-#define HEIGHT_CONTROL_PX 30
-#define SELECTED_WIDTH_CONTROL_PX 36
-#define SELECTED_HEIGHT_CONTROL_PX 36
-#define CONTROL_MARGIN_X 4
-#define CONTROL_MARGIN_Y 4
-#else
-#define IS_GCW 0
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
-#define WIDTH_GRID_PX 34
-#define HEIGHT_GRID_PX 34
-
-#define WIDTH_CONTROL_PX 64
-#define HEIGHT_CONTROL_PX 64
-#define SELECTED_WIDTH_CONTROL_PX 76
-#define SELECTED_HEIGHT_CONTROL_PX 76
-#define CONTROL_MARGIN_X 4
-#define CONTROL_MARGIN_Y 4
-#endif
-
-#define NB_COLORS 6
-
-#define MAX_TURNS 25
-
-#define FLAG_DONE 0x1
-#define FLAG_NEEDS_REFRESH 0x2
-#define FLAG_NEEDS_RESTART 0x4
-
-#define STATE_PLAY 1
-#define STATE_FINISH_WON 2
-#define STATE_FINISH_LOST 3
-
+#include "globals.h"
 int g_grid[HEIGHT_GRID][WIDTH_GRID];
 int g_colors[NB_COLORS][3] = {
 	{255, 0, 0},
