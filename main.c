@@ -21,11 +21,6 @@ typedef struct {
 	int iState;
 	int iSelectedColor;
 } s_Game;
-
-/**
- * Game font
- */
-TTF_Font* g_Sans = 0;
 SDL_Color g_White = {255, 255, 255};
 
 int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
@@ -47,7 +42,7 @@ int main()
 {
 	s_Game game;
 	initSDL(&game, "Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	g_Sans = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	game.font = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
@@ -272,7 +267,7 @@ void renderCurrentTurn(s_Game* game) {
 
 	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
 
-	SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, score, g_White);
+	SDL_Surface* textSurface = TTF_RenderText_Solid(game->font, score, g_White);
 	if (textSurface == NULL) {
 		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 	}
@@ -365,7 +360,7 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 
 	for (line = 0; line < 2; ++line) {
-		SDL_Surface* textSurface = TTF_RenderText_Solid(g_Sans, messages[line], g_White);
+		SDL_Surface* textSurface = TTF_RenderText_Solid(game->font, messages[line], g_White);
 		if (textSurface == NULL) {
 			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 		}
