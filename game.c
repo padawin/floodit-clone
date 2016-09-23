@@ -2,7 +2,7 @@
 #include "game.h"
 #include "utils.h"
 
-void generateGrid(s_Game* game) {
+void game_generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;
 
@@ -14,7 +14,7 @@ void generateGrid(s_Game* game) {
 	}
 }
 
-char checkBoard(s_Game* game) {
+char game_checkBoard(s_Game* game) {
 	signed char color = -1;
 	int i, j;
 	for (j = 0; j < HEIGHT_GRID; ++j){
@@ -31,7 +31,7 @@ char checkBoard(s_Game* game) {
 	return 1;
 }
 
-char selectColor(s_Game* game) {
+char game_selectColor(s_Game* game) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
 	int oldColor = game->grid[0][0];
@@ -63,7 +63,7 @@ char selectColor(s_Game* game) {
 	nbToVisit = 1;
 
 	while (nbToVisit > 0) {
-		int x, y, next = popArray(toVisit, &nbToVisit);
+		int x, y, next = utils_popArray(toVisit, &nbToVisit);
 
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
@@ -72,7 +72,7 @@ char selectColor(s_Game* game) {
 
 		int neighbours[4][2];
 		int nbNeighbours;
-		getNeighbours(x, y, neighbours, &nbNeighbours);
+		game_getNeighbours(x, y, neighbours, &nbNeighbours);
 		for (i = 0; i < nbNeighbours; ++i) {
 			if (
 				visited[neighbours[i][1]][neighbours[i][0]] == 0
@@ -92,7 +92,7 @@ char selectColor(s_Game* game) {
 	return 1;
 }
 
-void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
+void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
 	(*nbNeighbours) = 0;
 	if (x > 0) {
 		neighbours[*nbNeighbours][0] = x - 1;

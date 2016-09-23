@@ -14,7 +14,7 @@ void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
 
-void renderPlay(s_Game* game) {
+void play_render(s_Game* game) {
 	renderGrid(game);
 	renderCurrentTurn(game);
 	renderControls(game);
