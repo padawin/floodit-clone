@@ -75,6 +75,7 @@ int initSDL(s_Game* game, const char* title, const int x, const int y, const int
 void handleEvents(s_Game* game, char *flags);
 void generateGrid();
 void play(s_Game* game, char* flags);
+void renderPlay(s_Game* game);
 char checkBoard();
 void renderGrid(s_Game* game);
 void render(s_Game* game, char *flags);
@@ -272,20 +273,24 @@ void render(s_Game* game, char *flags) {
 		game->iState == STATE_FINISH_WON ||
 		game->iState == STATE_FINISH_LOST
 	) {
-		renderGrid(game);
-		renderCurrentTurn(game);
-		renderControls(game);
-
-		if (game->iState == STATE_FINISH_WON) {
-			renderEndScreen(game, 1);
-		}
-		else if (game->iState == STATE_FINISH_LOST) {
-			renderEndScreen(game, 0);
-		}
+		renderPlay(game);
 	}
 	// Render the rect to the screen
 	SDL_RenderPresent(game->renderer);
 	(*flags) &= ~FLAG_NEEDS_REFRESH;
+}
+
+void renderPlay(s_Game* game) {
+	renderGrid(game);
+	renderCurrentTurn(game);
+	renderControls(game);
+
+	if (game->iState == STATE_FINISH_WON) {
+		renderEndScreen(game, 1);
+	}
+	else if (game->iState == STATE_FINISH_LOST) {
+		renderEndScreen(game, 0);
+	}
 }
 
 void renderCurrentTurn(s_Game* game) {
