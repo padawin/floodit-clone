@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "globals.h"
-int g_grid[HEIGHT_GRID][WIDTH_GRID];
+
 int g_colors[NB_COLORS][3] = {
 	{255, 0, 0},
 	{0, 255, 0},
@@ -17,6 +17,7 @@ typedef struct {
 	SDL_Renderer* renderer;
 	SDL_Window* window;
 	TTF_Font* font;
+	int grid[HEIGHT_GRID][WIDTH_GRID];
 	int iTurns;
 	int iState;
 	int iSelectedColor;
@@ -25,16 +26,16 @@ SDL_Color g_White = {255, 255, 255};
 
 int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(s_Game* game, char *flags);
-void generateGrid();
+void generateGrid(s_Game* game);
 void play(s_Game* game, char* flags);
 void renderPlay(s_Game* game);
-char checkBoard();
+char checkBoard(s_Game* game);
 void renderGrid(s_Game* game);
 void render(s_Game* game, char *flags);
 void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
-char selectColor(const int selectedColor);
+char selectColor(s_Game* game);
 int popArray(int* array, int* arrayLength);
 void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 
@@ -51,7 +52,7 @@ int main()
 
 	char flags = FLAG_NEEDS_RESTART;
 	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
-		generateGrid();
+		generateGrid(&game);
 
 		// program main loop
 		game.iSelectedColor = 0;
@@ -162,14 +163,14 @@ void handleEvents(s_Game* game, char *flags) {
 	} // end of message processing
 }
 
-void generateGrid() {
+void generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;
 
 	srand((unsigned) time(&t));
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
-			g_grid[j][i] = rand() % NB_COLORS;
+			game->grid[j][i] = rand() % NB_COLORS;
 		}
 	}
 }
@@ -180,8 +181,8 @@ void play(s_Game* game, char* flags) {
 		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
 		return;
 	}
-	else if (selectColor(game->iSelectedColor)) {
-		char finished = checkBoard();
+	else if (selectColor(game)) {
+		char finished = checkBoard(game);
 		if (finished) {
 			game->iState = STATE_FINISH_WON;
 		}
@@ -196,16 +197,16 @@ void play(s_Game* game, char* flags) {
 	}
 }
 
-char checkBoard() {
+char checkBoard(s_Game* game) {
 	signed char color = -1;
 	int i, j;
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
-			if (color != -1 && g_grid[j][i] != color) {
+			if (color != -1 && game->grid[j][i] != color) {
 				return 0;
 			}
 			else {
-				color = g_grid[j][i];
+				color = game->grid[j][i];
 			}
 		}
 	}
@@ -378,11 +379,12 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 }
 
-char selectColor(const int selectedColor) {
+char selectColor(s_Game* game) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
-	int oldColor = g_grid[0][0];
-	int i, j, nbToVisit;
+	int oldColor = game->grid[0][0];
+	int i, j, nbToVisit, selectedColor;
+	selectedColor = game->iSelectedColor;
 	if (selectedColor == oldColor) {
 		return 0;
 	}
@@ -414,7 +416,7 @@ char selectColor(const int selectedColor) {
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
 		visited[y][x] |= visitedFlag;
-		g_grid[y][x] = selectedColor;
+		game->grid[y][x] = selectedColor;
 
 		int neighbours[4][2];
 		int nbNeighbours;
@@ -422,7 +424,7 @@ char selectColor(const int selectedColor) {
 		for (i = 0; i < nbNeighbours; ++i) {
 			if (
 				visited[neighbours[i][1]][neighbours[i][0]] == 0
-				&& g_grid[neighbours[i][1]][neighbours[i][0]] == oldColor
+				&& game->grid[neighbours[i][1]][neighbours[i][0]] == oldColor
 			) {
 				toVisit[nbToVisit++] = neighbours[i][1] * WIDTH_GRID + neighbours[i][0];
 				visited[neighbours[i][1]][neighbours[i][0]] = toVisitFlag;
