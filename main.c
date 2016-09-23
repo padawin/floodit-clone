@@ -116,33 +116,12 @@ void handleEvents(s_Game* game, char *flags) {
 
 			// check for keypresses
 			case SDL_KEYDOWN:
-				if (
-					(IS_GCW && event.key.keysym.sym == SDLK_LCTRL)
-					|| (!IS_GCW && event.key.keysym.sym == SDLK_SPACE)
-				) {
-					play(game, flags);
-				}
-				// exit if ESCAPE is pressed
-				else if (event.key.keysym.sym == SDLK_ESCAPE) {
-					(*flags) |= FLAG_DONE;
-				}
-				else if (game->iState == STATE_PLAY) {
-					if (event.key.keysym.sym == SDLK_UP) {
-						game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
-					else if (event.key.keysym.sym == SDLK_DOWN) {
-						game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
-					else if (event.key.keysym.sym == SDLK_LEFT) {
-						game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
-					else if (event.key.keysym.sym == SDLK_RIGHT) {
-						game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
+				switch (game->iState) {
+					case STATE_FINISH_WON:
+					case STATE_FINISH_LOST:
+					case STATE_PLAY:
+						play_handleEvent(game, flags, event.key.keysym.sym);
+						break;
 				}
 				break;
 		}

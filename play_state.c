@@ -9,6 +9,7 @@
  */
 SDL_Color g_White = {255, 255, 255};
 
+void play(s_Game* game, char* flags);
 void renderGrid(s_Game* game);
 void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
@@ -157,6 +158,35 @@ void renderEndScreen(s_Game* game, const char won) {
 			SDL_RenderCopy(game->renderer, text, NULL, &textRect);
 			SDL_DestroyTexture(text);
 		}
+	}
+}
+
+void play_handleEvent(s_Game* game, char *flags, int key) {
+	if (
+		(IS_GCW && key == SDLK_LCTRL)
+		|| (!IS_GCW && key == SDLK_SPACE)
+	) {
+		play(game, flags);
+	}
+	// exit if ESCAPE is pressed
+	else if (key == SDLK_ESCAPE) {
+		(*flags) |= FLAG_DONE;
+	}
+	else if (key == SDLK_UP) {
+		game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
+		(*flags) |= FLAG_NEEDS_REFRESH;
+	}
+	else if (key == SDLK_DOWN) {
+		game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
+		(*flags) |= FLAG_NEEDS_REFRESH;
+	}
+	else if (key == SDLK_LEFT) {
+		game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
+		(*flags) |= FLAG_NEEDS_REFRESH;
+	}
+	else if (key == SDLK_RIGHT) {
+		game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
+		(*flags) |= FLAG_NEEDS_REFRESH;
 	}
 }
 

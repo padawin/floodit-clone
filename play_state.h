@@ -2,6 +2,6 @@
 #define __PLAY_STATE__
 
 void play_render(s_Game* game);
-void play(s_Game* game, char* flags);
+void play_handleEvent(s_Game* game, char *flags, int key);
 
 #endif
