@@ -1,6 +1,6 @@
 #ifndef __UTILS__
 #define __UTILS__
 
-int popArray(int* array, int* arrayLength);
+int utils_popArray(int* array, int* arrayLength);
 
 #endif

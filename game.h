@@ -16,9 +16,9 @@ typedef struct {
 	int iSelectedColor;
 } s_Game;
 
-void generateGrid(s_Game* game);
-char checkBoard(s_Game* game);
-char selectColor(s_Game* game);
-void getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
+void game_generateGrid(s_Game* game);
+char game_checkBoard(s_Game* game);
+char game_selectColor(s_Game* game);
+void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 
 #endif

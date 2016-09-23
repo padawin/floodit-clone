@@ -1,6 +1,6 @@
 #include "utils.h"
 
-int popArray(int* array, int* arrayLength) {
+int utils_popArray(int* array, int* arrayLength) {
 	// swap the first element with the last, reduce the length, return the old
 	// first element
 	if (arrayLength == 0) {

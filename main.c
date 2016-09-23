@@ -40,7 +40,7 @@ int main() {
 
 	char flags = FLAG_NEEDS_RESTART;
 	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
-		generateGrid(&game);
+		game_generateGrid(&game);
 
 		// program main loop
 		game.iSelectedColor = 0;
@@ -157,8 +157,8 @@ void play(s_Game* game, char* flags) {
 		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
 		return;
 	}
-	else if (selectColor(game)) {
-		char finished = checkBoard(game);
+	else if (game_selectColor(game)) {
+		char finished = game_checkBoard(game);
 		if (finished) {
 			game->iState = STATE_FINISH_WON;
 		}
@@ -185,7 +185,7 @@ void render(s_Game* game, char *flags) {
 		game->iState == STATE_FINISH_WON ||
 		game->iState == STATE_FINISH_LOST
 	) {
-		renderPlay(game);
+		play_render(game);
 	}
 	// Render the rect to the screen
 	SDL_RenderPresent(game->renderer);
