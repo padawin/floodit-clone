@@ -8,4 +8,5 @@ void mainmenu_normalMode(s_Game* game) {
 
 void mainmenu_quit(s_Game* game) {
 	printf("Quit\n");
+	game_setFlag(game, FLAG_DONE);
 }
