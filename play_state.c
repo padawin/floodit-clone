@@ -141,6 +141,8 @@ void play_renderTimer(s_Game *game) {
 		textY = SCREEN_HEIGHT - textMarginBottom;
 		SDL_FreeSurface(textSurface);
 		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
+		SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+		SDL_RenderFillRect(game->renderer, &renderQuad);
 		SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
 		SDL_DestroyTexture(text);
 	}
