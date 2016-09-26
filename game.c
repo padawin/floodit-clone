@@ -2,6 +2,11 @@
 #include "game.h"
 #include "utils.h"
 
+void game_init(s_Game *game) {
+	game->iState = STATE_MAIN_MENU;
+	game->cFlags = FLAG_NEEDS_RESTART;
+}
+
 void game_generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;
@@ -117,4 +122,16 @@ void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
 		neighbours[*nbNeighbours][1] = y + 1;
 		(*nbNeighbours) += 1;
 	}
+}
+
+char game_is(s_Game *game, char flag) {
+	return (game->cFlags & flag) == flag;
+}
+
+void game_setFlag(s_Game *game, char flag) {
+	game->cFlags |= flag;
+}
+
+void game_unSetFlag(s_Game *game, char flag) {
+	game->cFlags &= ~flag;
 }

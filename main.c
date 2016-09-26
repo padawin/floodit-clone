@@ -3,67 +3,77 @@
 #include <stdlib.h>
 #include "globals.h"
 #include "game.h"
+#include "menu.h"
+#include "main_menu.h"
 #include "play_state.h"
 
-int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
-void handleEvents(s_Game* game, char *flags);
-void play(s_Game* game, char* flags);
-void render(s_Game* game, char *flags);
+s_Game g_game;
+s_Menu g_mainMenu;
+
+int initSDL(const char* title, const int x, const int y, const int w, const int h);
+void handleEvents();
+void render();
 
 int main() {
-	s_Game game;
-	initSDL(&game, "Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	game.font = TTF_OpenFont("ClearSans-Medium.ttf", 18);
-	game.colors[0][0] = 255;
-	game.colors[0][1] = 0;
-	game.colors[0][2] = 0;
-	game.colors[1][0] = 0;
-	game.colors[1][1] = 255;
-	game.colors[1][2] = 0;
-	game.colors[2][0] = 0;
-	game.colors[2][1] = 0;
-	game.colors[2][2] = 255;
-	game.colors[3][0] = 255;
-	game.colors[3][1] = 255;
-	game.colors[3][2] = 0;
-	game.colors[4][0] = 255;
-	game.colors[4][1] = 0;
-	game.colors[4][2] = 255;
-	game.colors[5][0] = 0;
-	game.colors[5][1] = 255;
-	game.colors[5][2] = 255;
+	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	g_game.scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	g_game.endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	g_game.menuFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	g_game.selectedMenuFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
+	g_game.colors[0][0] = 255;
+	g_game.colors[0][1] = 0;
+	g_game.colors[0][2] = 0;
+	g_game.colors[1][0] = 0;
+	g_game.colors[1][1] = 255;
+	g_game.colors[1][2] = 0;
+	g_game.colors[2][0] = 0;
+	g_game.colors[2][1] = 0;
+	g_game.colors[2][2] = 255;
+	g_game.colors[3][0] = 255;
+	g_game.colors[3][1] = 255;
+	g_game.colors[3][2] = 0;
+	g_game.colors[4][0] = 255;
+	g_game.colors[4][1] = 0;
+	g_game.colors[4][2] = 255;
+	g_game.colors[5][0] = 0;
+	g_game.colors[5][1] = 255;
+	g_game.colors[5][2] = 255;
+
+	menu_setActionsNumber(&g_mainMenu, 3);
+	menu_addAction(&g_mainMenu, "Normal Mode", mainmenu_normalMode);
+	menu_addAction(&g_mainMenu, "Timed Mode", mainmenu_timedMode);
+	menu_addAction(&g_mainMenu, "Quit", mainmenu_quit);
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
-	game.iState = STATE_PLAY;
-
-	char flags = FLAG_NEEDS_RESTART;
-	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
-		game_generateGrid(&game);
+	game_init(&g_game);
+	while (!game_is(&g_game, FLAG_DONE) && game_is(&g_game, FLAG_NEEDS_RESTART)) {
+		game_generateGrid(&g_game);
 
 		// program main loop
-		game.iSelectedColor = 0;
-		game.iTurns = 1;
-		flags ^= FLAG_NEEDS_RESTART;
-		flags |= FLAG_NEEDS_REFRESH;
-		while (!(flags & FLAG_DONE) && !(flags & FLAG_NEEDS_RESTART)) {
-			handleEvents(&game, &flags);
+		g_game.iSelectedColor = 0;
+		g_game.iTurns = 1;
+		game_unSetFlag(&g_game, FLAG_NEEDS_RESTART);
+		game_setFlag(&g_game, FLAG_NEEDS_REFRESH);
+		while (!game_is(&g_game, FLAG_DONE) && !game_is(&g_game, FLAG_NEEDS_RESTART)) {
+			handleEvents();
 
 			// DRAWING STARTS HERE
-			if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
-				render(&game, &flags);
+			if (game_is(&g_game, FLAG_NEEDS_REFRESH)) {
+				render();
 			}
 			// DRAWING ENDS HERE
 		} // end main loop
 	}
 
 	// all is well ;)
+	menu_free(&g_mainMenu);
 	printf("Exited cleanly\n");
 	return 0;
 }
 
-int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h) {
+int initSDL(const char* title, const int x, const int y, const int w, const int h) {
 	char l_bReturn = 1;
 	int flags;
 
@@ -81,15 +91,15 @@ int initSDL(s_Game* game, const char* title, const int x, const int y, const int
 	}
 	else {
 		// if succeeded create our window
-		game->window = SDL_CreateWindow(title, x, y, w, h, flags);
+		g_game.window = SDL_CreateWindow(title, x, y, w, h, flags);
 		// if the window creation succeeded create our renderer
-		if (game->window == 0) {
+		if (g_game.window == 0) {
 			printf("Window creation failed\n");
 			l_bReturn = 0;
 		}
 		else {
-			game->renderer = SDL_CreateRenderer(game->window, -1, 0);
-			if (game->renderer == 0) {
+			g_game.renderer = SDL_CreateRenderer(g_game.window, -1, 0);
+			if (g_game.renderer == 0) {
 				printf("Renderer creation failed\n");
 				l_bReturn = 0;
 			}
@@ -104,7 +114,7 @@ int initSDL(s_Game* game, const char* title, const int x, const int y, const int
 	return l_bReturn;
 }
 
-void handleEvents(s_Game* game, char *flags) {
+void handleEvents() {
 	// message processing loop
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -112,38 +122,20 @@ void handleEvents(s_Game* game, char *flags) {
 		switch (event.type) {
 			// exit if the window is closed
 			case SDL_QUIT:
-				(*flags) |= FLAG_DONE;
+				game_setFlag(&g_game, FLAG_DONE);
 				break;
 
 			// check for keypresses
 			case SDL_KEYDOWN:
-				if (
-					(IS_GCW && event.key.keysym.sym == SDLK_LCTRL)
-					|| (!IS_GCW && event.key.keysym.sym == SDLK_SPACE)
-				) {
-					play(game, flags);
-				}
-				// exit if ESCAPE is pressed
-				else if (event.key.keysym.sym == SDLK_ESCAPE) {
-					(*flags) |= FLAG_DONE;
-				}
-				else if (game->iState == STATE_PLAY) {
-					if (event.key.keysym.sym == SDLK_UP) {
-						game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
-					else if (event.key.keysym.sym == SDLK_DOWN) {
-						game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
-					else if (event.key.keysym.sym == SDLK_LEFT) {
-						game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
-					else if (event.key.keysym.sym == SDLK_RIGHT) {
-						game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
-						(*flags) |= FLAG_NEEDS_REFRESH;
-					}
+				switch (g_game.iState) {
+					case STATE_MAIN_MENU:
+						menu_handleEvent(&g_game, &g_mainMenu, event.key.keysym.sym);
+						break;
+					case STATE_FINISH_WON:
+					case STATE_FINISH_LOST:
+					case STATE_PLAY:
+						play_handleEvent(&g_game, event.key.keysym.sym);
+						break;
 				}
 				break;
 		}
@@ -151,43 +143,24 @@ void handleEvents(s_Game* game, char *flags) {
 	} // end of message processing
 }
 
-void play(s_Game* game, char* flags) {
-	if (game->iState != STATE_PLAY) {
-		game->iState = STATE_PLAY;
-		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
-		return;
-	}
-	else if (game_selectColor(game)) {
-		char finished = game_checkBoard(game);
-		if (finished) {
-			game->iState = STATE_FINISH_WON;
-		}
-		else if (game->iTurns == MAX_TURNS) {
-			game->iState = STATE_FINISH_LOST;
-		}
-		else {
-			game->iTurns++;
-		}
-
-		(*flags) |= FLAG_NEEDS_REFRESH;
-	}
-}
-
-void render(s_Game* game, char *flags) {
+void render() {
 	// Set render color to red (background will be rendered in this color)
-	SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 
 	// Clear window
-	SDL_RenderClear(game->renderer);
+	SDL_RenderClear(g_game.renderer);
 
-	if (
-		game->iState == STATE_PLAY ||
-		game->iState == STATE_FINISH_WON ||
-		game->iState == STATE_FINISH_LOST
+	if (g_game.iState == STATE_MAIN_MENU) {
+		mainmenu_render(&g_game, &g_mainMenu);
+	}
+	else if (
+		g_game.iState == STATE_PLAY ||
+		g_game.iState == STATE_FINISH_WON ||
+		g_game.iState == STATE_FINISH_LOST
 	) {
-		play_render(game);
+		play_render(&g_game);
 	}
 	// Render the rect to the screen
-	SDL_RenderPresent(game->renderer);
-	(*flags) &= ~FLAG_NEEDS_REFRESH;
+	SDL_RenderPresent(g_game.renderer);
+	game_unSetFlag(&g_game, FLAG_NEEDS_REFRESH);
 }
