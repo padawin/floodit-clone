@@ -26,6 +26,7 @@ typedef struct {
 	char cFlags;
 } s_Game;
 
+void game_init(s_Game *game);
 void game_generateGrid(s_Game* game);
 char game_checkBoard(s_Game* game);
 char game_selectColor(s_Game* game);

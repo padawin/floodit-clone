@@ -2,6 +2,11 @@
 #include "game.h"
 #include "utils.h"
 
+void game_init(s_Game *game) {
+	game->iState = STATE_MAIN_MENU;
+	game->cFlags = FLAG_NEEDS_RESTART;
+}
+
 void game_generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;

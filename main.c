@@ -44,9 +44,7 @@ int main() {
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
-	g_game.iState = STATE_MAIN_MENU;
-
-	g_game.cFlags = FLAG_NEEDS_RESTART;
+	game_init(&g_game);
 	while (!(g_game.cFlags & FLAG_DONE) && (g_game.cFlags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
 		game_generateGrid(&g_game);
 
