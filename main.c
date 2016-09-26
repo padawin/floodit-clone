@@ -68,7 +68,7 @@ int initSDL(s_Game* game, const char* title, const int x, const int y, const int
 	int flags;
 
 	if (IS_GCW) {
-		flags = 0;
+		flags = SDL_WINDOW_FULLSCREEN;
 	}
 	else {
 		flags = 0;
