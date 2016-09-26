@@ -18,6 +18,8 @@ int main() {
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	g_game.scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	g_game.menuFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	g_game.selectedMenuFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
 	g_game.colors[0][0] = 255;
 	g_game.colors[0][1] = 0;
 	g_game.colors[0][2] = 0;

@@ -19,6 +19,8 @@ typedef struct {
 	SDL_Window* window;
 	TTF_Font* scoreFont;
 	TTF_Font* endFont;
+	TTF_Font* menuFont;
+	TTF_Font* selectedMenuFont;
 	int grid[HEIGHT_GRID][WIDTH_GRID];
 	int colors[NB_COLORS][3];
 	int iTurns;
