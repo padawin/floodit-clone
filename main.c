@@ -58,12 +58,7 @@ int main() {
 		game_setFlag(&g_game, FLAG_NEEDS_REFRESH);
 		while (!game_is(&g_game, FLAG_DONE) && !game_is(&g_game, FLAG_NEEDS_RESTART)) {
 			handleEvents();
-
-			// DRAWING STARTS HERE
-			if (game_is(&g_game, FLAG_NEEDS_REFRESH)) {
-				render();
-			}
-			// DRAWING ENDS HERE
+			render();
 		} // end main loop
 	}
 
@@ -144,22 +139,26 @@ void handleEvents() {
 }
 
 void render() {
-	// Set render color to red (background will be rendered in this color)
-	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
+	if (game_is(&g_game, FLAG_NEEDS_REFRESH)) {
+		// Set render color to red (background will be rendered in this color)
+		SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 
-	// Clear window
-	SDL_RenderClear(g_game.renderer);
+		// Clear window
+		SDL_RenderClear(g_game.renderer);
 
-	if (g_game.iState == STATE_MAIN_MENU) {
-		mainmenu_render(&g_game, &g_mainMenu);
+		if (g_game.iState == STATE_MAIN_MENU) {
+			mainmenu_render(&g_game, &g_mainMenu);
+		}
+		else if (
+			g_game.iState == STATE_PLAY ||
+			g_game.iState == STATE_FINISH_WON ||
+			g_game.iState == STATE_FINISH_LOST
+		) {
+			play_render(&g_game);
+		}
 	}
-	else if (
-		g_game.iState == STATE_PLAY ||
-		g_game.iState == STATE_FINISH_WON ||
-		g_game.iState == STATE_FINISH_LOST
-	) {
-		play_render(&g_game);
-	}
+
+
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
 	game_unSetFlag(&g_game, FLAG_NEEDS_REFRESH);
