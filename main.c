@@ -5,53 +5,54 @@
 #include "game.h"
 #include "play_state.h"
 
-int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h);
-void handleEvents(s_Game* game, char *flags);
-void render(s_Game* game, char *flags);
+s_Game g_game;
+
+int initSDL(const char* title, const int x, const int y, const int w, const int h);
+void handleEvents(char *flags);
+void render(char *flags);
 
 int main() {
-	s_Game game;
-	initSDL(&game, "Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	game.font = TTF_OpenFont("ClearSans-Medium.ttf", 18);
-	game.colors[0][0] = 255;
-	game.colors[0][1] = 0;
-	game.colors[0][2] = 0;
-	game.colors[1][0] = 0;
-	game.colors[1][1] = 255;
-	game.colors[1][2] = 0;
-	game.colors[2][0] = 0;
-	game.colors[2][1] = 0;
-	game.colors[2][2] = 255;
-	game.colors[3][0] = 255;
-	game.colors[3][1] = 255;
-	game.colors[3][2] = 0;
-	game.colors[4][0] = 255;
-	game.colors[4][1] = 0;
-	game.colors[4][2] = 255;
-	game.colors[5][0] = 0;
-	game.colors[5][1] = 255;
-	game.colors[5][2] = 255;
+	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	g_game.font = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	g_game.colors[0][0] = 255;
+	g_game.colors[0][1] = 0;
+	g_game.colors[0][2] = 0;
+	g_game.colors[1][0] = 0;
+	g_game.colors[1][1] = 255;
+	g_game.colors[1][2] = 0;
+	g_game.colors[2][0] = 0;
+	g_game.colors[2][1] = 0;
+	g_game.colors[2][2] = 255;
+	g_game.colors[3][0] = 255;
+	g_game.colors[3][1] = 255;
+	g_game.colors[3][2] = 0;
+	g_game.colors[4][0] = 255;
+	g_game.colors[4][1] = 0;
+	g_game.colors[4][2] = 255;
+	g_game.colors[5][0] = 0;
+	g_game.colors[5][1] = 255;
+	g_game.colors[5][2] = 255;
 
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
-	game.iState = STATE_PLAY;
+	g_game.iState = STATE_PLAY;
 
 	char flags = FLAG_NEEDS_RESTART;
 	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
-		game_generateGrid(&game);
+		game_generateGrid(&g_game);
 
 		// program main loop
-		game.iSelectedColor = 0;
-		game.iTurns = 1;
+		g_game.iSelectedColor = 0;
+		g_game.iTurns = 1;
 		flags ^= FLAG_NEEDS_RESTART;
 		flags |= FLAG_NEEDS_REFRESH;
 		while (!(flags & FLAG_DONE) && !(flags & FLAG_NEEDS_RESTART)) {
-			handleEvents(&game, &flags);
+			handleEvents(&flags);
 
 			// DRAWING STARTS HERE
 			if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
-				render(&game, &flags);
+				render(&flags);
 			}
 			// DRAWING ENDS HERE
 		} // end main loop
@@ -62,7 +63,7 @@ int main() {
 	return 0;
 }
 
-int initSDL(s_Game* game, const char* title, const int x, const int y, const int w, const int h) {
+int initSDL(const char* title, const int x, const int y, const int w, const int h) {
 	char l_bReturn = 1;
 	int flags;
 
@@ -80,15 +81,15 @@ int initSDL(s_Game* game, const char* title, const int x, const int y, const int
 	}
 	else {
 		// if succeeded create our window
-		game->window = SDL_CreateWindow(title, x, y, w, h, flags);
+		g_game.window = SDL_CreateWindow(title, x, y, w, h, flags);
 		// if the window creation succeeded create our renderer
-		if (game->window == 0) {
+		if (g_game.window == 0) {
 			printf("Window creation failed\n");
 			l_bReturn = 0;
 		}
 		else {
-			game->renderer = SDL_CreateRenderer(game->window, -1, 0);
-			if (game->renderer == 0) {
+			g_game.renderer = SDL_CreateRenderer(g_game.window, -1, 0);
+			if (g_game.renderer == 0) {
 				printf("Renderer creation failed\n");
 				l_bReturn = 0;
 			}
@@ -103,7 +104,7 @@ int initSDL(s_Game* game, const char* title, const int x, const int y, const int
 	return l_bReturn;
 }
 
-void handleEvents(s_Game* game, char *flags) {
+void handleEvents(char *flags) {
 	// message processing loop
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -116,11 +117,11 @@ void handleEvents(s_Game* game, char *flags) {
 
 			// check for keypresses
 			case SDL_KEYDOWN:
-				switch (game->iState) {
+				switch (g_game.iState) {
 					case STATE_FINISH_WON:
 					case STATE_FINISH_LOST:
 					case STATE_PLAY:
-						play_handleEvent(game, flags, event.key.keysym.sym);
+						play_handleEvent(&g_game, flags, event.key.keysym.sym);
 						break;
 				}
 				break;
@@ -129,21 +130,21 @@ void handleEvents(s_Game* game, char *flags) {
 	} // end of message processing
 }
 
-void render(s_Game* game, char *flags) {
+void render(char *flags) {
 	// Set render color to red (background will be rendered in this color)
-	SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 
 	// Clear window
-	SDL_RenderClear(game->renderer);
+	SDL_RenderClear(g_game.renderer);
 
 	if (
-		game->iState == STATE_PLAY ||
-		game->iState == STATE_FINISH_WON ||
-		game->iState == STATE_FINISH_LOST
+		g_game.iState == STATE_PLAY ||
+		g_game.iState == STATE_FINISH_WON ||
+		g_game.iState == STATE_FINISH_LOST
 	) {
-		play_render(game);
+		play_render(&g_game);
 	}
 	// Render the rect to the screen
-	SDL_RenderPresent(game->renderer);
+	SDL_RenderPresent(g_game.renderer);
 	(*flags) &= ~FLAG_NEEDS_REFRESH;
 }
