@@ -7,6 +7,15 @@ void game_init(s_Game *game) {
 	game->cFlags = FLAG_NEEDS_RESTART;
 }
 
+void game_start(s_Game *game, game_mode mode) {
+	game->iState = STATE_PLAY;
+	game->mode = mode;
+
+	if (mode == MODE_TIMED) {
+		game->timeStarted = SDL_GetTicks();
+	}
+}
+
 void game_generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;

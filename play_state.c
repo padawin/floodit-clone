@@ -35,18 +35,10 @@ void renderCurrentTurn(s_Game* game) {
 		widthTextSmall, widthTextLong,
 		textMarginRight, textMarginBottom;
 
-	if (IS_GCW) {
-		widthTextSmall = 52;
-		widthTextLong = 63;
-		textMarginRight = 10;
-		textMarginBottom = 30;
-	}
-	else {
-		widthTextSmall = 52;
-		widthTextLong = 63;
-		textMarginRight = 10;
-		textMarginBottom = 30;
-	}
+	widthTextSmall = 52;
+	widthTextLong = 63;
+	textMarginRight = 10;
+	textMarginBottom = 30;
 
 	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
 
@@ -115,6 +107,44 @@ void renderControls(s_Game* game) {
 
 		SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
 		SDL_RenderFillRect(game->renderer, &r);
+	}
+}
+
+void play_renderTimer(s_Game *game) {
+	char timer[6];
+	Uint32 seconds = 0,
+		minutes = 0,
+		totalSeconds;
+	int textWidth, textHeight,
+		textX, textY,
+		widthText,
+		textMarginRight, textMarginBottom;
+
+	widthText = 52;
+	textMarginRight = 10;
+	textMarginBottom = 50;
+
+	totalSeconds = (SDL_GetTicks() - game->timeStarted) / 1000;
+	seconds = totalSeconds % 60;
+	minutes = totalSeconds / 60;
+	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
+
+	SDL_Surface* textSurface = TTF_RenderText_Solid(game->scoreFont, timer, g_White);
+	if (textSurface == NULL) {
+		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
+	}
+	else {
+		SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
+		textWidth = textSurface->w;
+		textHeight = textSurface->h;
+		textX = SCREEN_WIDTH - textMarginRight - widthText;
+		textY = SCREEN_HEIGHT - textMarginBottom;
+		SDL_FreeSurface(textSurface);
+		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
+		SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+		SDL_RenderFillRect(game->renderer, &renderQuad);
+		SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
+		SDL_DestroyTexture(text);
 	}
 }
 
@@ -192,9 +222,7 @@ void play_handleEvent(s_Game* game, int key) {
 
 void play(s_Game* game) {
 	if (game->iState != STATE_PLAY) {
-		game->iState = STATE_PLAY;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
-		game_setFlag(game, FLAG_NEEDS_RESTART);
+		game_init(game);
 		return;
 	}
 	else if (game_selectColor(game)) {

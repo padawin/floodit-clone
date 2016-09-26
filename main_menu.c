@@ -35,7 +35,12 @@ void mainmenu_render(s_Game* game, s_Menu* menu) {
 
 void mainmenu_normalMode(s_Game* game) {
 	printf("Normal\n");
-	game->iState = STATE_PLAY;
+	game_start(game, MODE_NORMAL);
+}
+
+void mainmenu_timedMode(s_Game* game) {
+	printf("Timed\n");
+	game_start(game, MODE_TIMED);
 }
 
 void mainmenu_quit(s_Game* game) {
