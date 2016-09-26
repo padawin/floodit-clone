@@ -11,8 +11,8 @@ s_Game g_game;
 s_Menu g_mainMenu;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
-void handleEvents(char *flags);
-void render(char *flags);
+void handleEvents();
+void render();
 
 int main() {
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -46,21 +46,21 @@ int main() {
 
 	g_game.iState = STATE_MAIN_MENU;
 
-	char flags = FLAG_NEEDS_RESTART;
-	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
+	g_game.cFlags = FLAG_NEEDS_RESTART;
+	while (!(g_game.cFlags & FLAG_DONE) && (g_game.cFlags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
 		game_generateGrid(&g_game);
 
 		// program main loop
 		g_game.iSelectedColor = 0;
 		g_game.iTurns = 1;
-		flags ^= FLAG_NEEDS_RESTART;
-		flags |= FLAG_NEEDS_REFRESH;
-		while (!(flags & FLAG_DONE) && !(flags & FLAG_NEEDS_RESTART)) {
-			handleEvents(&flags);
+		g_game.cFlags ^= FLAG_NEEDS_RESTART;
+		g_game.cFlags |= FLAG_NEEDS_REFRESH;
+		while (!(g_game.cFlags & FLAG_DONE) && !(g_game.cFlags & FLAG_NEEDS_RESTART)) {
+			handleEvents();
 
 			// DRAWING STARTS HERE
-			if ((flags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
-				render(&flags);
+			if ((g_game.cFlags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
+				render();
 			}
 			// DRAWING ENDS HERE
 		} // end main loop
@@ -113,7 +113,7 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	return l_bReturn;
 }
 
-void handleEvents(char *flags) {
+void handleEvents() {
 	// message processing loop
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -121,19 +121,19 @@ void handleEvents(char *flags) {
 		switch (event.type) {
 			// exit if the window is closed
 			case SDL_QUIT:
-				(*flags) |= FLAG_DONE;
+				g_game.cFlags |= FLAG_DONE;
 				break;
 
 			// check for keypresses
 			case SDL_KEYDOWN:
 				switch (g_game.iState) {
 					case STATE_MAIN_MENU:
-						menu_handleEvent(&g_game, &g_mainMenu, flags, event.key.keysym.sym);
+						menu_handleEvent(&g_game, &g_mainMenu, event.key.keysym.sym);
 						break;
 					case STATE_FINISH_WON:
 					case STATE_FINISH_LOST:
 					case STATE_PLAY:
-						play_handleEvent(&g_game, flags, event.key.keysym.sym);
+						play_handleEvent(&g_game, event.key.keysym.sym);
 						break;
 				}
 				break;
@@ -142,7 +142,7 @@ void handleEvents(char *flags) {
 	} // end of message processing
 }
 
-void render(char *flags) {
+void render() {
 	// Set render color to red (background will be rendered in this color)
 	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 
@@ -161,5 +161,5 @@ void render(char *flags) {
 	}
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
-	(*flags) &= ~FLAG_NEEDS_REFRESH;
+	g_game.cFlags &= ~FLAG_NEEDS_REFRESH;
 }

@@ -6,25 +6,25 @@ void menu_render(s_Game* game, s_Menu* menu) {
 	printf("Selected item: %d - %s\n", menu->iSelectedItem, menu->pItems[menu->iSelectedItem]);
 }
 
-void menu_handleEvent(s_Game *game, s_Menu* menu, char *flags, int key) {
+void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 	if (
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
 		menu->pActions[menu->iSelectedItem](game);
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
-		(*flags) |= FLAG_DONE;
+		game->cFlags |= FLAG_DONE;
 	}
 	else if (key == SDLK_UP) {
 		menu->iSelectedItem = (menu->iNbItems + menu->iSelectedItem - 1) % menu->iNbItems;
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 	else if (key == SDLK_DOWN) {
 		menu->iSelectedItem = (menu->iSelectedItem + 1) % menu->iNbItems;
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 }
 

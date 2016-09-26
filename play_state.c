@@ -9,7 +9,7 @@
  */
 SDL_Color g_White = {255, 255, 255};
 
-void play(s_Game* game, char* flags);
+void play(s_Game* game);
 void renderGrid(s_Game* game);
 void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
@@ -161,39 +161,39 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 }
 
-void play_handleEvent(s_Game* game, char *flags, int key) {
+void play_handleEvent(s_Game* game, int key) {
 	if (
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
-		play(game, flags);
+		play(game);
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
-		(*flags) |= FLAG_DONE;
+		game->cFlags |= FLAG_DONE;
 	}
 	else if (key == SDLK_UP) {
 		game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 	else if (key == SDLK_DOWN) {
 		game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 	else if (key == SDLK_LEFT) {
 		game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 	else if (key == SDLK_RIGHT) {
 		game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 }
 
-void play(s_Game* game, char* flags) {
+void play(s_Game* game) {
 	if (game->iState != STATE_PLAY) {
 		game->iState = STATE_PLAY;
-		(*flags) |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
+		game->cFlags |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
 		return;
 	}
 	else if (game_selectColor(game)) {
@@ -208,6 +208,6 @@ void play(s_Game* game, char* flags) {
 			game->iTurns++;
 		}
 
-		(*flags) |= FLAG_NEEDS_REFRESH;
+		game->cFlags |= FLAG_NEEDS_REFRESH;
 	}
 }
