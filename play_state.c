@@ -50,7 +50,7 @@ void renderCurrentTurn(s_Game* game) {
 
 	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
 
-	SDL_Surface* textSurface = TTF_RenderText_Solid(game->font, score, g_White);
+	SDL_Surface* textSurface = TTF_RenderText_Solid(game->scoreFont, score, g_White);
 	if (textSurface == NULL) {
 		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 	}
@@ -143,7 +143,7 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 
 	for (line = 0; line < 2; ++line) {
-		SDL_Surface* textSurface = TTF_RenderText_Solid(game->font, messages[line], g_White);
+		SDL_Surface* textSurface = TTF_RenderText_Solid(game->endFont, messages[line], g_White);
 		if (textSurface == NULL) {
 			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
 		}
