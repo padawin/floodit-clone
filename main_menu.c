@@ -38,6 +38,10 @@ void mainmenu_normalMode(s_Game* game) {
 	game->iState = STATE_PLAY;
 }
 
+void mainmenu_timedMode(s_Game* game) {
+	printf("Timed\n");
+}
+
 void mainmenu_quit(s_Game* game) {
 	printf("Quit\n");
 	game_setFlag(game, FLAG_DONE);
