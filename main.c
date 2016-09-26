@@ -3,9 +3,12 @@
 #include <stdlib.h>
 #include "globals.h"
 #include "game.h"
+#include "menu.h"
+#include "main_menu.h"
 #include "play_state.h"
 
 s_Game g_game;
+s_Menu g_mainMenu;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents(char *flags);
@@ -33,10 +36,15 @@ int main() {
 	g_game.colors[5][1] = 255;
 	g_game.colors[5][2] = 255;
 
+	menu_setActionsNumber(&g_mainMenu, 3);
+	menu_addAction(&g_mainMenu, "Normal Mode", mainmenu_normalMode);
+	menu_addAction(&g_mainMenu, "Timed Mode", mainmenu_timedMode);
+	menu_addAction(&g_mainMenu, "Quit", mainmenu_quit);
+
 	// make sure SDL cleans up before exit
 	atexit(SDL_Quit);
 
-	g_game.iState = STATE_PLAY;
+	g_game.iState = STATE_MAIN_MENU;
 
 	char flags = FLAG_NEEDS_RESTART;
 	while (!(flags & FLAG_DONE) && (flags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
@@ -59,6 +67,7 @@ int main() {
 	}
 
 	// all is well ;)
+	menu_free(&g_mainMenu);
 	printf("Exited cleanly\n");
 	return 0;
 }
@@ -118,6 +127,9 @@ void handleEvents(char *flags) {
 			// check for keypresses
 			case SDL_KEYDOWN:
 				switch (g_game.iState) {
+					case STATE_MAIN_MENU:
+						menu_handleEvent(&g_game, &g_mainMenu, flags, event.key.keysym.sym);
+						break;
 					case STATE_FINISH_WON:
 					case STATE_FINISH_LOST:
 					case STATE_PLAY:
@@ -137,7 +149,10 @@ void render(char *flags) {
 	// Clear window
 	SDL_RenderClear(g_game.renderer);
 
-	if (
+	if (g_game.iState == STATE_MAIN_MENU) {
+		menu_render(&g_game, &g_mainMenu);
+	}
+	else if (
 		g_game.iState == STATE_PLAY ||
 		g_game.iState == STATE_FINISH_WON ||
 		g_game.iState == STATE_FINISH_LOST

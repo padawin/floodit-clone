@@ -40,8 +40,9 @@
 #define FLAG_NEEDS_REFRESH 0x2
 #define FLAG_NEEDS_RESTART 0x4
 
-#define STATE_PLAY 1
-#define STATE_FINISH_WON 2
-#define STATE_FINISH_LOST 3
+#define STATE_MAIN_MENU 1
+#define STATE_PLAY 2
+#define STATE_FINISH_WON 3
+#define STATE_FINISH_LOST 4
 
 #endif
