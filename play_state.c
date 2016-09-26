@@ -35,18 +35,10 @@ void renderCurrentTurn(s_Game* game) {
 		widthTextSmall, widthTextLong,
 		textMarginRight, textMarginBottom;
 
-	if (IS_GCW) {
-		widthTextSmall = 52;
-		widthTextLong = 63;
-		textMarginRight = 10;
-		textMarginBottom = 30;
-	}
-	else {
-		widthTextSmall = 52;
-		widthTextLong = 63;
-		textMarginRight = 10;
-		textMarginBottom = 30;
-	}
+	widthTextSmall = 52;
+	widthTextLong = 63;
+	textMarginRight = 10;
+	textMarginBottom = 30;
 
 	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
 
