@@ -2,10 +2,6 @@
 #include <SDL2/SDL_ttf.h>
 #include "menu.h"
 
-void menu_render(s_Game* game, s_Menu* menu) {
-	printf("Selected item: %d - %s\n", menu->iSelectedItem, menu->pItems[menu->iSelectedItem]);
-}
-
 void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 	if (
 		(IS_GCW && key == SDLK_LCTRL)
