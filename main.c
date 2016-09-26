@@ -9,6 +9,7 @@
 
 s_Game g_game;
 s_Menu g_mainMenu;
+Uint32 lastTimeRendered;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents();
@@ -158,6 +159,17 @@ void render() {
 		}
 	}
 
+	if (
+		g_game.iState == STATE_PLAY &&
+		g_game.mode == MODE_TIMED &&
+		(
+			game_is(&g_game, FLAG_NEEDS_REFRESH) ||
+			SDL_GetTicks() - lastTimeRendered > 1000
+		)
+	) {
+		play_renderTimer(&g_game);
+		lastTimeRendered = SDL_GetTicks();
+	}
 
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
