@@ -30,6 +30,7 @@ typedef struct {
 } s_Game;
 
 void game_init(s_Game *game);
+void game_start(s_Game *game);
 void game_generateGrid(s_Game* game);
 char game_checkBoard(s_Game* game);
 char game_selectColor(s_Game* game);
