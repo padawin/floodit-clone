@@ -14,6 +14,8 @@
 #define STATE_FINISH_WON 3
 #define STATE_FINISH_LOST 4
 
+typedef enum {MODE_NORMAL, MODE_TIMED} game_mode;
+
 typedef struct {
 	SDL_Renderer* renderer;
 	SDL_Window* window;
@@ -21,6 +23,7 @@ typedef struct {
 	TTF_Font* endFont;
 	TTF_Font* menuFont;
 	TTF_Font* selectedMenuFont;
+	game_mode mode;
 	int grid[HEIGHT_GRID][WIDTH_GRID];
 	int colors[NB_COLORS][3];
 	int iTurns;
@@ -30,7 +33,7 @@ typedef struct {
 } s_Game;
 
 void game_init(s_Game *game);
-void game_start(s_Game *game);
+void game_start(s_Game *game, game_mode mode);
 void game_generateGrid(s_Game* game);
 char game_checkBoard(s_Game* game);
 char game_selectColor(s_Game* game);

@@ -7,8 +7,9 @@ void game_init(s_Game *game) {
 	game->cFlags = FLAG_NEEDS_RESTART;
 }
 
-void game_start(s_Game *game) {
+void game_start(s_Game *game, game_mode mode) {
 	game->iState = STATE_PLAY;
+	game->mode = mode;
 }
 
 void game_generateGrid(s_Game* game) {
