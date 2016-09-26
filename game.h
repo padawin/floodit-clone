@@ -24,6 +24,7 @@ typedef struct {
 	TTF_Font* menuFont;
 	TTF_Font* selectedMenuFont;
 	game_mode mode;
+	Uint32 timeStarted;
 	int grid[HEIGHT_GRID][WIDTH_GRID];
 	int colors[NB_COLORS][3];
 	int iTurns;

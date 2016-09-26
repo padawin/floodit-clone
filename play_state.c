@@ -14,11 +14,16 @@ void renderGrid(s_Game* game);
 void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
+void renderTimer(s_Game* game);
 
 void play_render(s_Game* game) {
 	renderGrid(game);
 	renderCurrentTurn(game);
 	renderControls(game);
+
+	if (game->mode == MODE_TIMED) {
+		renderTimer(game);
+	}
 
 	if (game->iState == STATE_FINISH_WON) {
 		renderEndScreen(game, 1);
@@ -107,6 +112,42 @@ void renderControls(s_Game* game) {
 
 		SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
 		SDL_RenderFillRect(game->renderer, &r);
+	}
+}
+
+void renderTimer(s_Game *game) {
+	char timer[6];
+	Uint32 seconds = 0,
+		minutes = 0,
+		totalSeconds;
+	int textWidth, textHeight,
+		textX, textY,
+		widthText,
+		textMarginRight, textMarginBottom;
+
+	widthText = 52;
+	textMarginRight = 10;
+	textMarginBottom = 50;
+
+	totalSeconds = (SDL_GetTicks() - game->timeStarted) / 1000;
+	seconds = totalSeconds % 60;
+	minutes = totalSeconds / 60;
+	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
+
+	SDL_Surface* textSurface = TTF_RenderText_Solid(game->scoreFont, timer, g_White);
+	if (textSurface == NULL) {
+		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
+	}
+	else {
+		SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
+		textWidth = textSurface->w;
+		textHeight = textSurface->h;
+		textX = SCREEN_WIDTH - textMarginRight - widthText;
+		textY = SCREEN_HEIGHT - textMarginBottom;
+		SDL_FreeSurface(textSurface);
+		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
+		SDL_DestroyTexture(text);
 	}
 }
 
