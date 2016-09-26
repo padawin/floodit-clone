@@ -12,19 +12,19 @@ void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
 		menu->pActions[menu->iSelectedItem](game);
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
-		game->cFlags |= FLAG_DONE;
+		game_setFlag(game, FLAG_DONE);
 	}
 	else if (key == SDLK_UP) {
 		menu->iSelectedItem = (menu->iNbItems + menu->iSelectedItem - 1) % menu->iNbItems;
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_DOWN) {
 		menu->iSelectedItem = (menu->iSelectedItem + 1) % menu->iNbItems;
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 }
 

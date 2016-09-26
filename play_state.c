@@ -170,30 +170,31 @@ void play_handleEvent(s_Game* game, int key) {
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
-		game->cFlags |= FLAG_DONE;
+		game_setFlag(game, FLAG_DONE);
 	}
 	else if (key == SDLK_UP) {
 		game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_DOWN) {
 		game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_LEFT) {
 		game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_RIGHT) {
 		game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 }
 
 void play(s_Game* game) {
 	if (game->iState != STATE_PLAY) {
 		game->iState = STATE_PLAY;
-		game->cFlags |= FLAG_NEEDS_REFRESH | FLAG_NEEDS_RESTART;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
+		game_setFlag(game, FLAG_NEEDS_RESTART);
 		return;
 	}
 	else if (game_selectColor(game)) {
@@ -208,6 +209,6 @@ void play(s_Game* game) {
 			game->iTurns++;
 		}
 
-		game->cFlags |= FLAG_NEEDS_REFRESH;
+		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 }

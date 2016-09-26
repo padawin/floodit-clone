@@ -45,19 +45,19 @@ int main() {
 	atexit(SDL_Quit);
 
 	game_init(&g_game);
-	while (!(g_game.cFlags & FLAG_DONE) && (g_game.cFlags & FLAG_NEEDS_RESTART) == FLAG_NEEDS_RESTART) {
+	while (!game_is(&g_game, FLAG_DONE) && game_is(&g_game, FLAG_NEEDS_RESTART)) {
 		game_generateGrid(&g_game);
 
 		// program main loop
 		g_game.iSelectedColor = 0;
 		g_game.iTurns = 1;
-		g_game.cFlags ^= FLAG_NEEDS_RESTART;
-		g_game.cFlags |= FLAG_NEEDS_REFRESH;
-		while (!(g_game.cFlags & FLAG_DONE) && !(g_game.cFlags & FLAG_NEEDS_RESTART)) {
+		game_unSetFlag(&g_game, FLAG_NEEDS_RESTART);
+		game_setFlag(&g_game, FLAG_NEEDS_REFRESH);
+		while (!game_is(&g_game, FLAG_DONE) && !game_is(&g_game, FLAG_NEEDS_RESTART)) {
 			handleEvents();
 
 			// DRAWING STARTS HERE
-			if ((g_game.cFlags & FLAG_NEEDS_REFRESH) == FLAG_NEEDS_REFRESH) {
+			if (game_is(&g_game, FLAG_NEEDS_REFRESH)) {
 				render();
 			}
 			// DRAWING ENDS HERE
@@ -119,7 +119,7 @@ void handleEvents() {
 		switch (event.type) {
 			// exit if the window is closed
 			case SDL_QUIT:
-				g_game.cFlags |= FLAG_DONE;
+				game_setFlag(&g_game, FLAG_DONE);
 				break;
 
 			// check for keypresses
@@ -159,5 +159,5 @@ void render() {
 	}
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
-	g_game.cFlags &= ~FLAG_NEEDS_REFRESH;
+	game_unSetFlag(&g_game, FLAG_NEEDS_REFRESH);
 }
