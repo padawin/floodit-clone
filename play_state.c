@@ -192,9 +192,7 @@ void play_handleEvent(s_Game* game, int key) {
 
 void play(s_Game* game) {
 	if (game->iState != STATE_PLAY) {
-		game->iState = STATE_PLAY;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
-		game_setFlag(game, FLAG_NEEDS_RESTART);
+		game_init(game);
 		return;
 	}
 	else if (game_selectColor(game)) {
