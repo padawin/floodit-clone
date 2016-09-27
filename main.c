@@ -14,6 +14,7 @@ Uint32 lastTimeRendered;
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents();
 void render();
+void clean();
 
 int main() {
 	const int SCREEN_FPS = 60;
@@ -48,9 +49,6 @@ int main() {
 	menu_addAction(&g_mainMenu, "Timed Mode", mainmenu_timedMode);
 	menu_addAction(&g_mainMenu, "Quit", mainmenu_quit);
 
-	// make sure SDL cleans up before exit
-	atexit(SDL_Quit);
-
 	game_init(&g_game);
 
 	Uint32 nextFrame;
@@ -77,8 +75,7 @@ int main() {
 		} // end main loop
 	}
 
-	// all is well ;)
-	menu_free(&g_mainMenu);
+	clean();
 	printf("Exited cleanly\n");
 	return 0;
 }
@@ -174,4 +171,18 @@ void render() {
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
 	game_unSetFlag(&g_game, FLAG_NEEDS_REFRESH);
+}
+
+void clean() {
+	TTF_CloseFont(g_game.scoreFont);
+	g_game.scoreFont = NULL;
+	TTF_CloseFont(g_game.endFont);
+	g_game.endFont = NULL;
+	TTF_CloseFont(g_game.menuFont);
+	g_game.menuFont = NULL;
+	TTF_CloseFont(g_game.selectedMenuFont);
+	g_game.selectedMenuFont = NULL;
+	menu_free(&g_mainMenu);
+	TTF_Quit();
+	SDL_Quit();
 }
