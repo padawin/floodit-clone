@@ -168,7 +168,6 @@ void render() {
 		g_game.iState == STATE_FINISH_LOST
 	) {
 		play_render(&g_game);
-		play_renderTimer(&g_game);
 	}
 
 	// Render the rect to the screen
