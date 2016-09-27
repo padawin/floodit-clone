@@ -49,6 +49,10 @@ int main() {
 	atexit(SDL_Quit);
 
 	game_init(&g_game);
+
+	const int SCREEN_FPS = 60;
+	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
+	Uint32 nextFrame;
 	while (!game_is(&g_game, FLAG_DONE) && game_is(&g_game, FLAG_NEEDS_RESTART)) {
 		game_generateGrid(&g_game);
 
@@ -57,9 +61,18 @@ int main() {
 		g_game.iTurns = 1;
 		game_unSetFlag(&g_game, FLAG_NEEDS_RESTART);
 		game_setFlag(&g_game, FLAG_NEEDS_REFRESH);
+
+		nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
 		while (!game_is(&g_game, FLAG_DONE) && !game_is(&g_game, FLAG_NEEDS_RESTART)) {
 			handleEvents();
 			render();
+
+			Uint32 now;
+			now = SDL_GetTicks();
+			if (nextFrame > now) {
+				SDL_Delay(nextFrame - now);
+			}
+			nextFrame += SCREEN_TICKS_PER_FRAME;
 		} // end main loop
 	}
 
@@ -140,35 +153,21 @@ void handleEvents() {
 }
 
 void render() {
-	if (game_is(&g_game, FLAG_NEEDS_REFRESH)) {
-		// Set render color to red (background will be rendered in this color)
-		SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
+	// Set render color to red (background will be rendered in this color)
+	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 
-		// Clear window
-		SDL_RenderClear(g_game.renderer);
+	// Clear window
+	SDL_RenderClear(g_game.renderer);
 
-		if (g_game.iState == STATE_MAIN_MENU) {
-			mainmenu_render(&g_game, &g_mainMenu);
-		}
-		else if (
-			g_game.iState == STATE_PLAY ||
-			g_game.iState == STATE_FINISH_WON ||
-			g_game.iState == STATE_FINISH_LOST
-		) {
-			play_render(&g_game);
-		}
+	if (g_game.iState == STATE_MAIN_MENU) {
+		mainmenu_render(&g_game, &g_mainMenu);
 	}
-
-	if (
-		g_game.iState == STATE_PLAY &&
-		g_game.mode == MODE_TIMED &&
-		(
-			game_is(&g_game, FLAG_NEEDS_REFRESH) ||
-			SDL_GetTicks() - lastTimeRendered > 1000
-		)
+	else if (
+		g_game.iState == STATE_PLAY ||
+		g_game.iState == STATE_FINISH_WON ||
+		g_game.iState == STATE_FINISH_LOST
 	) {
-		play_renderTimer(&g_game);
-		lastTimeRendered = SDL_GetTicks();
+		play_render(&g_game);
 	}
 
 	// Render the rect to the screen

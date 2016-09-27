@@ -13,12 +13,17 @@ void play(s_Game* game);
 void renderGrid(s_Game* game);
 void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
+void renderTimer(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
 
 void play_render(s_Game* game) {
 	renderGrid(game);
 	renderCurrentTurn(game);
 	renderControls(game);
+
+	if (game->mode == MODE_TIMED) {
+		renderTimer(game);
+	}
 
 	if (game->iState == STATE_FINISH_WON) {
 		renderEndScreen(game, 1);
@@ -110,7 +115,7 @@ void renderControls(s_Game* game) {
 	}
 }
 
-void play_renderTimer(s_Game *game) {
+void renderTimer(s_Game *game) {
 	char timer[6];
 	Uint32 seconds = 0,
 		minutes = 0,
