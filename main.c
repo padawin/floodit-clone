@@ -52,27 +52,17 @@ int main() {
 	game_init(&g_game);
 
 	Uint32 nextFrame;
-	while (!game_is(&g_game, FLAG_DONE) && game_is(&g_game, FLAG_NEEDS_RESTART)) {
-		game_generateGrid(&g_game);
+	nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
+	while (!game_is(&g_game, FLAG_DONE)) {
+		handleEvents();
+		render();
 
-		// program main loop
-		g_game.iSelectedColor = 0;
-		g_game.iTurns = 1;
-		game_unSetFlag(&g_game, FLAG_NEEDS_RESTART);
-		game_setFlag(&g_game, FLAG_NEEDS_REFRESH);
-
-		nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
-		while (!game_is(&g_game, FLAG_DONE) && !game_is(&g_game, FLAG_NEEDS_RESTART)) {
-			handleEvents();
-			render();
-
-			Uint32 now;
-			now = SDL_GetTicks();
-			if (nextFrame > now) {
-				SDL_Delay(nextFrame - now);
-			}
-			nextFrame += SCREEN_TICKS_PER_FRAME;
-		} // end main loop
+		Uint32 now;
+		now = SDL_GetTicks();
+		if (nextFrame > now) {
+			SDL_Delay(nextFrame - now);
+		}
+		nextFrame += SCREEN_TICKS_PER_FRAME;
 	}
 
 	clean();
