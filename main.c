@@ -16,6 +16,9 @@ void handleEvents();
 void render();
 
 int main() {
+	const int SCREEN_FPS = 60;
+	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
+
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	g_game.scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
@@ -50,8 +53,6 @@ int main() {
 
 	game_init(&g_game);
 
-	const int SCREEN_FPS = 60;
-	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 	Uint32 nextFrame;
 	while (!game_is(&g_game, FLAG_DONE) && game_is(&g_game, FLAG_NEEDS_RESTART)) {
 		game_generateGrid(&g_game);
