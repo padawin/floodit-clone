@@ -36,7 +36,6 @@ typedef struct {
 
 void game_init(s_Game *game);
 void game_start(s_Game *game, game_mode mode);
-void game_generateGrid(s_Game* game);
 char game_checkBoard(s_Game* game);
 char game_selectColor(s_Game* game);
 void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
