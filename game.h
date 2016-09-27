@@ -41,5 +41,6 @@ void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 char game_is(s_Game *game, char flag);
 void game_setFlag(s_Game *game, char flag);
 void game_unSetFlag(s_Game *game, char flag);
+void game_finish(s_Game *game);
 
 #endif
