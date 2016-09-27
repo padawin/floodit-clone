@@ -205,7 +205,7 @@ void play_handleEvent(s_Game* game, int key) {
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
-		game_setFlag(game, FLAG_DONE);
+		game_init(game);
 	}
 	else if (key == SDLK_UP) {
 		game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
