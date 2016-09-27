@@ -2,6 +2,8 @@
 #include "game.h"
 #include "utils.h"
 
+void generateGrid(s_Game* game);
+
 void game_init(s_Game *game) {
 	game->iState = STATE_MAIN_MENU;
 	game->cFlags = FLAG_NEEDS_RESTART;
@@ -14,9 +16,17 @@ void game_start(s_Game *game, game_mode mode) {
 	if (mode == MODE_TIMED) {
 		game->timeStarted = SDL_GetTicks();
 	}
+
+	generateGrid(game);
+
+	// program main loop
+	game->iSelectedColor = 0;
+	game->iTurns = 1;
+	game_unSetFlag(game, FLAG_NEEDS_RESTART);
+	game_setFlag(game, FLAG_NEEDS_REFRESH);
 }
 
-void game_generateGrid(s_Game* game) {
+void generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;
 

@@ -14,8 +14,12 @@ Uint32 lastTimeRendered;
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void handleEvents();
 void render();
+void clean();
 
 int main() {
+	const int SCREEN_FPS = 60;
+	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
+
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	g_game.scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
@@ -45,39 +49,23 @@ int main() {
 	menu_addAction(&g_mainMenu, "Timed Mode", mainmenu_timedMode);
 	menu_addAction(&g_mainMenu, "Quit", mainmenu_quit);
 
-	// make sure SDL cleans up before exit
-	atexit(SDL_Quit);
-
 	game_init(&g_game);
 
-	const int SCREEN_FPS = 60;
-	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 	Uint32 nextFrame;
-	while (!game_is(&g_game, FLAG_DONE) && game_is(&g_game, FLAG_NEEDS_RESTART)) {
-		game_generateGrid(&g_game);
+	nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
+	while (!game_is(&g_game, FLAG_DONE)) {
+		handleEvents();
+		render();
 
-		// program main loop
-		g_game.iSelectedColor = 0;
-		g_game.iTurns = 1;
-		game_unSetFlag(&g_game, FLAG_NEEDS_RESTART);
-		game_setFlag(&g_game, FLAG_NEEDS_REFRESH);
-
-		nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
-		while (!game_is(&g_game, FLAG_DONE) && !game_is(&g_game, FLAG_NEEDS_RESTART)) {
-			handleEvents();
-			render();
-
-			Uint32 now;
-			now = SDL_GetTicks();
-			if (nextFrame > now) {
-				SDL_Delay(nextFrame - now);
-			}
-			nextFrame += SCREEN_TICKS_PER_FRAME;
-		} // end main loop
+		Uint32 now;
+		now = SDL_GetTicks();
+		if (nextFrame > now) {
+			SDL_Delay(nextFrame - now);
+		}
+		nextFrame += SCREEN_TICKS_PER_FRAME;
 	}
 
-	// all is well ;)
-	menu_free(&g_mainMenu);
+	clean();
 	printf("Exited cleanly\n");
 	return 0;
 }
@@ -173,4 +161,18 @@ void render() {
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
 	game_unSetFlag(&g_game, FLAG_NEEDS_REFRESH);
+}
+
+void clean() {
+	TTF_CloseFont(g_game.scoreFont);
+	g_game.scoreFont = NULL;
+	TTF_CloseFont(g_game.endFont);
+	g_game.endFont = NULL;
+	TTF_CloseFont(g_game.menuFont);
+	g_game.menuFont = NULL;
+	TTF_CloseFont(g_game.selectedMenuFont);
+	g_game.selectedMenuFont = NULL;
+	menu_free(&g_mainMenu);
+	TTF_Quit();
+	SDL_Quit();
 }
