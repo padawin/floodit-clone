@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include "main_menu.h"
+#include "utils.h"
 
 void mainmenu_render(s_Game* game, s_Menu* menu) {
 	SDL_Color white = {255, 255, 255};
-	int i, textX, textY, textWidth, textHeight;
-	SDL_Surface* textSurface;
+	int i;
 	for (i = 0; i < menu->iNbItems; ++i) {
 		TTF_Font *font;
 		if (i == menu->iSelectedItem) {
@@ -14,22 +14,7 @@ void mainmenu_render(s_Game* game, s_Menu* menu) {
 			font = game->menuFont;
 		}
 
-		textSurface = TTF_RenderText_Solid(font, menu->pItems[i], white);
-
-		if (textSurface == NULL) {
-			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
-		}
-		else {
-			SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
-			textWidth = textSurface->w;
-			textHeight = textSurface->h;
-			textX = 50;
-			textY = 50 + i * 30;
-			SDL_FreeSurface(textSurface);
-			SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
-			SDL_DestroyTexture(text);
-		}
+		utils_renderText(game, font, menu->pItems[i], white, 50, 50 + i * 30);
 	}
 }
 
