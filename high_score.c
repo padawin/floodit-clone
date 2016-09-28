@@ -10,14 +10,36 @@ FILE* _open_file(const char *mode);
 
 void high_score_save(const int time, const int turns) {
 	FILE *f;
+	int highScoreTimes[MAX_HIGH_SCORES_NUMBER];
+	int highScoreTurns[MAX_HIGH_SCORES_NUMBER];
+	int nbRows;
 
 	_prepare_folder();
-	f = _open_file("a");
+
+	high_score_list(highScoreTimes, highScoreTurns, &nbRows);
+	f = _open_file("w");
 	if (f == NULL) {
 		return;
 	}
 
-	fprintf(f, "%d %d\n", time, turns);
+	int existingScoresCursor = 0,
+		newScoresCursor = 0;
+	char newScoreInserted = 0;
+	while (newScoresCursor < MAX_HIGH_SCORES_NUMBER && newScoresCursor < nbRows + 1) {
+		if (!newScoreInserted && (newScoresCursor == nbRows || time < highScoreTimes[existingScoresCursor])) {
+			fprintf(f, "%d %d\n", time, turns);
+			newScoreInserted = 1;
+		}
+		else {
+			fprintf(
+				f, "%d %d\n",
+				highScoreTimes[existingScoresCursor],
+				highScoreTurns[existingScoresCursor]
+			);
+			++existingScoresCursor;
+		}
+		++newScoresCursor;
+	}
 	fclose(f);
 }
 
