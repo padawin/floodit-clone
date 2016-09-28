@@ -17,7 +17,7 @@ gcw: $(OBJS)
 	$(CC) $(OPTS) $(CFLAGS) -DGCW $^ -o $(NAME) $(LIB)
 
 opk:
-	cp floodit dist/
+	cp floodit ClearSans-Medium.ttf dist/
 	mksquashfs dist $(TARGETDIST) -all-root -noappend -no-exports -no-xattrs
 
 clean:
