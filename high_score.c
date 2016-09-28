@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "high_score.h"
+#include <errno.h>
+#include <string.h>
 
 void _prepare_folder();
 FILE* _open_file(const char *mode);
@@ -79,7 +81,9 @@ void _prepare_folder() {
 	struct stat st = {0};
 	if (stat(filePath, &st) == -1) {
 		printf("Create folder %s\n", filePath);
-		mkdir(filePath, 0700);
+		if (mkdir(filePath, S_IRWXU | S_IRWXG | S_IRWXO)) {
+			printf("Error while creating folder %s\n", filePath);
+		}
 	}
 }
 
@@ -90,6 +94,7 @@ FILE* _open_file(const char *mode) {
 	f = fopen(filePath, mode);
 	if (f == NULL) {
 		printf("Error while reading high scores file %s\n", filePath);
+		printf("Reason: %s\n", strerror(errno));
 	}
 
 	return f;
