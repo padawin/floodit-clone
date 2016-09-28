@@ -5,26 +5,13 @@
 #include <string.h>
 #include "high_score.h"
 
+void _prepare_folder();
 FILE* _open_file(const char *mode);
 
 void high_score_save(const int time, const int turns) {
 	FILE *f;
-	char filePath[255];
 
-	sprintf(
-		filePath,
-		"%s/%s",
-		getenv("HOME"),
-		// dirname needs a copy of the string
-		dirname(strdup(HIGH_SCORES_LOCATION))
-	);
-
-	struct stat st = {0};
-	if (stat(filePath, &st) == -1) {
-		printf("Create folder %s\n", filePath);
-		mkdir(filePath, 0700);
-	}
-
+	_prepare_folder();
 	f = _open_file("a");
 	if (f == NULL) {
 		return;
@@ -54,6 +41,24 @@ void high_score_list(int *times, int *turns, int *nbRows) {
 	}
 
 	fclose(f);
+}
+
+void _prepare_folder() {
+	char filePath[255];
+
+	sprintf(
+		filePath,
+		"%s/%s",
+		getenv("HOME"),
+		// dirname needs a copy of the string
+		dirname(strdup(HIGH_SCORES_LOCATION))
+	);
+
+	struct stat st = {0};
+	if (stat(filePath, &st) == -1) {
+		printf("Create folder %s\n", filePath);
+		mkdir(filePath, 0700);
+	}
 }
 
 FILE* _open_file(const char *mode) {
