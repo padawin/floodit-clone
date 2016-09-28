@@ -48,16 +48,20 @@ int main() {
 	menu_setActionsNumber(&g_mainMenu, 4);
 	SDL_Texture *normalModeTexture, *selectedNormalModeTextures,
 		*timedModeTexture, *selectedTimedModeTexture,
+		*highScoresTexture, *selectedHighScoresTexture,
 		*quitTexture, *selectedQuitTexture;
 	SDL_Color white = {255, 255, 255};
 	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Normal Mode", white, &normalModeTexture);
 	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Normal Mode", white, &selectedNormalModeTextures);
 	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Timed Mode", white, &timedModeTexture);
 	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Timed Mode", white, &selectedTimedModeTexture);
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "High Scores", white, &highScoresTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "High Scores", white, &selectedHighScoresTexture);
 	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Quit", white, &quitTexture);
 	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Quit", white, &selectedQuitTexture);
 	menu_addAction(&g_mainMenu, mainmenu_normalMode, normalModeTexture, selectedNormalModeTextures);
 	menu_addAction(&g_mainMenu, mainmenu_timedMode, timedModeTexture, selectedTimedModeTexture);
+	menu_addAction(&g_mainMenu, mainmenu_highScores, highScoresTexture, selectedHighScoresTexture);
 	menu_addAction(&g_mainMenu, mainmenu_quit, quitTexture, selectedQuitTexture);
 
 	game_init(&g_game);
