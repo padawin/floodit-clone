@@ -34,6 +34,28 @@ void high_score_save(const int time, const int turns) {
 	fclose(f);
 }
 
+void high_score_list(int *times, int *turns, int *nbRows) {
+	FILE *f;
+	char line[32], *read;
+
+	*nbRows = 0;
+	f = _open_file("r");
+	if (f == NULL) {
+		return;
+	}
+
+	while ((read = fgets(line, 32, f)) != NULL) {
+		int readTime, readTurns;
+		if (-1 != sscanf(line, "%d %d\n", &readTime, &readTurns)) {
+			times[*nbRows] = readTime;
+			turns[*nbRows] = readTurns;
+			*nbRows += 1;
+		}
+	}
+
+	fclose(f);
+}
+
 FILE* _open_file(const char *mode) {
 	FILE *f;
 	char filePath[255];

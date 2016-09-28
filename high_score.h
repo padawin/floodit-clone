@@ -4,5 +4,6 @@
 #define HIGH_SCORES_LOCATION ".floodit/highscores"
 
 void high_score_save(const int time, const int turns);
+void high_score_list(int *times, int *turns, int *nbRows);
 
 #endif
