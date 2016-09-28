@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "game.h"
 #include "play_state.h"
+#include "utils.h"
 
 /**
  * Game font
@@ -35,8 +36,7 @@ void play_render(s_Game* game) {
 
 void renderCurrentTurn(s_Game* game) {
 	char score[8];
-	int textWidth, textHeight,
-		textX, textY,
+	int textX, textY,
 		widthTextSmall, widthTextLong,
 		textMarginRight, textMarginBottom;
 
@@ -46,22 +46,9 @@ void renderCurrentTurn(s_Game* game) {
 	textMarginBottom = 30;
 
 	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
-
-	SDL_Surface* textSurface = TTF_RenderText_Solid(game->scoreFont, score, g_White);
-	if (textSurface == NULL) {
-		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
-	}
-	else {
-		SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
-		textWidth = textSurface->w;
-		textHeight = textSurface->h;
-		textX = SCREEN_WIDTH - textMarginRight - (game->iTurns < 10 ? widthTextSmall : widthTextLong);
-		textY = SCREEN_HEIGHT - textMarginBottom;
-		SDL_FreeSurface(textSurface);
-		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
-		SDL_DestroyTexture(text);
-	}
+	textX = SCREEN_WIDTH - textMarginRight - (game->iTurns < 10 ? widthTextSmall : widthTextLong);
+	textY = SCREEN_HEIGHT - textMarginBottom;
+	utils_renderText(game, game->scoreFont, score, g_White, textX, textY);
 }
 
 void renderGrid(s_Game* game) {
@@ -120,8 +107,7 @@ void renderTimer(s_Game *game) {
 	Uint32 seconds = 0,
 		minutes = 0,
 		totalSeconds;
-	int textWidth, textHeight,
-		textX, textY,
+	int textX, textY,
 		widthText,
 		textMarginRight, textMarginBottom;
 
@@ -133,29 +119,17 @@ void renderTimer(s_Game *game) {
 	seconds = totalSeconds % 60;
 	minutes = totalSeconds / 60;
 	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
-
-	SDL_Surface* textSurface = TTF_RenderText_Solid(game->scoreFont, timer, g_White);
-	if (textSurface == NULL) {
-		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
-	}
-	else {
-		SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
-		textWidth = textSurface->w;
-		textHeight = textSurface->h;
-		textX = SCREEN_WIDTH - textMarginRight - widthText;
-		textY = SCREEN_HEIGHT - textMarginBottom;
-		SDL_FreeSurface(textSurface);
-		SDL_Rect renderQuad = {textX, textY, textWidth, textHeight};
-		SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
-		SDL_RenderFillRect(game->renderer, &renderQuad);
-		SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
-		SDL_DestroyTexture(text);
-	}
+	textX = SCREEN_WIDTH - textMarginRight - widthText;
+	textY = SCREEN_HEIGHT - textMarginBottom;
+	utils_renderText(game, game->scoreFont, timer, g_White, textX, textY);
 }
 
+/**
+ * Text dimension very hacked
+ */
 void renderEndScreen(s_Game* game, const char won) {
 	const char *messages[2];
-	int textWidth, textHeight, textX, textY, line;
+	int textWidth[2], textHeight, textX, textY, line;
 
 	SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
@@ -165,34 +139,27 @@ void renderEndScreen(s_Game* game, const char won) {
 
 	if (won) {
 		messages[0] = "Congratulation!";
+		textWidth[0] = 127;
 	}
 	else {
 		messages[0] = "You lost.";
+		textWidth[0] = 69;
 	}
 
 	if (IS_GCW) {
 		messages[1] = "Click A to restart";
+		textWidth[1] = 139;
 	}
 	else {
 		messages[1] = "Click SPACE to restart";
+		textWidth[1] = 182;
 	}
 
+	textHeight = 25;
 	for (line = 0; line < 2; ++line) {
-		SDL_Surface* textSurface = TTF_RenderText_Solid(game->endFont, messages[line], g_White);
-		if (textSurface == NULL) {
-			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
-		}
-		else {
-			SDL_Texture* text = SDL_CreateTextureFromSurface(game->renderer, textSurface);
-			textWidth = textSurface->w;
-			textHeight = textSurface->h;
-			textX = (SCREEN_WIDTH - textWidth) / 2;
-			textY = 50 + line * (textHeight + 5);
-			SDL_FreeSurface(textSurface);
-			SDL_Rect textRect = {textX, textY, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, text, NULL, &textRect);
-			SDL_DestroyTexture(text);
-		}
+		textX = (SCREEN_WIDTH - textWidth[line]) / 2;
+		textY = 50 + line * (textHeight + 5);
+		utils_renderText(game, game->endFont, messages[line], g_White, textX, textY);
 	}
 }
 
