@@ -176,19 +176,15 @@ void play_handleEvent(s_Game* game, int key) {
 	}
 	else if (key == SDLK_UP) {
 		game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_DOWN) {
 		game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_LEFT) {
 		game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_RIGHT) {
 		game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 }
 
@@ -208,7 +204,5 @@ void play(s_Game* game) {
 		else {
 			game->iTurns++;
 		}
-
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 }

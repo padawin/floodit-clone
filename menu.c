@@ -8,7 +8,6 @@ void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
 		menu->pActions[menu->iSelectedItem](game);
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
@@ -16,11 +15,9 @@ void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 	}
 	else if (key == SDLK_UP) {
 		menu->iSelectedItem = (menu->iNbItems + menu->iSelectedItem - 1) % menu->iNbItems;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 	else if (key == SDLK_DOWN) {
 		menu->iSelectedItem = (menu->iSelectedItem + 1) % menu->iNbItems;
-		game_setFlag(game, FLAG_NEEDS_REFRESH);
 	}
 }
 

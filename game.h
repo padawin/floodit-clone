@@ -6,8 +6,7 @@
 #include "globals.h"
 
 #define FLAG_DONE 0x1
-#define FLAG_NEEDS_REFRESH 0x2
-#define FLAG_NEEDS_RESTART 0x4
+#define FLAG_NEEDS_RESTART 0x2
 
 #define STATE_MAIN_MENU 1
 #define STATE_PLAY 2

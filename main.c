@@ -160,7 +160,6 @@ void render() {
 
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
-	game_unSetFlag(&g_game, FLAG_NEEDS_REFRESH);
 }
 
 void clean() {
