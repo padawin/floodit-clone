@@ -14,7 +14,7 @@ void mainmenu_render(s_Game* game, s_Menu* menu) {
 			font = game->menuFont;
 		}
 
-		utils_renderText(game, font, menu->pItems[i], white, 50, 50 + i * 30);
+		utils_renderText(game, font, menu->pItems[i], white, 50, 50 + i * 35);
 	}
 }
 
