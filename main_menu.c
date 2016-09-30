@@ -32,14 +32,7 @@ void mainmenu_timedMode(s_Game* game) {
 }
 
 void mainmenu_highScores(s_Game* game) {
-	int times[MAX_HIGH_SCORES_NUMBER];
-	int turns[MAX_HIGH_SCORES_NUMBER];
-	int nbRows;
-	high_score_list(times, turns, &nbRows);
-	int i;
-	for (i = 0; i < nbRows; ++i) {
-		printf("Time: %d, Turns: %d\n", times[i], turns[i]);
-	}
+	game->iState = STATE_HIGH_SCORES;
 }
 
 void mainmenu_quit(s_Game* game) {

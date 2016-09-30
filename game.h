@@ -12,6 +12,7 @@
 #define STATE_PLAY 2
 #define STATE_FINISH_WON 3
 #define STATE_FINISH_LOST 4
+#define STATE_HIGH_SCORES 5
 
 typedef enum {MODE_NORMAL, MODE_TIMED} game_mode;
 

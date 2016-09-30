@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "main_menu.h"
 #include "play_state.h"
+#include "high_scores_state.h"
 
 s_Game g_game;
 s_Menu g_mainMenu;
@@ -148,6 +149,9 @@ void handleEvents() {
 					case STATE_PLAY:
 						play_handleEvent(&g_game, event.key.keysym.sym);
 						break;
+					case STATE_HIGH_SCORES:
+						high_scores_handleEvent(&g_game, event.key.keysym.sym);
+						break;
 				}
 				break;
 		}
@@ -168,6 +172,9 @@ void render() {
 		g_game.iState == STATE_FINISH_LOST
 	) {
 		play_render(&g_game);
+	}
+	else if (g_game.iState == STATE_HIGH_SCORES) {
+		high_scores_render(&g_game);
 	}
 
 	// Render the rect to the screen
