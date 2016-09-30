@@ -141,10 +141,7 @@ void handleEvents() {
 }
 
 void render() {
-	// Set render color to red (background will be rendered in this color)
 	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
-
-	// Clear window
 	SDL_RenderClear(g_game.renderer);
 
 	if (g_game.iState == STATE_MAIN_MENU) {
@@ -160,7 +157,6 @@ void render() {
 
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
-	game_unSetFlag(&g_game, FLAG_NEEDS_REFRESH);
 }
 
 void clean() {

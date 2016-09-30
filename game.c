@@ -23,7 +23,6 @@ void game_start(s_Game *game, game_mode mode) {
 	game->iSelectedColor = 0;
 	game->iTurns = 1;
 	game_unSetFlag(game, FLAG_NEEDS_RESTART);
-	game_setFlag(game, FLAG_NEEDS_REFRESH);
 }
 
 void generateGrid(s_Game* game) {
