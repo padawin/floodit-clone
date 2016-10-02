@@ -62,19 +62,36 @@ void high_scores_state_clean(s_Game *game) {
 }
 
 void high_scores_render(s_Game* game) {
-	int times[MAX_HIGH_SCORES_NUMBER];
-	int turns[MAX_HIGH_SCORES_NUMBER];
-	int nbRows;
-	high_score_list(times, turns, &nbRows);
-	int i;
-	printf("High Scores:\n");
+	int i, textWidth, textHeight,
+		marginTitleX, marginTitleY,
+		marginTimeX, marginTurnsX, marginY;
+
+	if (IS_GCW) {
+		marginTitleX = 20;
+		marginTitleY = 10;
+		marginTimeX = 20;
+		marginTurnsX = 160;
+		marginY = 50;
+	}
+	else {
+		marginTitleX = 50;
+		marginTitleY = 50;
+		marginTimeX = 50;
+		marginTurnsX = 200;
+		marginY = 100;
+	}
+
+	SDL_QueryTexture(highScoresTitle, NULL, NULL, &textWidth, &textHeight);
+	SDL_Rect renderQuad = {marginTitleX, marginTitleY, textWidth, textHeight};
+	SDL_RenderCopy(game->renderer, highScoresTitle, NULL, &renderQuad);
+
 	for (i = 0; i < MAX_HIGH_SCORES_NUMBER; ++i) {
-		if (i < nbRows) {
-			printf("Time: %d, Turns: %d\n", times[i], turns[i]);
-		}
-		else {
-			printf("Time: -, Turns: -\n");
-		}
+		SDL_QueryTexture(highScoreTextures[i][0], NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect renderQuadTime = {marginTimeX, marginY + 33 * i, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, highScoreTextures[i][0], NULL, &renderQuadTime);
+		SDL_QueryTexture(highScoreTextures[i][1], NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect renderQuadTurns = {marginTurnsX, marginY + 33 * i, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, highScoreTextures[i][1], NULL, &renderQuadTurns);
 	}
 }
 
