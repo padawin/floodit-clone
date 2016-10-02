@@ -8,6 +8,7 @@
 SDL_Texture *highScoresTitle;
 SDL_Texture *highScoreTextures[MAX_HIGH_SCORES_NUMBER][2];
 void high_scores_state_clean(s_Game *game);
+void format_time(const int time, char timeFormatted[8]);
 
 void high_scores_state_init(s_Game *game) {
 	int times[MAX_HIGH_SCORES_NUMBER];
@@ -24,13 +25,13 @@ void high_scores_state_init(s_Game *game) {
 
 	high_score_list(times, turns, &nbRows);
 	for (i = 0; i < MAX_HIGH_SCORES_NUMBER; ++i) {
-		char timeLabel[12], turnsLabel[10];
+		char timeLabel[10], turnsLabel[10];
 		if (i < nbRows) {
-			snprintf(timeLabel, 12, "Time: %d", times[i]);
-			snprintf(turnsLabel, 10, "Turns: %d", turns[i]);
+			format_time(times[i], timeLabel);
+			snprintf(turnsLabel, 10, "%d turns", turns[i]);
 		}
 		else {
-			snprintf(timeLabel, 8, "Time: -");
+			snprintf(timeLabel, 2, "-");
 			snprintf(turnsLabel, 9, "Turns: -");
 		}
 
@@ -49,6 +50,13 @@ void high_scores_state_init(s_Game *game) {
 			&highScoreTextures[i][1]
 		);
 	}
+}
+
+void format_time(const int time, char timeFormatted[10]) {
+	int min = time / 60000,
+		sec = (time / 1000) % 60,
+		msec = time % 1000;
+	snprintf(timeFormatted, 10, "%02d:%02d.%03d", min, sec, msec);
 }
 
 void high_scores_state_clean(s_Game *game) {
