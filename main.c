@@ -28,6 +28,8 @@ int main() {
 	g_game.endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.menuFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.selectedMenuFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
+	g_game.highScoreTitleFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
+	g_game.highScoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.colors[0][0] = 255;
 	g_game.colors[0][1] = 0;
 	g_game.colors[0][2] = 0;
@@ -195,6 +197,10 @@ void clean() {
 	g_game.menuFont = NULL;
 	TTF_CloseFont(g_game.selectedMenuFont);
 	g_game.selectedMenuFont = NULL;
+	TTF_CloseFont(g_game.highScoreFont);
+	g_game.highScoreFont = NULL;
+	TTF_CloseFont(g_game.highScoreTitleFont);
+	g_game.highScoreTitleFont = NULL;
 	menu_free(&g_mainMenu);
 	TTF_Quit();
 	SDL_Quit();

@@ -23,6 +23,8 @@ typedef struct {
 	TTF_Font* endFont;
 	TTF_Font* menuFont;
 	TTF_Font* selectedMenuFont;
+	TTF_Font* highScoreFont;
+	TTF_Font* highScoreTitleFont;
 	game_mode mode;
 	Uint32 timeStarted;
 	Uint32 lastTimeRendered;
