@@ -15,14 +15,13 @@ int utils_popArray(int* array, int* arrayLength) {
 	return elem;
 }
 
-void utils_renderText(
-	s_Game *game,
+void utils_createTextTexture(
+	SDL_Renderer *renderer,
 	TTF_Font *font,
 	const char *text,
 	SDL_Color color,
-	const int x, const int y
+	SDL_Texture **texture
 ) {
-	int textWidth, textHeight;
 	SDL_Surface* textSurface;
 	textSurface = TTF_RenderText_Solid(font, text, color);
 
@@ -33,15 +32,26 @@ void utils_renderText(
 		);
 	}
 	else {
-		SDL_Texture* text = SDL_CreateTextureFromSurface(
-			game->renderer,
-			textSurface
-		);
-		textWidth = textSurface->w;
-		textHeight = textSurface->h;
+		*texture = SDL_CreateTextureFromSurface(renderer, textSurface);
 		SDL_FreeSurface(textSurface);
+	}
+}
+
+void utils_renderText(
+	s_Game *game,
+	TTF_Font *font,
+	const char *text,
+	SDL_Color color,
+	const int x, const int y
+) {
+	int textWidth, textHeight;
+	SDL_Texture* textTexture = 0;
+
+	utils_createTextTexture(game->renderer, font, text, color, &textTexture);
+	if (textTexture != 0) {
+		SDL_QueryTexture(textTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect renderQuad = {x, y, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, text, NULL, &renderQuad);
-		SDL_DestroyTexture(text);
+		SDL_RenderCopy(game->renderer, textTexture, NULL, &renderQuad);
+		SDL_DestroyTexture(textTexture);
 	}
 }

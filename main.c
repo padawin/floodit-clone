@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "game.h"
 #include "menu.h"
+#include "utils.h"
 #include "main_menu.h"
 #include "play_state.h"
 
@@ -44,10 +45,20 @@ int main() {
 	g_game.colors[5][1] = 255;
 	g_game.colors[5][2] = 255;
 
-	menu_setActionsNumber(&g_mainMenu, 3);
-	menu_addAction(&g_mainMenu, "Normal Mode", mainmenu_normalMode);
-	menu_addAction(&g_mainMenu, "Timed Mode", mainmenu_timedMode);
-	menu_addAction(&g_mainMenu, "Quit", mainmenu_quit);
+	menu_setActionsNumber(&g_mainMenu, 4);
+	SDL_Texture *normalModeTexture, *selectedNormalModeTextures,
+		*timedModeTexture, *selectedTimedModeTexture,
+		*quitTexture, *selectedQuitTexture;
+	SDL_Color white = {255, 255, 255};
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Normal Mode", white, &normalModeTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Normal Mode", white, &selectedNormalModeTextures);
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Timed Mode", white, &timedModeTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Timed Mode", white, &selectedTimedModeTexture);
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Quit", white, &quitTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Quit", white, &selectedQuitTexture);
+	menu_addAction(&g_mainMenu, mainmenu_normalMode, normalModeTexture, selectedNormalModeTextures);
+	menu_addAction(&g_mainMenu, mainmenu_timedMode, timedModeTexture, selectedTimedModeTexture);
+	menu_addAction(&g_mainMenu, mainmenu_quit, quitTexture, selectedQuitTexture);
 
 	game_init(&g_game);
 

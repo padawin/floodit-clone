@@ -3,18 +3,20 @@
 #include "utils.h"
 
 void mainmenu_render(s_Game* game, s_Menu* menu) {
-	SDL_Color white = {255, 255, 255};
 	int i;
 	for (i = 0; i < menu->iNbItems; ++i) {
-		TTF_Font *font;
+		SDL_Texture *item;
 		if (i == menu->iSelectedItem) {
-			font = game->selectedMenuFont;
+			item = menu->pSelectedItems[i];
 		}
 		else {
-			font = game->menuFont;
+			item = menu->pItems[i];
 		}
 
-		utils_renderText(game, font, menu->pItems[i], white, 50, 50 + i * 35);
+		int textWidth, textHeight;
+		SDL_QueryTexture(item, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect renderQuad = {50, 50 + i * 35, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, item, NULL, &renderQuad);
 	}
 }
 
