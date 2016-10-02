@@ -26,17 +26,31 @@ void menu_setActionsNumber(s_Menu* menu, int nbActions) {
 	menu->iNbItems = nbActions;
 	menu->iNbActionsSet = 0;
 	menu->iSelectedItem = 0;
-	menu->pItems = (const char **) malloc(nbActions * sizeof(const char *));
 	menu->pActions = (void (**)(s_Game*)) malloc(nbActions * sizeof(void (*)(s_Game*)));
+	menu->pItems = (SDL_Texture **) malloc(nbActions * sizeof(SDL_Texture *));
+	menu->pSelectedItems = (SDL_Texture **) malloc(nbActions * sizeof(SDL_Texture *));
 }
 
-void menu_addAction(s_Menu* menu, const char *actionLabel, void (*pAction)(s_Game*)) {
-	menu->pItems[menu->iNbActionsSet] = actionLabel;
+void menu_addAction(
+	s_Menu* menu,
+	void (*pAction)(s_Game*),
+	SDL_Texture *itemTexture,
+	SDL_Texture *selectedItemTexture
+) {
 	menu->pActions[menu->iNbActionsSet] = pAction;
+	menu->pItems[menu->iNbActionsSet] = itemTexture;
+	menu->pSelectedItems[menu->iNbActionsSet] = selectedItemTexture;
 	menu->iNbActionsSet++;
 }
 
 void menu_free(s_Menu* menu) {
+	int t;
+	for (t = 0; t < menu->iNbItems; ++t) {
+		SDL_DestroyTexture(menu->pItems[t]);
+		SDL_DestroyTexture(menu->pSelectedItems[t]);
+	}
+
 	free(menu->pItems);
+	free(menu->pSelectedItems);
 	free(menu->pActions);
 }
