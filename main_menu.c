@@ -2,6 +2,7 @@
 #include "main_menu.h"
 #include "utils.h"
 #include "high_score.h"
+#include "high_scores_state.h"
 
 void mainmenu_render(s_Game* game, s_Menu* menu) {
 	int i;
@@ -32,6 +33,7 @@ void mainmenu_timedMode(s_Game* game) {
 }
 
 void mainmenu_highScores(s_Game* game) {
+	high_scores_state_init(game);
 	game->iState = STATE_HIGH_SCORES;
 }
 
