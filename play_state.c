@@ -142,11 +142,11 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 
 	if (IS_GCW) {
-		messages[1] = "Click A to restart";
+		messages[1] = "Press A to restart";
 		textWidth[1] = 139;
 	}
 	else {
-		messages[1] = "Click SPACE to restart";
+		messages[1] = "Press SPACE to restart";
 		textWidth[1] = 182;
 	}
 
