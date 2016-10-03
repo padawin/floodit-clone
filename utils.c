@@ -36,22 +36,3 @@ void utils_createTextTexture(
 		SDL_FreeSurface(textSurface);
 	}
 }
-
-void utils_renderText(
-	s_Game *game,
-	TTF_Font *font,
-	const char *text,
-	SDL_Color color,
-	const int x, const int y
-) {
-	int textWidth, textHeight;
-	SDL_Texture* textTexture = 0;
-
-	utils_createTextTexture(game->renderer, font, text, color, &textTexture);
-	if (textTexture != 0) {
-		SDL_QueryTexture(textTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect renderQuad = {x, y, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, textTexture, NULL, &renderQuad);
-		SDL_DestroyTexture(textTexture);
-	}
-}
