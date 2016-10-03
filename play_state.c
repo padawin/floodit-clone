@@ -9,7 +9,8 @@
  * Game font
  */
 SDL_Color g_White = {255, 255, 255};
-SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText;
+SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
+	*timerText;
 
 void play(s_Game* game);
 void renderGrid(s_Game* game);
@@ -30,6 +31,8 @@ void play_state_init(s_Game *game) {
 		utils_createTextTexture(renderer, game->endFont, "Press SPACE to restart", g_White, &restartEndText);
 		utils_createTextTexture(renderer, game->endFont, "PRESS ESCAPE to quit", g_White, &quitEndText);
 	}
+
+	timerText = 0;
 }
 
 void play_state_clean(s_Game *game) {
@@ -37,6 +40,7 @@ void play_state_clean(s_Game *game) {
 	SDL_DestroyTexture(loseEndText);
 	SDL_DestroyTexture(restartEndText);
 	SDL_DestroyTexture(quitEndText);
+	SDL_DestroyTexture(timerText);
 }
 
 void play_render(s_Game* game) {
@@ -126,18 +130,25 @@ void renderControls(s_Game* game) {
 
 void renderTimer(s_Game *game) {
 	int textX, textY,
-		widthText,
+		textWidth, textHeight,
 		textMarginRight, textMarginBottom;
 	char timer[6];
 
 	game_getTimer(game, timer);
 
-	widthText = 52;
 	textMarginRight = 10;
 	textMarginBottom = 50;
-	textX = SCREEN_WIDTH - textMarginRight - widthText;
+
+	if (timerText != 0) {
+		SDL_DestroyTexture(timerText);
+	}
+
+	utils_createTextTexture(game->renderer, game->scoreFont, timer, g_White, &timerText);
+	SDL_QueryTexture(timerText, NULL, NULL, &textWidth, &textHeight);
+	textX = SCREEN_WIDTH - textMarginRight - textWidth;
 	textY = SCREEN_HEIGHT - textMarginBottom;
-	utils_renderText(game, game->scoreFont, timer, g_White, textX, textY);
+	SDL_Rect rect = {textX, textY, textWidth, textHeight};
+	SDL_RenderCopy(game->renderer, timerText, NULL, &rect);
 }
 
 /**
