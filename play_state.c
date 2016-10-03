@@ -122,8 +122,9 @@ void renderTimer(s_Game *game) {
  * Text dimension very hacked
  */
 void renderEndScreen(s_Game* game, const char won) {
-	const char *messages[2];
-	int textWidth[2], textHeight, textX, textY, line;
+	int nbLines = 3,
+		textWidth[nbLines], textHeight, textX, textY, line;
+	const char *messages[nbLines];
 
 	SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
@@ -141,16 +142,25 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 
 	if (IS_GCW) {
-		messages[1] = "Click A to restart";
+		messages[1] = "Press A to restart";
 		textWidth[1] = 139;
 	}
 	else {
-		messages[1] = "Click SPACE to restart";
+		messages[1] = "Press SPACE to restart";
 		textWidth[1] = 182;
 	}
 
+	if (IS_GCW) {
+		messages[2] = "Press SELECT to quit";
+		textWidth[2] = 162;
+	}
+	else {
+		messages[2] = "PRESS ESCAPE to quit";
+		textWidth[2] = 162;
+	}
+
 	textHeight = 25;
-	for (line = 0; line < 2; ++line) {
+	for (line = 0; line < nbLines; ++line) {
 		textX = (SCREEN_WIDTH - textWidth[line]) / 2;
 		textY = 50 + line * (textHeight + 5);
 		utils_renderText(game, game->endFont, messages[line], g_White, textX, textY);
@@ -186,7 +196,7 @@ void play_handleEvent(s_Game* game, int key) {
 
 void play(s_Game* game) {
 	if (game->iState != STATE_PLAY) {
-		game_init(game);
+		game_restart(game);
 		return;
 	}
 	else if (game_selectColor(game)) {
