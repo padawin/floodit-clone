@@ -122,7 +122,7 @@ void renderTimer(s_Game *game) {
  * Text dimension very hacked
  */
 void renderEndScreen(s_Game* game, const char won) {
-	int nbLines = 2,
+	int nbLines = 3,
 		textWidth[nbLines], textHeight, textX, textY, line;
 	const char *messages[nbLines];
 
@@ -148,6 +148,15 @@ void renderEndScreen(s_Game* game, const char won) {
 	else {
 		messages[1] = "Press SPACE to restart";
 		textWidth[1] = 182;
+	}
+
+	if (IS_GCW) {
+		messages[2] = "Press SELECT to quit";
+		textWidth[2] = 162;
+	}
+	else {
+		messages[2] = "PRESS ESCAPE to quit";
+		textWidth[2] = 162;
 	}
 
 	textHeight = 25;
