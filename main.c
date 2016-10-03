@@ -11,7 +11,6 @@
 
 s_Game g_game;
 s_Menu g_mainMenu;
-Uint32 lastTimeRendered;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void initMainMenu();

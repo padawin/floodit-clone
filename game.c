@@ -13,6 +13,8 @@ void game_init(s_Game *game) {
 void game_start(s_Game *game, game_mode mode) {
 	game->iState = STATE_PLAY;
 	game->mode = mode;
+	game->timeStarted = 0;
+	game->timeFinished = 0;
 
 	if (mode == MODE_TIMED) {
 		game->timeStarted = SDL_GetTicks();
@@ -155,8 +157,30 @@ void game_unSetFlag(s_Game *game, char flag) {
 	game->cFlags &= ~flag;
 }
 
-void game_finish(s_Game *game) {
+void game_finish(s_Game *game, const char won) {
 	if (game->mode == MODE_TIMED) {
-		high_score_save(SDL_GetTicks() - game->timeStarted, game->iTurns);
+		game->timeFinished = SDL_GetTicks();
+		if (won) {
+			high_score_save(game->timeFinished - game->timeStarted, game->iTurns);
+		}
 	}
+}
+
+void game_getTimer(s_Game *game, char *timer) {
+	Uint32 seconds = 0,
+		minutes = 0,
+		totalSeconds,
+		endTime;
+
+	if (game->timeFinished == 0) {
+		endTime = SDL_GetTicks();
+	}
+	else {
+		endTime = game->timeFinished;
+	}
+
+	totalSeconds = (endTime - game->timeStarted) / 1000;
+	seconds = totalSeconds % 60;
+	minutes = totalSeconds / 60;
+	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }
