@@ -7,12 +7,14 @@
 #include "utils.h"
 #include "main_menu.h"
 #include "play_state.h"
+#include "high_scores_state.h"
 
 s_Game g_game;
 s_Menu g_mainMenu;
 Uint32 lastTimeRendered;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
+void initMainMenu();
 void handleEvents();
 void render();
 void clean();
@@ -26,6 +28,8 @@ int main() {
 	g_game.endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.menuFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.selectedMenuFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
+	g_game.highScoreTitleFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
+	g_game.highScoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	g_game.colors[0][0] = 255;
 	g_game.colors[0][1] = 0;
 	g_game.colors[0][2] = 0;
@@ -45,21 +49,7 @@ int main() {
 	g_game.colors[5][1] = 255;
 	g_game.colors[5][2] = 255;
 
-	menu_setActionsNumber(&g_mainMenu, 4);
-	SDL_Texture *normalModeTexture, *selectedNormalModeTextures,
-		*timedModeTexture, *selectedTimedModeTexture,
-		*quitTexture, *selectedQuitTexture;
-	SDL_Color white = {255, 255, 255};
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Normal Mode", white, &normalModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Normal Mode", white, &selectedNormalModeTextures);
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Timed Mode", white, &timedModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Timed Mode", white, &selectedTimedModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Quit", white, &quitTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Quit", white, &selectedQuitTexture);
-	menu_addAction(&g_mainMenu, mainmenu_normalMode, normalModeTexture, selectedNormalModeTextures);
-	menu_addAction(&g_mainMenu, mainmenu_timedMode, timedModeTexture, selectedTimedModeTexture);
-	menu_addAction(&g_mainMenu, mainmenu_quit, quitTexture, selectedQuitTexture);
-
+	initMainMenu();
 	game_init(&g_game);
 
 	Uint32 nextFrame;
@@ -122,6 +112,28 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	return l_bReturn;
 }
 
+void initMainMenu() {
+	menu_setActionsNumber(&g_mainMenu, 4);
+	SDL_Texture *normalModeTexture, *selectedNormalModeTextures,
+		*timedModeTexture, *selectedTimedModeTexture,
+		*highScoresTexture, *selectedHighScoresTexture,
+		*quitTexture, *selectedQuitTexture;
+	SDL_Color white = {255, 255, 255};
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Normal Mode", white, &normalModeTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Normal Mode", white, &selectedNormalModeTextures);
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Timed Mode", white, &timedModeTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Timed Mode", white, &selectedTimedModeTexture);
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "High Scores", white, &highScoresTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "High Scores", white, &selectedHighScoresTexture);
+	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Quit", white, &quitTexture);
+	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Quit", white, &selectedQuitTexture);
+	menu_addAction(&g_mainMenu, mainmenu_normalMode, normalModeTexture, selectedNormalModeTextures);
+	menu_addAction(&g_mainMenu, mainmenu_timedMode, timedModeTexture, selectedTimedModeTexture);
+	menu_addAction(&g_mainMenu, mainmenu_highScores, highScoresTexture, selectedHighScoresTexture);
+	menu_addAction(&g_mainMenu, mainmenu_quit, quitTexture, selectedQuitTexture);
+
+}
+
 void handleEvents() {
 	// message processing loop
 	SDL_Event event;
@@ -144,6 +156,9 @@ void handleEvents() {
 					case STATE_PLAY:
 						play_handleEvent(&g_game, event.key.keysym.sym);
 						break;
+					case STATE_HIGH_SCORES:
+						high_scores_handleEvent(&g_game, event.key.keysym.sym);
+						break;
 				}
 				break;
 		}
@@ -165,6 +180,9 @@ void render() {
 	) {
 		play_render(&g_game);
 	}
+	else if (g_game.iState == STATE_HIGH_SCORES) {
+		high_scores_render(&g_game);
+	}
 
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
@@ -179,6 +197,10 @@ void clean() {
 	g_game.menuFont = NULL;
 	TTF_CloseFont(g_game.selectedMenuFont);
 	g_game.selectedMenuFont = NULL;
+	TTF_CloseFont(g_game.highScoreFont);
+	g_game.highScoreFont = NULL;
+	TTF_CloseFont(g_game.highScoreTitleFont);
+	g_game.highScoreTitleFont = NULL;
 	menu_free(&g_mainMenu);
 	TTF_Quit();
 	SDL_Quit();

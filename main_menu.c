@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "main_menu.h"
 #include "utils.h"
+#include "high_score.h"
+#include "high_scores_state.h"
 
 void mainmenu_render(s_Game* game, s_Menu* menu) {
 	int i;
@@ -28,6 +30,11 @@ void mainmenu_normalMode(s_Game* game) {
 void mainmenu_timedMode(s_Game* game) {
 	printf("Timed\n");
 	game_start(game, MODE_TIMED);
+}
+
+void mainmenu_highScores(s_Game* game) {
+	high_scores_state_init(game);
+	game->iState = STATE_HIGH_SCORES;
 }
 
 void mainmenu_quit(s_Game* game) {

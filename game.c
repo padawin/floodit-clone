@@ -1,6 +1,7 @@
 #include <time.h>
 #include "game.h"
 #include "utils.h"
+#include "high_score.h"
 
 void generateGrid(s_Game* game);
 
@@ -152,4 +153,10 @@ void game_setFlag(s_Game *game, char flag) {
 
 void game_unSetFlag(s_Game *game, char flag) {
 	game->cFlags &= ~flag;
+}
+
+void game_finish(s_Game *game) {
+	if (game->mode == MODE_TIMED) {
+		high_score_save(SDL_GetTicks() - game->timeStarted, game->iTurns);
+	}
 }

@@ -12,6 +12,7 @@
 #define STATE_PLAY 2
 #define STATE_FINISH_WON 3
 #define STATE_FINISH_LOST 4
+#define STATE_HIGH_SCORES 5
 
 typedef enum {MODE_NORMAL, MODE_TIMED} game_mode;
 
@@ -22,6 +23,8 @@ typedef struct {
 	TTF_Font* endFont;
 	TTF_Font* menuFont;
 	TTF_Font* selectedMenuFont;
+	TTF_Font* highScoreFont;
+	TTF_Font* highScoreTitleFont;
 	game_mode mode;
 	Uint32 timeStarted;
 	Uint32 lastTimeRendered;
@@ -41,5 +44,7 @@ void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 char game_is(s_Game *game, char flag);
 void game_setFlag(s_Game *game, char flag);
 void game_unSetFlag(s_Game *game, char flag);
+void game_finish(s_Game *game);
+void high_scores_state_init(s_Game *game);
 
 #endif
