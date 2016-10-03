@@ -45,5 +45,6 @@ void game_setFlag(s_Game *game, char flag);
 void game_unSetFlag(s_Game *game, char flag);
 void game_finish(s_Game *game, const char won);
 void high_scores_state_init(s_Game *game);
+void game_getTimer(s_Game *game, char *timer);
 
 #endif

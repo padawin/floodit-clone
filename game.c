@@ -162,3 +162,14 @@ void game_finish(s_Game *game, const char won) {
 		}
 	}
 }
+
+void game_getTimer(s_Game *game, char *timer) {
+	Uint32 seconds = 0,
+		minutes = 0,
+		totalSeconds;
+
+	totalSeconds = (SDL_GetTicks() - game->timeStarted) / 1000;
+	seconds = totalSeconds % 60;
+	minutes = totalSeconds / 60;
+	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
+}

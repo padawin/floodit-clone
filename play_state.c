@@ -103,22 +103,16 @@ void renderControls(s_Game* game) {
 }
 
 void renderTimer(s_Game *game) {
-	char timer[6];
-	Uint32 seconds = 0,
-		minutes = 0,
-		totalSeconds;
 	int textX, textY,
 		widthText,
 		textMarginRight, textMarginBottom;
+	char timer[6];
+
+	game_getTimer(game, timer);
 
 	widthText = 52;
 	textMarginRight = 10;
 	textMarginBottom = 50;
-
-	totalSeconds = (SDL_GetTicks() - game->timeStarted) / 1000;
-	seconds = totalSeconds % 60;
-	minutes = totalSeconds / 60;
-	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 	textX = SCREEN_WIDTH - textMarginRight - widthText;
 	textY = SCREEN_HEIGHT - textMarginBottom;
 	utils_renderText(game, game->scoreFont, timer, g_White, textX, textY);
