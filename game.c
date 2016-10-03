@@ -28,6 +28,10 @@ void game_start(s_Game *game, game_mode mode) {
 	game_unSetFlag(game, FLAG_NEEDS_RESTART);
 }
 
+void game_restart(s_Game *game) {
+	game_start(game, game->mode);
+}
+
 void generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;
