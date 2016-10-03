@@ -17,6 +17,14 @@ void renderControls(s_Game* game);
 void renderTimer(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
 
+void play_state_init(s_Game *game) {
+	printf("play init\n");
+}
+
+void play_state_clean(s_Game *game) {
+	printf("play clean\n");
+}
+
 void play_render(s_Game* game) {
 	renderGrid(game);
 	renderCurrentTurn(game);
@@ -176,6 +184,7 @@ void play_handleEvent(s_Game* game, int key) {
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
+		play_state_clean(game);
 		game_init(game);
 	}
 	else if (game->iState == STATE_PLAY) {
