@@ -9,6 +9,7 @@
  * Game font
  */
 SDL_Color g_White = {255, 255, 255};
+SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText;
 
 void play(s_Game* game);
 void renderGrid(s_Game* game);
@@ -18,11 +19,24 @@ void renderTimer(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
 
 void play_state_init(s_Game *game) {
-	printf("play init\n");
+	SDL_Renderer *renderer = game->renderer;
+	utils_createTextTexture(renderer, game->endFont, "Congratulations!", g_White, &winEndText);
+	utils_createTextTexture(renderer, game->endFont, "You lost.", g_White, &loseEndText);
+	if (IS_GCW) {
+		utils_createTextTexture(renderer, game->endFont, "Press A to restart", g_White, &restartEndText);
+		utils_createTextTexture(renderer, game->endFont, "Press SELECT to quit", g_White, &quitEndText);
+	}
+	else {
+		utils_createTextTexture(renderer, game->endFont, "Press SPACE to restart", g_White, &restartEndText);
+		utils_createTextTexture(renderer, game->endFont, "PRESS ESCAPE to quit", g_White, &quitEndText);
+	}
 }
 
 void play_state_clean(s_Game *game) {
-	printf("play clean\n");
+	SDL_DestroyTexture(winEndText);
+	SDL_DestroyTexture(loseEndText);
+	SDL_DestroyTexture(restartEndText);
+	SDL_DestroyTexture(quitEndText);
 }
 
 void play_render(s_Game* game) {
@@ -130,48 +144,30 @@ void renderTimer(s_Game *game) {
  * Text dimension very hacked
  */
 void renderEndScreen(s_Game* game, const char won) {
-	int nbLines = 3,
-		textWidth[nbLines], textHeight, textX, textY, line;
-	const char *messages[nbLines];
-
-	SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+	int textWidth, textHeight, t;
+	SDL_Texture *texts[3];
+	SDL_Rect rect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
 	SDL_SetRenderDrawBlendMode(game->renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 224);
-	SDL_RenderFillRect(game->renderer, &bgRect);
+	SDL_RenderFillRect(game->renderer, &rect);
 
 	if (won) {
-		messages[0] = "Congratulation!";
-		textWidth[0] = 127;
+		texts[0] = winEndText;
 	}
 	else {
-		messages[0] = "You lost.";
-		textWidth[0] = 69;
+		texts[0] = loseEndText;
 	}
+	texts[1] = restartEndText;
+	texts[2] = quitEndText;
 
-	if (IS_GCW) {
-		messages[1] = "Press A to restart";
-		textWidth[1] = 139;
-	}
-	else {
-		messages[1] = "Press SPACE to restart";
-		textWidth[1] = 182;
-	}
-
-	if (IS_GCW) {
-		messages[2] = "Press SELECT to quit";
-		textWidth[2] = 162;
-	}
-	else {
-		messages[2] = "PRESS ESCAPE to quit";
-		textWidth[2] = 162;
-	}
-
-	textHeight = 25;
-	for (line = 0; line < nbLines; ++line) {
-		textX = (SCREEN_WIDTH - textWidth[line]) / 2;
-		textY = 50 + line * (textHeight + 5);
-		utils_renderText(game, game->endFont, messages[line], g_White, textX, textY);
+	for (t = 0; t < 3; ++t) {
+		SDL_QueryTexture(texts[t], NULL, NULL, &textWidth, &textHeight);
+		rect.x = (SCREEN_WIDTH - textWidth) / 2;
+		rect.y = 80 + t * 40;
+		rect.w = textWidth;
+		rect.h = textHeight;
+		SDL_RenderCopy(game->renderer, texts[t], NULL, &rect);
 	}
 }
 
