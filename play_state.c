@@ -168,17 +168,19 @@ void play_handleEvent(s_Game* game, int key) {
 	else if (key == SDLK_ESCAPE) {
 		game_init(game);
 	}
-	else if (key == SDLK_UP) {
-		game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-	}
-	else if (key == SDLK_DOWN) {
-		game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-	}
-	else if (key == SDLK_LEFT) {
-		game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-	}
-	else if (key == SDLK_RIGHT) {
-		game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
+	else if (game->iState == STATE_PLAY) {
+		if (key == SDLK_UP) {
+			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
+		}
+		else if (key == SDLK_DOWN) {
+			game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
+		}
+		else if (key == SDLK_LEFT) {
+			game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
+		}
+		else if (key == SDLK_RIGHT) {
+			game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
+		}
 	}
 }
 
