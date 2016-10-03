@@ -13,6 +13,7 @@ void game_init(s_Game *game) {
 void game_start(s_Game *game, game_mode mode) {
 	game->iState = STATE_PLAY;
 	game->mode = mode;
+	game->timeStarted = 0;
 
 	if (mode == MODE_TIMED) {
 		game->timeStarted = SDL_GetTicks();
