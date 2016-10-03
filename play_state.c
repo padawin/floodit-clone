@@ -14,9 +14,10 @@ SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 
 void play(s_Game* game);
 void renderGrid(s_Game* game);
+void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom);
+void renderTimer(s_Game* game);
 void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
-void renderTimer(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
 
 void play_state_init(s_Game *game) {
@@ -62,29 +63,43 @@ void play_render(s_Game* game) {
 	}
 }
 
-void renderCurrentTurn(s_Game* game) {
-	char score[8];
+void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom) {
 	int textX, textY,
-		textWidth, textHeight,
-		widthTextSmall, widthTextLong,
-		textMarginRight, textMarginBottom;
+		textWidth, textHeight;
 
-	widthTextSmall = 52;
-	widthTextLong = 63;
-	textMarginRight = 10;
-	textMarginBottom = 30;
-
-	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
-	if (currentTurnText != 0) {
-		SDL_DestroyTexture(currentTurnText);
+	if (timerText != 0) {
+		SDL_DestroyTexture(timerText);
 	}
 
-	utils_createTextTexture(game->renderer, game->scoreFont, score, g_White, &currentTurnText);
-	SDL_QueryTexture(currentTurnText, NULL, NULL, &textWidth, &textHeight);
-	textX = SCREEN_WIDTH - textMarginRight - (game->iTurns < 10 ? widthTextSmall : widthTextLong);
-	textY = SCREEN_HEIGHT - textMarginBottom;
+	utils_createTextTexture(game->renderer, game->scoreFont, text, g_White, &texture);
+	SDL_QueryTexture(texture, NULL, NULL, &textWidth, &textHeight);
+	textX = SCREEN_WIDTH - marginRight - textWidth;
+	textY = SCREEN_HEIGHT - marginBottom;
 	SDL_Rect rect = {textX, textY, textWidth, textHeight};
-	SDL_RenderCopy(game->renderer, currentTurnText, NULL, &rect);
+	SDL_RenderCopy(game->renderer, texture, NULL, &rect);
+}
+
+void renderTimer(s_Game *game) {
+	int textMarginRight, textMarginBottom;
+	char timer[6];
+
+	game_getTimer(game, timer);
+
+	textMarginRight = 10;
+	textMarginBottom = 50;
+	_renderText(game, timerText, timer, textMarginRight, textMarginBottom);
+}
+
+void renderCurrentTurn(s_Game* game) {
+	int textMarginRight, textMarginBottom;
+	char score[8];
+
+	snprintf(score, 8, "%d / %d", game->iTurns, MAX_TURNS);
+
+	textMarginRight = 10;
+	textMarginBottom = 30;
+	_renderText(game, currentTurnText, score, textMarginRight, textMarginBottom);
+
 }
 
 void renderGrid(s_Game* game) {
@@ -136,29 +151,6 @@ void renderControls(s_Game* game) {
 		SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
 		SDL_RenderFillRect(game->renderer, &r);
 	}
-}
-
-void renderTimer(s_Game *game) {
-	int textX, textY,
-		textWidth, textHeight,
-		textMarginRight, textMarginBottom;
-	char timer[6];
-
-	game_getTimer(game, timer);
-
-	textMarginRight = 10;
-	textMarginBottom = 50;
-
-	if (timerText != 0) {
-		SDL_DestroyTexture(timerText);
-	}
-
-	utils_createTextTexture(game->renderer, game->scoreFont, timer, g_White, &timerText);
-	SDL_QueryTexture(timerText, NULL, NULL, &textWidth, &textHeight);
-	textX = SCREEN_WIDTH - textMarginRight - textWidth;
-	textY = SCREEN_HEIGHT - textMarginBottom;
-	SDL_Rect rect = {textX, textY, textWidth, textHeight};
-	SDL_RenderCopy(game->renderer, timerText, NULL, &rect);
 }
 
 /**
