@@ -14,9 +14,9 @@ SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 
 void play(s_Game* game);
 void renderGrid(s_Game* game);
+void renderTimer(s_Game* game);
 void renderCurrentTurn(s_Game* game);
 void renderControls(s_Game* game);
-void renderTimer(s_Game* game);
 void renderEndScreen(s_Game* game, const char won);
 
 void play_state_init(s_Game *game) {
@@ -60,6 +60,29 @@ void play_render(s_Game* game) {
 	else if (game->iState == STATE_FINISH_LOST) {
 		renderEndScreen(game, 0);
 	}
+}
+
+void renderTimer(s_Game *game) {
+	int textX, textY,
+		textWidth, textHeight,
+		textMarginRight, textMarginBottom;
+	char timer[6];
+
+	game_getTimer(game, timer);
+
+	textMarginRight = 10;
+	textMarginBottom = 50;
+
+	if (timerText != 0) {
+		SDL_DestroyTexture(timerText);
+	}
+
+	utils_createTextTexture(game->renderer, game->scoreFont, timer, g_White, &timerText);
+	SDL_QueryTexture(timerText, NULL, NULL, &textWidth, &textHeight);
+	textX = SCREEN_WIDTH - textMarginRight - textWidth;
+	textY = SCREEN_HEIGHT - textMarginBottom;
+	SDL_Rect rect = {textX, textY, textWidth, textHeight};
+	SDL_RenderCopy(game->renderer, timerText, NULL, &rect);
 }
 
 void renderCurrentTurn(s_Game* game) {
@@ -136,29 +159,6 @@ void renderControls(s_Game* game) {
 		SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
 		SDL_RenderFillRect(game->renderer, &r);
 	}
-}
-
-void renderTimer(s_Game *game) {
-	int textX, textY,
-		textWidth, textHeight,
-		textMarginRight, textMarginBottom;
-	char timer[6];
-
-	game_getTimer(game, timer);
-
-	textMarginRight = 10;
-	textMarginBottom = 50;
-
-	if (timerText != 0) {
-		SDL_DestroyTexture(timerText);
-	}
-
-	utils_createTextTexture(game->renderer, game->scoreFont, timer, g_White, &timerText);
-	SDL_QueryTexture(timerText, NULL, NULL, &textWidth, &textHeight);
-	textX = SCREEN_WIDTH - textMarginRight - textWidth;
-	textY = SCREEN_HEIGHT - textMarginBottom;
-	SDL_Rect rect = {textX, textY, textWidth, textHeight};
-	SDL_RenderCopy(game->renderer, timerText, NULL, &rect);
 }
 
 /**
