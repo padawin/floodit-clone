@@ -155,8 +155,10 @@ void game_unSetFlag(s_Game *game, char flag) {
 	game->cFlags &= ~flag;
 }
 
-void game_finish(s_Game *game) {
+void game_finish(s_Game *game, const char won) {
 	if (game->mode == MODE_TIMED) {
-		high_score_save(SDL_GetTicks() - game->timeStarted, game->iTurns);
+		if (won) {
+			high_score_save(SDL_GetTicks() - game->timeStarted, game->iTurns);
+		}
 	}
 }

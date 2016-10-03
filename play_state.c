@@ -197,10 +197,11 @@ void play(s_Game* game) {
 		char finished = game_checkBoard(game);
 		if (finished) {
 			game->iState = STATE_FINISH_WON;
-			game_finish(game);
+			game_finish(game, 1);
 		}
 		else if (game->iTurns == MAX_TURNS) {
 			game->iState = STATE_FINISH_LOST;
+			game_finish(game, 0);
 		}
 		else {
 			game->iTurns++;
