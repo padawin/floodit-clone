@@ -122,8 +122,9 @@ void renderTimer(s_Game *game) {
  * Text dimension very hacked
  */
 void renderEndScreen(s_Game* game, const char won) {
-	const char *messages[2];
-	int textWidth[2], textHeight, textX, textY, line;
+	int nbLines = 2,
+		textWidth[nbLines], textHeight, textX, textY, line;
+	const char *messages[nbLines];
 
 	SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 
@@ -150,7 +151,7 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 
 	textHeight = 25;
-	for (line = 0; line < 2; ++line) {
+	for (line = 0; line < nbLines; ++line) {
 		textX = (SCREEN_WIDTH - textWidth[line]) / 2;
 		textY = 50 + line * (textHeight + 5);
 		utils_renderText(game, game->endFont, messages[line], g_White, textX, textY);
