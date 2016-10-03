@@ -185,7 +185,7 @@ void renderEndScreen(s_Game* game, const char won) {
 	for (t = 0; t < 3; ++t) {
 		SDL_QueryTexture(texts[t], NULL, NULL, &textWidth, &textHeight);
 		rect.x = (SCREEN_WIDTH - textWidth) / 2;
-		rect.y = 80 + t * 40;
+		rect.y = 60 + t * 40;
 		rect.w = textWidth;
 		rect.h = textHeight;
 		SDL_RenderCopy(game->renderer, texts[t], NULL, &rect);
