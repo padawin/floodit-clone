@@ -27,6 +27,7 @@ typedef struct {
 	TTF_Font* highScoreTitleFont;
 	game_mode mode;
 	Uint32 timeStarted;
+	Uint32 timeFinished;
 	int grid[HEIGHT_GRID][WIDTH_GRID];
 	int colors[NB_COLORS][3];
 	int iTurns;
