@@ -18,7 +18,7 @@ void mainmenu_render(s_Game* game, s_Menu* menu) {
 
 		int textWidth, textHeight;
 		SDL_QueryTexture(item, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect renderQuad = {50, 50 + i * 35, textWidth, textHeight};
+		SDL_Rect renderQuad = {50, 30 + i * 35, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, item, NULL, &renderQuad);
 	}
 }
