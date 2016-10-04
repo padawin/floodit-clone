@@ -196,6 +196,9 @@ void render() {
 	else if (g_game.iState == STATE_HIGH_SCORES) {
 		high_scores_render(&g_game);
 	}
+	else if (g_game.iState == STATE_MULTIPLAYER_SETUP) {
+		multiplayer_setup_render(&g_game);
+	}
 
 	// Render the rect to the screen
 	SDL_RenderPresent(g_game.renderer);
