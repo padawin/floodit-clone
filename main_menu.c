@@ -35,6 +35,10 @@ void mainmenu_timedMode(s_Game* game) {
 	game_start(game, MODE_TIMED);
 }
 
+void mainmenu_multiplayerMode(s_Game* game) {
+	printf("Multiplayer\n");
+}
+
 void mainmenu_highScores(s_Game* game) {
 	high_scores_state_init(game);
 	game->iState = STATE_HIGH_SCORES;
