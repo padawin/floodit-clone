@@ -9,6 +9,7 @@
 #include "main_menu.h"
 #include "play_state.h"
 #include "high_scores_state.h"
+#include "multiplayer_setup_state.h"
 
 s_Game g_game;
 s_Menu g_mainMenu;
@@ -167,6 +168,9 @@ void handleEvents() {
 						break;
 					case STATE_HIGH_SCORES:
 						high_scores_handleEvent(&g_game, event.key.keysym.sym);
+						break;
+					case STATE_MULTIPLAYER_SETUP:
+						multiplayer_setup_handleEvent(&g_game, event.key.keysym.sym);
 						break;
 				}
 				break;

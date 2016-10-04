@@ -4,6 +4,7 @@
 #include "high_score.h"
 #include "high_scores_state.h"
 #include "play_state.h"
+#include "multiplayer_setup_state.h"
 
 void mainmenu_render(s_Game* game, s_Menu* menu) {
 	int i;
@@ -37,6 +38,8 @@ void mainmenu_timedMode(s_Game* game) {
 
 void mainmenu_multiplayerMode(s_Game* game) {
 	printf("Multiplayer\n");
+	multiplayer_setup_state_init(game);
+	game->iState = STATE_MULTIPLAYER_SETUP;
 }
 
 void mainmenu_highScores(s_Game* game) {
