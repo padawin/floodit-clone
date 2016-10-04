@@ -14,7 +14,7 @@
 #define STATE_FINISH_LOST 4
 #define STATE_HIGH_SCORES 5
 
-typedef enum {MODE_NORMAL, MODE_TIMED} game_mode;
+typedef enum {MODE_CLASSIC, MODE_TIMED} game_mode;
 
 typedef struct {
 	SDL_Renderer* renderer;

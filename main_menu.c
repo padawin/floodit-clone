@@ -23,10 +23,10 @@ void mainmenu_render(s_Game* game, s_Menu* menu) {
 	}
 }
 
-void mainmenu_normalMode(s_Game* game) {
-	printf("Normal\n");
+void mainmenu_classicMode(s_Game* game) {
+	printf("Classic\n");
 	play_state_init(game);
-	game_start(game, MODE_NORMAL);
+	game_start(game, MODE_CLASSIC);
 }
 
 void mainmenu_timedMode(s_Game* game) {
