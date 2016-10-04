@@ -184,7 +184,7 @@ void render() {
 	SDL_RenderClear(g_game.renderer);
 
 	if (g_game.iState == STATE_MAIN_MENU) {
-		mainmenu_render(&g_game, &g_mainMenu);
+		menu_render(&g_game, &g_mainMenu);
 	}
 	else if (
 		g_game.iState == STATE_PLAY ||

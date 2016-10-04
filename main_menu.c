@@ -6,24 +6,6 @@
 #include "play_state.h"
 #include "multiplayer_setup_state.h"
 
-void mainmenu_render(s_Game* game, s_Menu* menu) {
-	int i;
-	for (i = 0; i < menu->iNbItems; ++i) {
-		SDL_Texture *item;
-		if (i == menu->iSelectedItem) {
-			item = menu->pSelectedItems[i];
-		}
-		else {
-			item = menu->pItems[i];
-		}
-
-		int textWidth, textHeight;
-		SDL_QueryTexture(item, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect renderQuad = {50, 30 + i * 35, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, item, NULL, &renderQuad);
-	}
-}
-
 void mainmenu_classicMode(s_Game* game) {
 	printf("Classic\n");
 	play_state_init(game);
