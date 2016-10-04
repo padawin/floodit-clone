@@ -3,7 +3,7 @@ TARGET := $(NAME)
 TARGETDIST := $(NAME).opk
 OBJS := *.c
 OPTS := -g -O2 -Wall
-LIB := -lSDL2 -lSDL2_ttf
+LIB := -lSDL2 -lSDL2_ttf -lSDL2_net
 CC := $(CROSS_COMPILE)gcc
 
 SDL2CONF = $(shell which sdl2-config)
