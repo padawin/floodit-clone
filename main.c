@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_net.h>
 #include <stdlib.h>
 #include "globals.h"
 #include "game.h"
@@ -108,6 +109,11 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 		l_bReturn = 0;
 	}
 
+	if (SDLNet_Init() == -1) {
+		printf("SDLNet_Init: %s\n", SDLNet_GetError());
+		l_bReturn = 0;
+	}
+
 	return l_bReturn;
 }
 
@@ -202,5 +208,6 @@ void clean() {
 	g_game.highScoreTitleFont = NULL;
 	menu_free(&g_mainMenu);
 	TTF_Quit();
+	SDLNet_Quit();
 	SDL_Quit();
 }
