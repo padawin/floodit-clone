@@ -1,5 +1,11 @@
 # Floodit
 
+## Screenshots
+
+![screenshot](screenshots/main-menu.png "Main menu")
+![screenshot](screenshots/in-game.png "In game")
+![screenshot](screenshots/high-scores.png "High scores")
+
 ## Dependancies
 
 Requires:
