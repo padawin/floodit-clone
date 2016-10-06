@@ -8,6 +8,8 @@
 
 s_Menu g_hostJoinMenu;
 SDL_Color white = {255, 255, 255};
+SDL_Texture *selectPlayersNumberTexture;
+int g_playersNumber = 2;
 
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
@@ -42,11 +44,24 @@ void _initMenus(s_Game *game) {
 
 void multiplayer_setup_state_clean(s_Game *game) {
 	menu_free(&g_hostJoinMenu);
+	SDL_DestroyTexture(selectPlayersNumberTexture);
 }
 
 void multiplayer_setup_render(s_Game* game) {
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_render(game, &g_hostJoinMenu);
+	}
+	else if (g_localState == STATE_HOST_SETUP) {
+		if (selectPlayersNumberTexture != 0) {
+			SDL_DestroyTexture(selectPlayersNumberTexture);
+		}
+		char txt[19];
+		int textWidth, textHeight;
+		snprintf(txt, 19, "Players: < %d >", g_playersNumber);
+		utils_createTextTexture(game->renderer, game->menuFont, txt, white, &selectPlayersNumberTexture);
+		SDL_QueryTexture(selectPlayersNumberTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect rect = {50, 30, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, selectPlayersNumberTexture, NULL, &rect);
 	}
 }
 
@@ -64,11 +79,11 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 		else if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
 		}
-		else if (key == SDLK_UP) {
-			printf("Increase players number\n");
+		else if (key == SDLK_RIGHT) {
+			g_playersNumber = (g_playersNumber - 2 + 1) % 3 + 2;
 		}
-		else if (key == SDLK_DOWN) {
-			printf("Decrease players number\n");
+		else if (key == SDLK_LEFT) {
+			g_playersNumber = (g_playersNumber - 2 - 1) % 3 + 2;
 		}
 	}
 }
