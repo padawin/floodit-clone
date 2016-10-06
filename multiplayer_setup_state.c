@@ -9,6 +9,7 @@
 s_Menu g_hostJoinMenu;
 
 int STATE_HOST_JOIN = 1;
+int STATE_HOST_SETUP = 2;
 int g_localState;
 
 void _initMenus();
@@ -50,18 +51,30 @@ void multiplayer_setup_render(s_Game* game) {
 }
 
 void multiplayer_setup_handleEvent(s_Game* game, int key) {
-	if (key == SDLK_ESCAPE) {
-		multiplayer_setup_state_clean(game);
-		game_init(game);
-	}
-
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_handleEvent(game, &g_hostJoinMenu, key);
+	}
+	else if (g_localState == STATE_HOST_SETUP) {
+		if (
+			(IS_GCW && key == SDLK_LCTRL)
+			|| (!IS_GCW && key == SDLK_SPACE)
+		) {
+			printf("Host game!\n");
+		}
+		else if (key == SDLK_ESCAPE) {
+			g_localState = STATE_HOST_JOIN;
+		}
+		else if (key == SDLK_UP) {
+			printf("Increase players number\n");
+		}
+		else if (key == SDLK_DOWN) {
+			printf("Decrease players number\n");
+		}
 	}
 }
 
 void _hostGameAction(s_Game *game) {
-	printf("Host Game \n");
+	g_localState = STATE_HOST_SETUP;
 }
 
 void _joinGameAction(s_Game *game) {
