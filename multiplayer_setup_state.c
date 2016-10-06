@@ -7,6 +7,7 @@
 #include "utils.h"
 
 s_Menu g_hostJoinMenu;
+SDL_Color white = {255, 255, 255};
 
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
@@ -28,7 +29,6 @@ void _initMenus(s_Game *game) {
 	SDL_Texture *hostGameTexture, *selectedHostGameTexture,
 		*joinGameTexture, *selectedJoinGameTexture,
 		*backTexture, *selectedBackTexture;
-	SDL_Color white = {255, 255, 255};
 	utils_createTextTexture(game->renderer, game->menuFont, "Host game", white, &hostGameTexture);
 	utils_createTextTexture(game->renderer, game->selectedMenuFont, "Host game", white, &selectedHostGameTexture);
 	utils_createTextTexture(game->renderer, game->menuFont, "Join game", white, &joinGameTexture);
