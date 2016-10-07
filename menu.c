@@ -36,7 +36,6 @@ void menu_render(s_Game* game, s_Menu* menu) {
 }
 
 void menu_setActionsNumber(s_Menu* menu, int nbActions) {
-	menu_free(menu);
 	menu->iNbItems = nbActions;
 	menu->iNbActionsSet = 0;
 	menu->iSelectedItem = 0;
