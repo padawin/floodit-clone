@@ -9,10 +9,6 @@ void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 	) {
 		menu->pActions[menu->iSelectedItem](game);
 	}
-	// exit if ESCAPE is pressed
-	else if (key == SDLK_ESCAPE) {
-		game_setFlag(game, FLAG_DONE);
-	}
 	else if (key == SDLK_UP) {
 		menu->iSelectedItem = (menu->iNbItems + menu->iSelectedItem - 1) % menu->iNbItems;
 	}
