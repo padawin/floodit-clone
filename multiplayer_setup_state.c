@@ -66,8 +66,15 @@ void multiplayer_setup_render(s_Game* game) {
 }
 
 void multiplayer_setup_handleEvent(s_Game* game, int key) {
+
 	if (g_localState == STATE_HOST_JOIN) {
-		menu_handleEvent(game, &g_hostJoinMenu, key);
+		if (key == SDLK_ESCAPE) {
+			multiplayer_setup_state_clean(game);
+			game_init(game);
+		}
+		else {
+			menu_handleEvent(game, &g_hostJoinMenu, key);
+		}
 	}
 	else if (g_localState == STATE_HOST_SETUP) {
 		if (
