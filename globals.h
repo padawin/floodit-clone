@@ -36,4 +36,6 @@
 
 #define MAX_TURNS 25
 
+#define MULTIPLAYER_PORT 1203
+
 #endif

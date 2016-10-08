@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "game.h"
 #include "menu.h"
+#include "multiplayer.h"
 #include "multiplayer_setup_state.h"
 #include "utils.h"
 
@@ -80,7 +81,7 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 			(IS_GCW && key == SDLK_LCTRL)
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
-			printf("Host game!\n");
+			multiplayer_create_server();
 		}
 		else if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
