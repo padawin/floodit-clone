@@ -14,6 +14,7 @@ int g_playersNumber = 2;
 
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
+int STATE_WAIT_FOR_CLIENTS = 3;
 int g_localState;
 
 void _initMenus();
@@ -82,6 +83,7 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
 			multiplayer_create_server();
+			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
 		else if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
