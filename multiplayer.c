@@ -1,5 +1,6 @@
 #include "multiplayer.h"
 #include "globals.h"
+#include "string.h"
 
 char multiplayer_create_server(s_SocketConnection *socketWrapper) {
 	IPaddress ipAddress;
@@ -19,4 +20,14 @@ char multiplayer_create_server(s_SocketConnection *socketWrapper) {
 	}
 
 	return 1;
+}
+
+void multiplayer_check_connections(s_SocketConnection *socket) {
+	socket->connection = SDLNet_TCP_Accept(socket->socket);
+	if (socket->connection != 0) {
+		printf("Client found, send him a message\n");
+		const char *message = "Hello World\n";
+		SDLNet_TCP_Send(socket->connection, message, strlen(message) + 1);
+		SDLNet_TCP_Close(socket->connection);
+	}
 }

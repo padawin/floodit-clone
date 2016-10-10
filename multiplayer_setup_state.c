@@ -49,6 +49,12 @@ void multiplayer_setup_state_clean(s_Game *game) {
 	SDL_DestroyTexture(selectPlayersNumberTexture);
 }
 
+void multiplayer_setup_update(s_Game* game) {
+	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
+		multiplayer_check_connections(&game->socketConnection);
+	}
+}
+
 void multiplayer_setup_render(s_Game* game) {
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_render(game, &g_hostJoinMenu);

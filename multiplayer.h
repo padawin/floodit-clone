@@ -14,5 +14,6 @@ typedef struct {
 } s_SocketConnection;
 
 char multiplayer_create_server(s_SocketConnection *socket);
+void multiplayer_check_connections(s_SocketConnection *socket);
 
 #endif

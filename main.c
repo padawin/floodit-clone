@@ -182,6 +182,9 @@ void handleEvents() {
 }
 
 void update() {
+	if (g_game.iState == STATE_MULTIPLAYER_SETUP) {
+		multiplayer_setup_update(&g_game);
+	}
 }
 
 void render() {
