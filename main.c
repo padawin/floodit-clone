@@ -17,6 +17,7 @@ s_Menu g_mainMenu;
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void initMainMenu();
 void handleEvents();
+void update();
 void render();
 void clean();
 
@@ -57,6 +58,7 @@ int main() {
 	nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
 	while (!game_is(&g_game, FLAG_DONE)) {
 		handleEvents();
+		update();
 		render();
 
 		Uint32 now;
@@ -177,6 +179,9 @@ void handleEvents() {
 		}
 		// end switch
 	} // end of message processing
+}
+
+void update() {
 }
 
 void render() {
