@@ -1,6 +1,5 @@
 #include "multiplayer.h"
 #include "globals.h"
-#include <SDL2/SDL_net.h>
 
 char multiplayer_create_server() {
 	IPaddress ipAddress;
