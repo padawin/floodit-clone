@@ -223,6 +223,7 @@ void clean() {
 	TTF_CloseFont(g_game.highScoreTitleFont);
 	g_game.highScoreTitleFont = NULL;
 	menu_free(&g_mainMenu);
+	SDLNet_TCP_Close(g_game.socketConnection.socket);
 	TTF_Quit();
 	SDLNet_Quit();
 	SDL_Quit();

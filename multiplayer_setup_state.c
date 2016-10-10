@@ -82,7 +82,7 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 			(IS_GCW && key == SDLK_LCTRL)
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
-			multiplayer_create_server();
+			multiplayer_create_server(&game->socketConnection);
 			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
 		else if (key == SDLK_ESCAPE) {

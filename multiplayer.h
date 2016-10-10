@@ -13,6 +13,6 @@ typedef struct {
 	TCPsocket connection;
 } s_SocketConnection;
 
-char multiplayer_create_server();
+char multiplayer_create_server(s_SocketConnection *socket);
 
 #endif

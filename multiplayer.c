@@ -1,7 +1,7 @@
 #include "multiplayer.h"
 #include "globals.h"
 
-char multiplayer_create_server() {
+char multiplayer_create_server(s_SocketConnection *socketWrapper) {
 	IPaddress ipAddress;
 	int success = SDLNet_ResolveHost(&ipAddress, 0, MULTIPLAYER_PORT);
 
@@ -11,10 +11,8 @@ char multiplayer_create_server() {
 	}
 
 	// listen for new connections on 'port'
-	TCPsocket serverSocket;
-	serverSocket = SDLNet_TCP_Open(&ipAddress);
-
-	if (serverSocket == 0) {
+	socketWrapper->socket = SDLNet_TCP_Open(&ipAddress);
+	if (socketWrapper->socket == 0) {
 		printf("Failed to open port for listening: %d\n", MULTIPLAYER_PORT);
 		printf("Error: %s\n", SDLNet_GetError());
 		return 0;
