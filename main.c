@@ -17,6 +17,7 @@ s_Menu g_mainMenu;
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void initMainMenu();
 void handleEvents();
+void update();
 void render();
 void clean();
 
@@ -57,6 +58,7 @@ int main() {
 	nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
 	while (!game_is(&g_game, FLAG_DONE)) {
 		handleEvents();
+		update();
 		render();
 
 		Uint32 now;
@@ -179,6 +181,12 @@ void handleEvents() {
 	} // end of message processing
 }
 
+void update() {
+	if (g_game.iState == STATE_MULTIPLAYER_SETUP) {
+		multiplayer_setup_update(&g_game);
+	}
+}
+
 void render() {
 	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 	SDL_RenderClear(g_game.renderer);
@@ -218,6 +226,7 @@ void clean() {
 	TTF_CloseFont(g_game.highScoreTitleFont);
 	g_game.highScoreTitleFont = NULL;
 	menu_free(&g_mainMenu);
+	SDLNet_TCP_Close(g_game.socketConnection.socket);
 	TTF_Quit();
 	SDLNet_Quit();
 	SDL_Quit();

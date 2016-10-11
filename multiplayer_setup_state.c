@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "game.h"
 #include "menu.h"
+#include "multiplayer.h"
 #include "multiplayer_setup_state.h"
 #include "utils.h"
 
@@ -13,6 +14,7 @@ int g_playersNumber = 2;
 
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
+int STATE_WAIT_FOR_CLIENTS = 3;
 int g_localState;
 
 void _initMenus();
@@ -45,6 +47,12 @@ void _initMenus(s_Game *game) {
 void multiplayer_setup_state_clean(s_Game *game) {
 	menu_free(&g_hostJoinMenu);
 	SDL_DestroyTexture(selectPlayersNumberTexture);
+}
+
+void multiplayer_setup_update(s_Game* game) {
+	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
+		multiplayer_check_connections(&game->socketConnection);
+	}
 }
 
 void multiplayer_setup_render(s_Game* game) {
@@ -80,7 +88,8 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 			(IS_GCW && key == SDLK_LCTRL)
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
-			printf("Host game!\n");
+			multiplayer_create_server(&game->socketConnection);
+			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
 		else if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;

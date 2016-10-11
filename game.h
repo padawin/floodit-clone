@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "globals.h"
+#include "multiplayer.h"
 
 #define FLAG_DONE 0x1
 #define FLAG_NEEDS_RESTART 0x2
@@ -26,6 +27,7 @@ typedef struct {
 	TTF_Font* selectedMenuFont;
 	TTF_Font* highScoreFont;
 	TTF_Font* highScoreTitleFont;
+	s_SocketConnection socketConnection;
 	game_mode mode;
 	Uint32 timeStarted;
 	Uint32 timeFinished;
