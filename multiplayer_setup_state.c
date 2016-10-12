@@ -94,11 +94,11 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 		else if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
 		}
-		else if (key == SDLK_RIGHT) {
-			g_playersNumber = (g_playersNumber - 2 + 1) % 3 + 2;
+		else if (key == SDLK_RIGHT && g_playersNumber < MULTIPLAYER_MAX_PLAYERS_NUMBER) {
+			++g_playersNumber;
 		}
-		else if (key == SDLK_LEFT) {
-			g_playersNumber = (g_playersNumber - 2 - 1) % 3 + 2;
+		else if (key == SDLK_LEFT && g_playersNumber > MULTIPLAYER_MIN_PLAYERS_NUMBER) {
+			--g_playersNumber;
 		}
 	}
 }
