@@ -6,6 +6,7 @@
 typedef enum {CLIENT, SERVER} e_SocketType;
 
 typedef struct {
+	IPaddress ipAddress;
 	e_SocketType type;
 	// current socket
 	TCPsocket socket;
