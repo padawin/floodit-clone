@@ -16,6 +16,7 @@ int g_playersNumber = 2;
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
 int STATE_WAIT_FOR_CLIENTS = 3;
+int STATE_JOIN_SETUP = 4;
 int g_localState;
 
 void _initMenus();
@@ -23,6 +24,7 @@ void _hostGameAction(s_Game *game);
 void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
 void _renderHostJoinMenu();
+void _handleIPSelectionEvent(s_Game *game, int key);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -86,6 +88,9 @@ void multiplayer_setup_render(s_Game* game) {
 			0, 0, 0
 		);
 	}
+	else if (g_localState == STATE_JOIN_SETUP) {
+		printf("Join Game \n");
+	}
 }
 
 void multiplayer_setup_handleEvent(s_Game* game, int key) {
@@ -116,6 +121,14 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 			--g_playersNumber;
 		}
 	}
+	else if (g_localState == STATE_JOIN_SETUP) {
+		if (key == SDLK_ESCAPE) {
+			g_localState = STATE_HOST_JOIN;
+		}
+		else {
+			_handleIPSelectionEvent(game, key);
+		}
+	}
 }
 
 void _hostGameAction(s_Game *game) {
@@ -123,7 +136,7 @@ void _hostGameAction(s_Game *game) {
 }
 
 void _joinGameAction(s_Game *game) {
-	printf("Join Game \n");
+	g_localState = STATE_JOIN_SETUP;
 }
 
 void _backAction(s_Game *game) {
@@ -132,5 +145,9 @@ void _backAction(s_Game *game) {
 }
 
 void _renderHostJoinMenu() {
+
+}
+
+void _handleIPSelectionEvent(s_Game *game, int key) {
 
 }
