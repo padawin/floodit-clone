@@ -78,7 +78,7 @@ void multiplayer_setup_render(s_Game* game) {
 
 		SDL_QueryTexture(selectPlayersNumberTexture, NULL, NULL, &textWidthNumber, &textHeight);
 		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, textHeight};
-		SDL_Rect destRect = {55 + textWidth, 31, 11, textHeight};
+		SDL_Rect destRect = {55 + textWidth, 30, 11, textHeight};
 		SDL_RenderCopyEx(
 			game->renderer,
 			selectPlayersNumberTexture,
