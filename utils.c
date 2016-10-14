@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <SDL2/SDL_image.h>
 
 int utils_popArray(int* array, int* arrayLength) {
 	// swap the first element with the last, reduce the length, return the old
@@ -13,6 +14,18 @@ int utils_popArray(int* array, int* arrayLength) {
 	array[0] = tmp;
 	(*arrayLength) -= 1;
 	return elem;
+}
+
+char utils_loadImageTexture(SDL_Renderer *renderer, const char *fileName, SDL_Texture **texture) {
+	SDL_Surface* tempSurface = IMG_Load(fileName);
+	if (tempSurface == 0) {
+		return 0;
+	}
+
+	*texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
+	SDL_FreeSurface(tempSurface);
+	// everything went ok, add the texture to our list
+	return texture != 0;
 }
 
 void utils_createTextTexture(
