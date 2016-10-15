@@ -10,7 +10,7 @@
 s_Menu g_hostJoinMenu;
 SDL_Color white = {255, 255, 255};
 SDL_Texture *selectPlayersTexture;
-SDL_Texture *selectPlayersNumberTexture;
+SDL_Texture *selectNumberTexture;
 int g_playersNumber = 2;
 
 int STATE_HOST_JOIN = 1;
@@ -53,12 +53,12 @@ void _initMenus(s_Game *game) {
 		white,
 		&selectPlayersTexture
 	);
-	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectPlayersNumberTexture);
+	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectNumberTexture);
 }
 
 void multiplayer_setup_state_clean(s_Game *game) {
 	menu_free(&g_hostJoinMenu);
-	SDL_DestroyTexture(selectPlayersNumberTexture);
+	SDL_DestroyTexture(selectNumberTexture);
 	SDL_DestroyTexture(selectPlayersTexture);
 }
 
@@ -78,12 +78,12 @@ void multiplayer_setup_render(s_Game* game) {
 		SDL_Rect rect = {50, 30, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, selectPlayersTexture, NULL, &rect);
 
-		SDL_QueryTexture(selectPlayersNumberTexture, NULL, NULL, &textWidthNumber, &textHeight);
+		SDL_QueryTexture(selectNumberTexture, NULL, NULL, &textWidthNumber, &textHeight);
 		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, textHeight};
 		SDL_Rect destRect = {55 + textWidth, 30, 11, textHeight};
 		SDL_RenderCopyEx(
 			game->renderer,
-			selectPlayersNumberTexture,
+			selectNumberTexture,
 			&srcRect, &destRect,
 			0, 0, 0
 		);
