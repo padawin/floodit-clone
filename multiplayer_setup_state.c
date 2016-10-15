@@ -10,6 +10,7 @@
 s_Menu g_hostJoinMenu;
 SDL_Color white = {255, 255, 255};
 SDL_Texture *selectPlayersTexture;
+SDL_Texture *serverIPTexture;
 SDL_Texture *selectNumberTexture;
 int g_playersNumber = 2;
 
@@ -53,6 +54,14 @@ void _initMenus(s_Game *game) {
 		white,
 		&selectPlayersTexture
 	);
+
+	utils_createTextTexture(
+		game->renderer,
+		game->menuFont,
+		"Server IP:",
+		white,
+		&serverIPTexture
+	);
 	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectNumberTexture);
 }
 
@@ -60,6 +69,7 @@ void multiplayer_setup_state_clean(s_Game *game) {
 	menu_free(&g_hostJoinMenu);
 	SDL_DestroyTexture(selectNumberTexture);
 	SDL_DestroyTexture(selectPlayersTexture);
+	SDL_DestroyTexture(serverIPTexture);
 }
 
 void multiplayer_setup_update(s_Game* game) {
@@ -69,11 +79,11 @@ void multiplayer_setup_update(s_Game* game) {
 }
 
 void multiplayer_setup_render(s_Game* game) {
+	int textWidth, textHeight;
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_render(game, &g_hostJoinMenu);
 	}
 	else if (g_localState == STATE_HOST_SETUP) {
-		int textWidth, textHeight;
 		SDL_QueryTexture(selectPlayersTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect rect = {50, 30, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, selectPlayersTexture, NULL, &rect);
@@ -88,7 +98,20 @@ void multiplayer_setup_render(s_Game* game) {
 		);
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
-		printf("Join Game \n");
+		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect rect = {50, 30, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, serverIPTexture, NULL, &rect);
+
+		if (IS_GCW) {
+			SDL_Rect srcRect = {0, 30, 69, 120};
+			SDL_Rect destRect = {(SCREEN_WIDTH - 69) / 2, 100, 69, 120};
+			SDL_RenderCopyEx(
+				game->renderer,
+				selectNumberTexture,
+				&srcRect, &destRect,
+				0, 0, 0
+			);
+		}
 	}
 }
 
