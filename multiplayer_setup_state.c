@@ -13,6 +13,10 @@ SDL_Texture *selectPlayersTexture;
 SDL_Texture *serverIPTexture;
 SDL_Texture *selectNumberTexture;
 int g_playersNumber = 2;
+int g_IPKeyboardSelectedValue = 0;
+int g_keypadWidth = 3,
+	g_keypadHeight = 4,
+	g_keypadLength = 11;
 
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
@@ -111,6 +115,19 @@ void multiplayer_setup_render(s_Game* game) {
 				&srcRect, &destRect,
 				0, 0, 0
 			);
+
+			SDL_Rect srcSelectRect = {46, 0, 23, 30};
+			SDL_Rect destSelectRect = {
+				(SCREEN_WIDTH - 69) / 2 + 23 * (g_IPKeyboardSelectedValue % g_keypadWidth),
+				100 + 30 * (g_IPKeyboardSelectedValue / g_keypadWidth),
+				23, 30
+			};
+			SDL_RenderCopyEx(
+				game->renderer,
+				selectNumberTexture,
+				&srcSelectRect, &destSelectRect,
+				0, 0, 0
+			);
 		}
 	}
 }
@@ -171,5 +188,36 @@ void _renderHostJoinMenu() {
 }
 
 void _handleIPSelectionEvent(s_Game *game, int key) {
+	int x = g_IPKeyboardSelectedValue % g_keypadWidth,
+		y = g_IPKeyboardSelectedValue / g_keypadWidth;
+	if (key == SDLK_RIGHT) {
+		x = (x + 1) % g_keypadWidth;
+	}
+	else if (key == SDLK_LEFT) {
+		x = (g_keypadWidth + x - 1) % g_keypadWidth;
+	}
+	else if (key == SDLK_UP) {
+		y = (g_keypadHeight + y - 1) % g_keypadHeight;
+	}
+	else if (key == SDLK_DOWN) {
+		y = (y + 1) % g_keypadHeight;
+	}
 
+	g_IPKeyboardSelectedValue = (y * g_keypadWidth + x);
+	if (g_IPKeyboardSelectedValue >= g_keypadLength) {
+		switch (key) {
+			case SDLK_RIGHT:
+				g_IPKeyboardSelectedValue -= g_IPKeyboardSelectedValue % g_keypadWidth;
+				break;
+			case SDLK_LEFT:
+				g_IPKeyboardSelectedValue = g_keypadLength - 1;
+				break;
+			case SDLK_UP:
+				g_IPKeyboardSelectedValue -= g_keypadWidth;
+				break;
+			case SDLK_DOWN:
+				g_IPKeyboardSelectedValue %= g_keypadWidth;
+				break;
+		}
+	}
 }
