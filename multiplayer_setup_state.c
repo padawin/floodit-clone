@@ -73,14 +73,13 @@ void multiplayer_setup_render(s_Game* game) {
 		menu_render(game, &g_hostJoinMenu);
 	}
 	else if (g_localState == STATE_HOST_SETUP) {
-		int textWidth, textWidthNumber, textHeight;
+		int textWidth, textHeight;
 		SDL_QueryTexture(selectPlayersTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect rect = {50, 30, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, selectPlayersTexture, NULL, &rect);
 
-		SDL_QueryTexture(selectNumberTexture, NULL, NULL, &textWidthNumber, &textHeight);
-		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, textHeight};
-		SDL_Rect destRect = {55 + textWidth, 30, 11, textHeight};
+		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, 30};
+		SDL_Rect destRect = {55 + textWidth, 30, 11, 30};
 		SDL_RenderCopyEx(
 			game->renderer,
 			selectNumberTexture,
