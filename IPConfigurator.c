@@ -32,3 +32,14 @@ char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t
 
 	return 1;
 }
+
+void IPConfigurator_toString(s_IpAddressConfigurator *configurator, char *ip) {
+	snprintf(
+		ip, 16,
+		"%d.%d.%d.%d",
+		255 & (configurator->ipAddress >> 24),
+		255 & (configurator->ipAddress >> 16),
+		255 & (configurator->ipAddress >> 8),
+		255 & configurator->ipAddress
+	);
+}

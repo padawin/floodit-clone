@@ -12,6 +12,7 @@ s_Menu g_hostJoinMenu;
 SDL_Color white = {255, 255, 255};
 SDL_Texture *selectPlayersTexture;
 SDL_Texture *serverIPTexture;
+SDL_Texture *IPTexture;
 SDL_Texture *selectNumberTexture;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -33,7 +34,8 @@ void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
 void _renderHostJoinMenu();
 void _handleIPSelectionEvent(s_Game *game, int key);
-char _addDigitToIP();
+char _addDigitToIP(s_Game *game);
+void _createIPTexture(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -78,6 +80,7 @@ void multiplayer_setup_state_clean(s_Game *game) {
 	SDL_DestroyTexture(selectNumberTexture);
 	SDL_DestroyTexture(selectPlayersTexture);
 	SDL_DestroyTexture(serverIPTexture);
+	SDL_DestroyTexture(IPTexture);
 }
 
 void multiplayer_setup_update(s_Game* game) {
@@ -109,6 +112,10 @@ void multiplayer_setup_render(s_Game* game) {
 		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect rect = {50, 30, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, serverIPTexture, NULL, &rect);
+
+		SDL_QueryTexture(IPTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect IPRect = {50, 60, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, IPTexture, NULL, &IPRect);
 
 		if (IS_GCW) {
 			SDL_Rect srcRect = {0, 30, 69, 120};
@@ -181,6 +188,7 @@ void _hostGameAction(s_Game *game) {
 void _joinGameAction(s_Game *game) {
 	g_localState = STATE_JOIN_SETUP;
 	g_IPConfigurator = IPConfigurator_create();
+	_createIPTexture(game);
 }
 
 void _backAction(s_Game *game) {
@@ -196,7 +204,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	int x = g_IPKeyboardSelectedValue % g_keypadWidth,
 		y = g_IPKeyboardSelectedValue / g_keypadWidth;
 	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
-		_addDigitToIP();
+		_addDigitToIP(game);
 		return;
 	}
 	else if (key == SDLK_RIGHT) {
@@ -231,10 +239,28 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	}
 }
 
-char _addDigitToIP() {
+char _addDigitToIP(s_Game *game) {
 	IPConfigurator_addChar(
 		&g_IPConfigurator,
 		g_ipCharMapping[g_IPKeyboardSelectedValue]
 	);
+
+	_createIPTexture(game);
 	return 0;
+}
+
+void _createIPTexture(s_Game *game) {
+	if (IPTexture != 0) {
+		SDL_DestroyTexture(IPTexture);
+	}
+
+	char ip[16];
+	IPConfigurator_toString(&g_IPConfigurator, ip);
+	utils_createTextTexture(
+		game->renderer,
+		game->menuFont,
+		ip,
+		white,
+		&IPTexture
+	);
 }
