@@ -15,6 +15,7 @@ SDL_Texture *serverIPTexture;
 SDL_Texture *selectNumberTexture;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
+uint8_t g_ipCharMapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.'};
 int g_keypadWidth = 3,
 	g_keypadHeight = 4,
 	g_keypadLength = 11;
@@ -32,6 +33,7 @@ void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
 void _renderHostJoinMenu();
 void _handleIPSelectionEvent(s_Game *game, int key);
+char _addDigitToIP();
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -193,7 +195,11 @@ void _renderHostJoinMenu() {
 void _handleIPSelectionEvent(s_Game *game, int key) {
 	int x = g_IPKeyboardSelectedValue % g_keypadWidth,
 		y = g_IPKeyboardSelectedValue / g_keypadWidth;
-	if (key == SDLK_RIGHT) {
+	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
+		_addDigitToIP();
+		return;
+	}
+	else if (key == SDLK_RIGHT) {
 		x = (x + 1) % g_keypadWidth;
 	}
 	else if (key == SDLK_LEFT) {
@@ -223,4 +229,12 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 				break;
 		}
 	}
+}
+
+char _addDigitToIP() {
+	IPConfigurator_addChar(
+		&g_IPConfigurator,
+		g_ipCharMapping[g_IPKeyboardSelectedValue]
+	);
+	return 0;
 }
