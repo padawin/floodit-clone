@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "game.h"
 #include "menu.h"
+#include "IPConfigurator.h"
 #include "multiplayer.h"
 #include "multiplayer_setup_state.h"
 #include "utils.h"
@@ -10,19 +11,29 @@
 s_Menu g_hostJoinMenu;
 SDL_Color white = {255, 255, 255};
 SDL_Texture *selectPlayersTexture;
-SDL_Texture *selectPlayersNumberTexture;
+SDL_Texture *serverIPTexture;
+SDL_Texture *IPTexture;
+SDL_Texture *selectNumberTexture;
 int g_playersNumber = 2;
+int g_IPKeyboardSelectedValue = 0;
+uint8_t g_ipCharMapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.'};
+int g_keypadWidth = 3,
+	g_keypadHeight = 4;
+s_IpAddressConfigurator g_IPConfigurator;
 
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
 int STATE_WAIT_FOR_CLIENTS = 3;
+int STATE_JOIN_SETUP = 4;
 int g_localState;
 
 void _initMenus();
 void _hostGameAction(s_Game *game);
 void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
-void _renderHostJoinMenu();
+void _handleIPSelectionEvent(s_Game *game, int key);
+char _addDigitToIP(s_Game *game);
+void _createIPTexture(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -51,13 +62,23 @@ void _initMenus(s_Game *game) {
 		white,
 		&selectPlayersTexture
 	);
-	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectPlayersNumberTexture);
+
+	utils_createTextTexture(
+		game->renderer,
+		game->menuFont,
+		"Server IP:",
+		white,
+		&serverIPTexture
+	);
+	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectNumberTexture);
 }
 
 void multiplayer_setup_state_clean(s_Game *game) {
 	menu_free(&g_hostJoinMenu);
-	SDL_DestroyTexture(selectPlayersNumberTexture);
+	SDL_DestroyTexture(selectNumberTexture);
 	SDL_DestroyTexture(selectPlayersTexture);
+	SDL_DestroyTexture(serverIPTexture);
+	SDL_DestroyTexture(IPTexture);
 }
 
 void multiplayer_setup_update(s_Game* game) {
@@ -67,24 +88,56 @@ void multiplayer_setup_update(s_Game* game) {
 }
 
 void multiplayer_setup_render(s_Game* game) {
+	int textWidth, textHeight;
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_render(game, &g_hostJoinMenu);
 	}
 	else if (g_localState == STATE_HOST_SETUP) {
-		int textWidth, textWidthNumber, textHeight;
 		SDL_QueryTexture(selectPlayersTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect rect = {50, 30, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, selectPlayersTexture, NULL, &rect);
 
-		SDL_QueryTexture(selectPlayersNumberTexture, NULL, NULL, &textWidthNumber, &textHeight);
-		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, textHeight};
-		SDL_Rect destRect = {55 + textWidth, 30, 11, textHeight};
+		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, 30};
+		SDL_Rect destRect = {55 + textWidth, 30, 11, 30};
 		SDL_RenderCopyEx(
 			game->renderer,
-			selectPlayersNumberTexture,
+			selectNumberTexture,
 			&srcRect, &destRect,
 			0, 0, 0
 		);
+	}
+	else if (g_localState == STATE_JOIN_SETUP) {
+		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect rect = {50, 30, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, serverIPTexture, NULL, &rect);
+
+		SDL_QueryTexture(IPTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect IPRect = {50, 60, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, IPTexture, NULL, &IPRect);
+
+		if (IS_GCW) {
+			SDL_Rect srcRect = {0, 30, 69, 120};
+			SDL_Rect destRect = {(SCREEN_WIDTH - 69) / 2, 100, 69, 120};
+			SDL_RenderCopyEx(
+				game->renderer,
+				selectNumberTexture,
+				&srcRect, &destRect,
+				0, 0, 0
+			);
+
+			SDL_Rect srcSelectRect = {46, 0, 23, 30};
+			SDL_Rect destSelectRect = {
+				(SCREEN_WIDTH - 69) / 2 + 23 * (g_IPKeyboardSelectedValue % g_keypadWidth),
+				100 + 30 * (g_IPKeyboardSelectedValue / g_keypadWidth),
+				23, 30
+			};
+			SDL_RenderCopyEx(
+				game->renderer,
+				selectNumberTexture,
+				&srcSelectRect, &destSelectRect,
+				0, 0, 0
+			);
+		}
 	}
 }
 
@@ -103,7 +156,7 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 			(IS_GCW && key == SDLK_LCTRL)
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
-			multiplayer_create_server(&game->socketConnection);
+			multiplayer_create_connection(&game->socketConnection, 0);
 			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
 		else if (key == SDLK_ESCAPE) {
@@ -116,6 +169,14 @@ void multiplayer_setup_handleEvent(s_Game* game, int key) {
 			--g_playersNumber;
 		}
 	}
+	else if (g_localState == STATE_JOIN_SETUP) {
+		if (key == SDLK_ESCAPE) {
+			g_localState = STATE_HOST_JOIN;
+		}
+		else {
+			_handleIPSelectionEvent(game, key);
+		}
+	}
 }
 
 void _hostGameAction(s_Game *game) {
@@ -123,7 +184,9 @@ void _hostGameAction(s_Game *game) {
 }
 
 void _joinGameAction(s_Game *game) {
-	printf("Join Game \n");
+	g_localState = STATE_JOIN_SETUP;
+	g_IPConfigurator = IPConfigurator_create();
+	_createIPTexture(game);
 }
 
 void _backAction(s_Game *game) {
@@ -131,6 +194,62 @@ void _backAction(s_Game *game) {
 	game_init(game);
 }
 
-void _renderHostJoinMenu() {
+void _handleIPSelectionEvent(s_Game *game, int key) {
+	int x = g_IPKeyboardSelectedValue % g_keypadWidth,
+		y = g_IPKeyboardSelectedValue / g_keypadWidth;
+	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
+		if (_addDigitToIP(game)) {
+			char ip[16];
+			IPConfigurator_toString(
+				&g_IPConfigurator,
+				ip
+			);
+			multiplayer_create_connection(&game->socketConnection, ip);
+		}
+		return;
+	}
+	else if (key == SDLK_RIGHT) {
+		x = (x + 1) % g_keypadWidth;
+	}
+	else if (key == SDLK_LEFT) {
+		x = (g_keypadWidth + x - 1) % g_keypadWidth;
+	}
+	else if (key == SDLK_UP) {
+		y = (g_keypadHeight + y - 1) % g_keypadHeight;
+	}
+	else if (key == SDLK_DOWN) {
+		y = (y + 1) % g_keypadHeight;
+	}
 
+	g_IPKeyboardSelectedValue = (y * g_keypadWidth + x);
+}
+
+char _addDigitToIP(s_Game *game) {
+	if (g_IPKeyboardSelectedValue == 11) {
+		return 1;
+	}
+
+	IPConfigurator_addChar(
+		&g_IPConfigurator,
+		g_ipCharMapping[g_IPKeyboardSelectedValue]
+	);
+
+	_createIPTexture(game);
+	return 0;
+}
+
+void _createIPTexture(s_Game *game) {
+	if (IPTexture != 0) {
+		SDL_DestroyTexture(IPTexture);
+	}
+
+	char ip[16];
+	IPConfigurator_toString(&g_IPConfigurator, ip);
+	utils_createTextTexture(
+		game->renderer,
+		game->menuFont,
+		ip,
+		white,
+		&IPTexture
+	);
 }
