@@ -32,7 +32,6 @@ void _initMenus();
 void _hostGameAction(s_Game *game);
 void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
-void _renderHostJoinMenu();
 void _handleIPSelectionEvent(s_Game *game, int key);
 char _addDigitToIP(s_Game *game);
 void _createIPTexture(s_Game *game);
@@ -194,10 +193,6 @@ void _joinGameAction(s_Game *game) {
 void _backAction(s_Game *game) {
 	multiplayer_setup_state_clean(game);
 	game_init(game);
-}
-
-void _renderHostJoinMenu() {
-
 }
 
 void _handleIPSelectionEvent(s_Game *game, int key) {
