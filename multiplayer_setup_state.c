@@ -198,7 +198,14 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	int x = g_IPKeyboardSelectedValue % g_keypadWidth,
 		y = g_IPKeyboardSelectedValue / g_keypadWidth;
 	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
-		_addDigitToIP(game);
+		if (_addDigitToIP(game)) {
+			char ip[16];
+			IPConfigurator_toString(
+				&g_IPConfigurator,
+				ip
+			);
+			multiplayer_create_connection(&game->socketConnection, ip);
+		}
 		return;
 	}
 	else if (key == SDLK_RIGHT) {
