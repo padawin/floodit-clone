@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "game.h"
 #include "menu.h"
+#include "IPConfigurator.h"
 #include "multiplayer.h"
 #include "multiplayer_setup_state.h"
 #include "utils.h"
@@ -17,6 +18,7 @@ int g_IPKeyboardSelectedValue = 0;
 int g_keypadWidth = 3,
 	g_keypadHeight = 4,
 	g_keypadLength = 11;
+s_IpAddressConfigurator g_IPConfigurator;
 
 int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
@@ -176,6 +178,7 @@ void _hostGameAction(s_Game *game) {
 
 void _joinGameAction(s_Game *game) {
 	g_localState = STATE_JOIN_SETUP;
+	g_IPConfigurator = IPConfigurator_create();
 }
 
 void _backAction(s_Game *game) {
