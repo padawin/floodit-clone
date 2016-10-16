@@ -18,8 +18,7 @@ int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
 uint8_t g_ipCharMapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.'};
 int g_keypadWidth = 3,
-	g_keypadHeight = 4,
-	g_keypadLength = 11;
+	g_keypadHeight = 4;
 s_IpAddressConfigurator g_IPConfigurator;
 
 int STATE_HOST_JOIN = 1;
@@ -216,25 +215,13 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	}
 
 	g_IPKeyboardSelectedValue = (y * g_keypadWidth + x);
-	if (g_IPKeyboardSelectedValue >= g_keypadLength) {
-		switch (key) {
-			case SDLK_RIGHT:
-				g_IPKeyboardSelectedValue -= g_IPKeyboardSelectedValue % g_keypadWidth;
-				break;
-			case SDLK_LEFT:
-				g_IPKeyboardSelectedValue = g_keypadLength - 1;
-				break;
-			case SDLK_UP:
-				g_IPKeyboardSelectedValue -= g_keypadWidth;
-				break;
-			case SDLK_DOWN:
-				g_IPKeyboardSelectedValue %= g_keypadWidth;
-				break;
-		}
-	}
 }
 
 char _addDigitToIP(s_Game *game) {
+	if (g_IPKeyboardSelectedValue == 11) {
+		return 1;
+	}
+
 	IPConfigurator_addChar(
 		&g_IPConfigurator,
 		g_ipCharMapping[g_IPKeyboardSelectedValue]
