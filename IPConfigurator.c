@@ -31,7 +31,7 @@ char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t
 	configurator->ipAddress &= ~(255 << shift);
 	configurator->ipAddress |= newValue << shift;
 
-	if (newValue > 25 || c == 0 && !newValue) {
+	if (newValue > 25 || (c == 0 && !newValue)) {
 		configurator->currentQuarter--;
 	}
 
