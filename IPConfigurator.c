@@ -11,7 +11,7 @@ s_IpAddressConfigurator IPConfigurator_create() {
 
 char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t c) {
 	uint8_t quarterValue, newValue, shift;
-	if (configurator->currentQuarter < 0) {
+	if (configurator->currentQuarter <= 0) {
 		return 0;
 	}
 
