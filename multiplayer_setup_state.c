@@ -33,6 +33,7 @@ void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
 void _handleIPSelectionEvent(s_Game *game, int key);
 char _addDigitToIP(s_Game *game);
+void _removeDigitFromIP(s_Game *game);
 void _createIPTexture(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
@@ -200,13 +201,13 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
 		if (_addDigitToIP(game)) {
 			char ip[16];
-			IPConfigurator_toString(
-				&g_IPConfigurator,
-				ip
-			);
+			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 			multiplayer_create_connection(&game->socketConnection, ip);
 		}
 		return;
+	}
+	else if ((IS_GCW && key == SDLK_LSHIFT) || (!IS_GCW && key == SDLK_BACKSPACE)) {
+		_removeDigitFromIP(game);
 	}
 	else if (key == SDLK_RIGHT) {
 		x = (x + 1) % g_keypadWidth;
@@ -238,13 +239,18 @@ char _addDigitToIP(s_Game *game) {
 	return 0;
 }
 
+void _removeDigitFromIP(s_Game *game) {
+	IPConfigurator_removeChar(&g_IPConfigurator);
+	_createIPTexture(game);
+}
+
 void _createIPTexture(s_Game *game) {
 	if (IPTexture != 0) {
 		SDL_DestroyTexture(IPTexture);
 	}
 
 	char ip[16];
-	IPConfigurator_toString(&g_IPConfigurator, ip);
+	IPConfigurator_toString(&g_IPConfigurator, ip, 0);
 	utils_createTextTexture(
 		game->renderer,
 		game->menuFont,
