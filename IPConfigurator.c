@@ -38,6 +38,29 @@ char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t
 	return 1;
 }
 
+void IPConfigurator_removeChar(s_IpAddressConfigurator *configurator) {
+	uint8_t quarterValue, newValue, shift;
+	if (configurator->currentQuarter == 4 && configurator->ipAddress == 0) {
+		return;
+	}
+
+	if (configurator->currentQuarter < 1) {
+		configurator->currentQuarter = 1;
+	}
+
+	shift = (configurator->currentQuarter - 1) * 8;
+	quarterValue = 255 & (configurator->ipAddress >> shift);
+
+	if (quarterValue == 0) {
+		configurator->currentQuarter++;
+		IPConfigurator_removeChar(configurator);
+	}
+
+	newValue = quarterValue / 10;
+	configurator->ipAddress &= ~(255 << shift);
+	configurator->ipAddress |= newValue << shift;
+}
+
 void IPConfigurator_toString(s_IpAddressConfigurator *configurator, char *ip, char full) {
 	if (full) {
 		snprintf(

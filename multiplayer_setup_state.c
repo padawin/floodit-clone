@@ -33,6 +33,7 @@ void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
 void _handleIPSelectionEvent(s_Game *game, int key);
 char _addDigitToIP(s_Game *game);
+void _removeDigitFromIP(s_Game *game);
 void _createIPTexture(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
@@ -205,6 +206,9 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 		}
 		return;
 	}
+	else if ((IS_GCW && key == SDLK_LSHIFT) || (!IS_GCW && key == SDLK_BACKSPACE)) {
+		_removeDigitFromIP(game);
+	}
 	else if (key == SDLK_RIGHT) {
 		x = (x + 1) % g_keypadWidth;
 	}
@@ -233,6 +237,11 @@ char _addDigitToIP(s_Game *game) {
 
 	_createIPTexture(game);
 	return 0;
+}
+
+void _removeDigitFromIP(s_Game *game) {
+	IPConfigurator_removeChar(&g_IPConfigurator);
+	_createIPTexture(game);
 }
 
 void _createIPTexture(s_Game *game) {
