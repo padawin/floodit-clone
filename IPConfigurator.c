@@ -1,4 +1,5 @@
 #include "IPConfigurator.h"
+#include <string.h>
 #include <stdio.h>
 
 s_IpAddressConfigurator IPConfigurator_create() {
@@ -37,13 +38,38 @@ char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t
 	return 1;
 }
 
-void IPConfigurator_toString(s_IpAddressConfigurator *configurator, char *ip) {
-	snprintf(
-		ip, 16,
-		"%d.%d.%d.%d",
-		255 & (configurator->ipAddress >> 24),
-		255 & (configurator->ipAddress >> 16),
-		255 & (configurator->ipAddress >> 8),
-		255 & configurator->ipAddress
-	);
+void IPConfigurator_toString(s_IpAddressConfigurator *configurator, char *ip, char full) {
+	if (full) {
+		snprintf(
+			ip, 16,
+			"%d.%d.%d.%d",
+			255 & (configurator->ipAddress >> 24),
+			255 & (configurator->ipAddress >> 16),
+			255 & (configurator->ipAddress >> 8),
+			255 & configurator->ipAddress
+		);
+		return;
+	}
+
+	int quarter = 4;
+	uint8_t shift, value;
+	char buff[4];
+
+	ip[0] = '\0';
+	while (quarter && quarter >= configurator->currentQuarter) {
+		shift = (quarter - 1) * 8;
+		value = 255 & (configurator->ipAddress >> shift);
+		sprintf(buff, "%d", value);
+		if (value || quarter > configurator->currentQuarter) {
+			strncat(ip, buff, 3);
+		}
+		if (quarter > 1 && quarter > configurator->currentQuarter) {
+			strncat(ip, ".", 1);
+		}
+		--quarter;
+	}
+
+	if (configurator->currentQuarter > 0) {
+		strcat(ip, "_");
+	}
 }

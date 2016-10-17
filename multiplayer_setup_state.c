@@ -200,10 +200,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
 		if (_addDigitToIP(game)) {
 			char ip[16];
-			IPConfigurator_toString(
-				&g_IPConfigurator,
-				ip
-			);
+			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 			multiplayer_create_connection(&game->socketConnection, ip);
 		}
 		return;
@@ -244,7 +241,7 @@ void _createIPTexture(s_Game *game) {
 	}
 
 	char ip[16];
-	IPConfigurator_toString(&g_IPConfigurator, ip);
+	IPConfigurator_toString(&g_IPConfigurator, ip, 0);
 	utils_createTextTexture(
 		game->renderer,
 		game->menuFont,
