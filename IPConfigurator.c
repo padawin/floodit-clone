@@ -23,7 +23,7 @@ char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t
 	shift = (configurator->currentQuarter - 1) * 8;
 	quarterValue = 255 & (configurator->ipAddress >> shift);
 	newValue = quarterValue * 10 + c;
-	if (newValue < quarterValue) {
+	if (newValue < quarterValue || quarterValue > 25) {
 		configurator->currentQuarter--;
 		return IPConfigurator_addChar(configurator, c);
 	}
