@@ -16,6 +16,7 @@ SDL_Texture *selectPlayersTexture;
 SDL_Texture *serverIPTexture;
 SDL_Texture *IPTexture;
 SDL_Texture *selectNumberTexture;
+SDL_Texture *ipsTextures[5];
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -108,6 +109,9 @@ void multiplayer_setup_state_clean(s_Game *game) {
 	SDL_DestroyTexture(serverIPTexture);
 	SDL_DestroyTexture(IPTexture);
 	net_freeIfAddr(g_ifap);
+	while (g_nbIps--) {
+		SDL_DestroyTexture(ipsTextures[g_nbIps]);
+	}
 }
 
 void multiplayer_setup_update(s_Game* game) {
@@ -134,6 +138,14 @@ void multiplayer_setup_render(s_Game* game) {
 			&srcRect, &destRect,
 			0, 0, 0
 		);
+	}
+	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
+		int i, textWidth, textHeight;
+		for (i = 0; i < g_nbIps; ++i) {
+			SDL_QueryTexture(ipsTextures[i], NULL, NULL, &textWidth, &textHeight);
+			SDL_Rect rect = {50, 30 + 24 * i, textWidth, textHeight};
+			SDL_RenderCopy(game->renderer, ipsTextures[i], NULL, &rect);
+		}
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
 		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
