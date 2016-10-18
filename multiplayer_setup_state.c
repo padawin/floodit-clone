@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <ifaddrs.h>
 #include "globals.h"
 #include "game.h"
 #include "menu.h"
@@ -7,6 +8,7 @@
 #include "multiplayer.h"
 #include "multiplayer_setup_state.h"
 #include "utils.h"
+#include "net.h"
 
 s_Menu g_hostJoinMenu;
 SDL_Color white = {255, 255, 255};
@@ -14,6 +16,7 @@ SDL_Texture *selectPlayersTexture;
 SDL_Texture *serverIPTexture;
 SDL_Texture *IPTexture;
 SDL_Texture *selectNumberTexture;
+int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
 uint8_t g_ipCharMapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.'};
@@ -26,8 +29,10 @@ int STATE_HOST_SETUP = 2;
 int STATE_WAIT_FOR_CLIENTS = 3;
 int STATE_JOIN_SETUP = 4;
 int g_localState;
+struct ifaddrs *g_ifap;
 
-void _initMenus();
+void _initMenus(s_Game *game);
+void _initIPs(s_Game *game);
 void _hostGameAction(s_Game *game);
 void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
@@ -38,7 +43,29 @@ void _createIPTexture(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
+	_initIPs(game);
 	g_localState = STATE_HOST_JOIN;
+}
+
+void _initIPs(s_Game *game) {
+	net_getIPs(&g_ifap);
+	g_nbIps = 0;
+	char *interface, *address;
+	while (
+		g_nbIps < 5
+		&& net_getNextIP(&g_ifap, &interface, &address)
+	) {
+		char text[25];
+		snprintf(text, 25, "%s (%s)", address, interface);
+		utils_createTextTexture(
+			game->renderer,
+			game->menuFont,
+			text,
+			white,
+			&ipsTextures[g_nbIps]
+		);
+		++g_nbIps;
+	}
 }
 
 void _initMenus(s_Game *game) {
@@ -80,6 +107,7 @@ void multiplayer_setup_state_clean(s_Game *game) {
 	SDL_DestroyTexture(selectPlayersTexture);
 	SDL_DestroyTexture(serverIPTexture);
 	SDL_DestroyTexture(IPTexture);
+	net_freeIfAddr(g_ifap);
 }
 
 void multiplayer_setup_update(s_Game* game) {
