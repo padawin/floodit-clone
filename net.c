@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <net/if.h>
 #include "net.h"
 
 int net_getIPs(struct ifaddrs **ifap) {
@@ -13,7 +14,10 @@ struct ifaddrs *net_getNextIP(struct ifaddrs **ifap, char **interface, char **ad
     struct sockaddr_in *sa;
 
 	if (*ifap) {
-		if ((*ifap)->ifa_addr->sa_family != AF_INET) {
+		if (
+			(*ifap)->ifa_addr->sa_family != AF_INET
+			|| IFF_LOOPBACK == ((*ifap)->ifa_flags & IFF_LOOPBACK)
+		) {
 			*ifap = (*ifap)->ifa_next;
 			return net_getNextIP(ifap, interface, addr);
 		}
