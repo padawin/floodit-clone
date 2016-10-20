@@ -213,6 +213,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
 			multiplayer_create_connection(&game->socketConnection, 0);
+			game_setFlag(game, FLAG_MULTIPLAYER);
 			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
 		else if (key == SDLK_ESCAPE) {
