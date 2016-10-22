@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "main_menu.h"
+#include "mainmenu.h"
 #include "utils.h"
 #include "high_score.h"
 #include "high_scores_state.h"

@@ -9,7 +9,7 @@
 #define FLAG_DONE 0x1
 #define FLAG_NEEDS_RESTART 0x2
 
-#define STATE_MAIN_MENU 1
+#define STATE_MAINMENU 1
 #define STATE_PLAY 2
 #define STATE_FINISH_WON 3
 #define STATE_FINISH_LOST 4

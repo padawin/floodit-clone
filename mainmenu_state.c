@@ -1,5 +1,5 @@
 #include "mainmenu_state.h"
-#include "main_menu.h"
+#include "mainmenu.h"
 #include "utils.h"
 #include "menu.h"
 

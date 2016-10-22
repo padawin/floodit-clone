@@ -107,7 +107,7 @@ void handleEvents() {
 			// check for keypresses
 			case SDL_KEYDOWN:
 				switch (g_game.iState) {
-					case STATE_MAIN_MENU:
+					case STATE_MAINMENU:
 						mainmenu_state_handleEvent(&g_game, event.key.keysym.sym);
 						break;
 					case STATE_FINISH_WON:
@@ -138,7 +138,7 @@ void render() {
 	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 	SDL_RenderClear(g_game.renderer);
 
-	if (g_game.iState == STATE_MAIN_MENU) {
+	if (g_game.iState == STATE_MAINMENU) {
 		mainmenu_state_render(&g_game);
 	}
 	else if (

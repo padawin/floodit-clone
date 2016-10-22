@@ -31,7 +31,7 @@ void game_init(s_Game *game) {
 	game->colors[5][1] = 255;
 	game->colors[5][2] = 255;
 
-	game->iState = STATE_MAIN_MENU;
+	game->iState = STATE_MAINMENU;
 	game->cFlags = FLAG_NEEDS_RESTART;
 }
 
