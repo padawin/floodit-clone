@@ -7,7 +7,6 @@
 
 SDL_Texture *highScoresTitle;
 SDL_Texture *highScoreTextures[MAX_HIGH_SCORES_NUMBER][2];
-void high_scores_state_clean();
 void format_time(const int time, char timeFormatted[8]);
 
 void high_scores_state_init(s_Game *game) {
