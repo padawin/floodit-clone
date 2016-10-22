@@ -111,7 +111,7 @@ void _initMenus(s_Game *game) {
 	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectNumberTexture);
 }
 
-void multiplayer_setup_state_clean(s_Game *game) {
+void multiplayer_setup_state_clean() {
 	menu_free(&g_hostJoinMenu);
 	SDL_DestroyTexture(selectNumberTexture);
 	SDL_DestroyTexture(selectPlayersTexture);
@@ -245,7 +245,7 @@ void _joinGameAction(s_Game *game) {
 }
 
 void _backAction(s_Game *game) {
-	multiplayer_setup_state_clean(game);
+	multiplayer_setup_state_clean();
 	game_init(game);
 }
 

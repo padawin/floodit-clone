@@ -37,7 +37,7 @@ void play_state_init(s_Game *game) {
 	timerText = 0;
 }
 
-void play_state_clean(s_Game *game) {
+void play_state_clean() {
 	SDL_DestroyTexture(winEndText);
 	SDL_DestroyTexture(loseEndText);
 	SDL_DestroyTexture(restartEndText);
@@ -193,7 +193,7 @@ void play_handleEvent(s_Game* game, int key) {
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
-		play_state_clean(game);
+		play_state_clean();
 		game_init(game);
 	}
 	else if (game->iState == STATE_PLAY) {

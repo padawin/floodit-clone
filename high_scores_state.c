@@ -7,7 +7,7 @@
 
 SDL_Texture *highScoresTitle;
 SDL_Texture *highScoreTextures[MAX_HIGH_SCORES_NUMBER][2];
-void high_scores_state_clean(s_Game *game);
+void high_scores_state_clean();
 void format_time(const int time, char timeFormatted[8]);
 
 void high_scores_state_init(s_Game *game) {
@@ -59,7 +59,7 @@ void format_time(const int time, char timeFormatted[10]) {
 	snprintf(timeFormatted, 10, "%02d:%02d.%03d", min, sec, msec);
 }
 
-void high_scores_state_clean(s_Game *game) {
+void high_scores_state_clean() {
 	int i;
 
 	SDL_DestroyTexture(highScoresTitle);
@@ -106,7 +106,7 @@ void high_scores_render(s_Game* game) {
 void high_scores_handleEvent(s_Game* game, int key) {
 	// exit if ESCAPE is pressed
 	if (key == SDLK_ESCAPE) {
-		high_scores_state_clean(game);
+		high_scores_state_clean();
 		game_init(game);
 	}
 }
