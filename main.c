@@ -5,14 +5,12 @@
 #include "globals.h"
 #include "game.h"
 #include "menu.h"
-#include "utils.h"
-#include "main_menu.h"
+#include "mainmenu_state.h"
 #include "play_state.h"
 #include "high_scores_state.h"
 #include "multiplayer_setup_state.h"
 
 s_Game g_game;
-s_Menu g_mainMenu;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void initMainMenu();
@@ -27,7 +25,7 @@ int main() {
 
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	game_init(&g_game);
-	initMainMenu();
+	mainmenu_state_init(&g_game);
 
 	Uint32 nextFrame;
 	nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
@@ -95,32 +93,6 @@ int initSDL(const char* title, const int x, const int y, const int w, const int 
 	return l_bReturn;
 }
 
-void initMainMenu() {
-	menu_setActionsNumber(&g_mainMenu, 5);
-	SDL_Texture *classicModeTexture, *selectedClassicModeTexture,
-		*timedModeTexture, *selectedTimedModeTexture,
-		*multiplayerModeTexture, *selectedMultiplayerModeTexture,
-		*highScoresTexture, *selectedHighScoresTexture,
-		*quitTexture, *selectedQuitTexture;
-	SDL_Color white = {255, 255, 255};
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Classic Mode", white, &classicModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Classic Mode", white, &selectedClassicModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Timed Mode", white, &timedModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Timed Mode", white, &selectedTimedModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Multiplayer Mode", white, &multiplayerModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Multiplayer Mode", white, &selectedMultiplayerModeTexture);
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "High Scores", white, &highScoresTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "High Scores", white, &selectedHighScoresTexture);
-	utils_createTextTexture(g_game.renderer, g_game.menuFont, "Quit", white, &quitTexture);
-	utils_createTextTexture(g_game.renderer, g_game.selectedMenuFont, "Quit", white, &selectedQuitTexture);
-	menu_addAction(&g_mainMenu, mainmenu_classicMode, classicModeTexture, selectedClassicModeTexture);
-	menu_addAction(&g_mainMenu, mainmenu_timedMode, timedModeTexture, selectedTimedModeTexture);
-	menu_addAction(&g_mainMenu, mainmenu_multiplayerMode, multiplayerModeTexture, selectedMultiplayerModeTexture);
-	menu_addAction(&g_mainMenu, mainmenu_highScores, highScoresTexture, selectedHighScoresTexture);
-	menu_addAction(&g_mainMenu, mainmenu_quit, quitTexture, selectedQuitTexture);
-
-}
-
 void handleEvents() {
 	// message processing loop
 	SDL_Event event;
@@ -136,7 +108,7 @@ void handleEvents() {
 			case SDL_KEYDOWN:
 				switch (g_game.iState) {
 					case STATE_MAIN_MENU:
-						menu_handleEvent(&g_game, &g_mainMenu, event.key.keysym.sym);
+						mainmenu_state_handleEvent(&g_game, event.key.keysym.sym);
 						break;
 					case STATE_FINISH_WON:
 					case STATE_FINISH_LOST:
@@ -167,7 +139,7 @@ void render() {
 	SDL_RenderClear(g_game.renderer);
 
 	if (g_game.iState == STATE_MAIN_MENU) {
-		menu_render(&g_game, &g_mainMenu);
+		mainmenu_state_render(&g_game);
 	}
 	else if (
 		g_game.iState == STATE_PLAY ||
@@ -189,7 +161,7 @@ void render() {
 
 void clean() {
 	game_clean(&g_game);
-	menu_free(&g_mainMenu);
+	mainmenu_state_clean();
 	SDLNet_TCP_Close(g_game.socketConnection.socket);
 	TTF_Quit();
 	SDLNet_Quit();
