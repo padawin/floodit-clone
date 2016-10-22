@@ -46,7 +46,7 @@ void play_state_clean() {
 	SDL_DestroyTexture(timerText);
 }
 
-void play_render(s_Game* game) {
+void play_state_render(s_Game* game) {
 	renderGrid(game);
 	renderCurrentTurn(game);
 	renderControls(game);
@@ -184,7 +184,7 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 }
 
-void play_handleEvent(s_Game* game, int key) {
+void play_state_handleEvent(s_Game* game, int key) {
 	if (
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)

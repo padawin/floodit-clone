@@ -68,7 +68,7 @@ void high_scores_state_clean() {
 	}
 }
 
-void high_scores_render(s_Game* game) {
+void high_scores_state_render(s_Game* game) {
 	int i, textWidth, textHeight,
 		marginTitleX, marginTitleY,
 		marginTimeX, marginTurnsX, marginY;
@@ -102,7 +102,7 @@ void high_scores_render(s_Game* game) {
 	}
 }
 
-void high_scores_handleEvent(s_Game* game, int key) {
+void high_scores_state_handleEvent(s_Game* game, int key) {
 	// exit if ESCAPE is pressed
 	if (key == SDLK_ESCAPE) {
 		high_scores_state_clean();

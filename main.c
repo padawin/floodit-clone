@@ -113,13 +113,13 @@ void handleEvents() {
 					case STATE_FINISH_WON:
 					case STATE_FINISH_LOST:
 					case STATE_PLAY:
-						play_handleEvent(&g_game, event.key.keysym.sym);
+						play_state_handleEvent(&g_game, event.key.keysym.sym);
 						break;
 					case STATE_HIGH_SCORES:
-						high_scores_handleEvent(&g_game, event.key.keysym.sym);
+						high_scores_state_handleEvent(&g_game, event.key.keysym.sym);
 						break;
 					case STATE_MULTIPLAYER_SETUP:
-						multiplayer_setup_handleEvent(&g_game, event.key.keysym.sym);
+						multiplayer_setup_state_handleEvent(&g_game, event.key.keysym.sym);
 						break;
 				}
 				break;
@@ -130,7 +130,7 @@ void handleEvents() {
 
 void update() {
 	if (g_game.iState == STATE_MULTIPLAYER_SETUP) {
-		multiplayer_setup_update(&g_game);
+		multiplayer_setup_state_update(&g_game);
 	}
 }
 
@@ -146,13 +146,13 @@ void render() {
 		g_game.iState == STATE_FINISH_WON ||
 		g_game.iState == STATE_FINISH_LOST
 	) {
-		play_render(&g_game);
+		play_state_render(&g_game);
 	}
 	else if (g_game.iState == STATE_HIGH_SCORES) {
-		high_scores_render(&g_game);
+		high_scores_state_render(&g_game);
 	}
 	else if (g_game.iState == STATE_MULTIPLAYER_SETUP) {
-		multiplayer_setup_render(&g_game);
+		multiplayer_setup_state_render(&g_game);
 	}
 
 	// Render the rect to the screen

@@ -124,13 +124,13 @@ void multiplayer_setup_state_clean() {
 	}
 }
 
-void multiplayer_setup_update(s_Game* game) {
+void multiplayer_setup_state_update(s_Game* game) {
 	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		multiplayer_check_connections(&game->socketConnection);
 	}
 }
 
-void multiplayer_setup_render(s_Game* game) {
+void multiplayer_setup_state_render(s_Game* game) {
 	int textWidth, textHeight;
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_render(game, &g_hostJoinMenu);
@@ -196,7 +196,7 @@ void multiplayer_setup_render(s_Game* game) {
 	}
 }
 
-void multiplayer_setup_handleEvent(s_Game* game, int key) {
+void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 
 	if (g_localState == STATE_HOST_JOIN) {
 		if (key == SDLK_ESCAPE) {
