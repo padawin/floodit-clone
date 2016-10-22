@@ -26,33 +26,8 @@ int main() {
 	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	g_game.scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
-	g_game.endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
-	g_game.menuFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
-	g_game.selectedMenuFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
-	g_game.highScoreTitleFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
-	g_game.highScoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
-	g_game.colors[0][0] = 255;
-	g_game.colors[0][1] = 0;
-	g_game.colors[0][2] = 0;
-	g_game.colors[1][0] = 0;
-	g_game.colors[1][1] = 255;
-	g_game.colors[1][2] = 0;
-	g_game.colors[2][0] = 0;
-	g_game.colors[2][1] = 0;
-	g_game.colors[2][2] = 255;
-	g_game.colors[3][0] = 255;
-	g_game.colors[3][1] = 255;
-	g_game.colors[3][2] = 0;
-	g_game.colors[4][0] = 255;
-	g_game.colors[4][1] = 0;
-	g_game.colors[4][2] = 255;
-	g_game.colors[5][0] = 0;
-	g_game.colors[5][1] = 255;
-	g_game.colors[5][2] = 255;
-
-	initMainMenu();
 	game_init(&g_game);
+	initMainMenu();
 
 	Uint32 nextFrame;
 	nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
