@@ -188,18 +188,7 @@ void render() {
 }
 
 void clean() {
-	TTF_CloseFont(g_game.scoreFont);
-	g_game.scoreFont = NULL;
-	TTF_CloseFont(g_game.endFont);
-	g_game.endFont = NULL;
-	TTF_CloseFont(g_game.menuFont);
-	g_game.menuFont = NULL;
-	TTF_CloseFont(g_game.selectedMenuFont);
-	g_game.selectedMenuFont = NULL;
-	TTF_CloseFont(g_game.highScoreFont);
-	g_game.highScoreFont = NULL;
-	TTF_CloseFont(g_game.highScoreTitleFont);
-	g_game.highScoreTitleFont = NULL;
+	game_clean(&g_game);
 	menu_free(&g_mainMenu);
 	SDLNet_TCP_Close(g_game.socketConnection.socket);
 	TTF_Quit();

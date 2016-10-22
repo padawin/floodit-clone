@@ -40,6 +40,7 @@ typedef struct {
 } s_Game;
 
 void game_init(s_Game *game);
+void game_clean(s_Game *game);
 void game_start(s_Game *game, game_mode mode);
 void game_restart(s_Game *game);
 char game_checkBoard(s_Game* game);
