@@ -4,6 +4,7 @@
 #include "game.h"
 #include "play_state.h"
 #include "utils.h"
+#include "fsm.h"
 
 /**
  * Game font
@@ -200,8 +201,7 @@ void play_state_handleEvent(s_Game* game, int key) {
 	}
 	// exit if ESCAPE is pressed
 	else if (key == SDLK_ESCAPE) {
-		play_state_clean();
-		game_init(game);
+		fsm_setState(game, mainmenu);
 	}
 	else if (g_state == STATE_ONGOING) {
 		if (key == SDLK_UP) {
