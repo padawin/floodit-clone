@@ -10,8 +10,6 @@ typedef struct {
 	e_SocketType type;
 	// current socket
 	TCPsocket socket;
-	// socket which it is connected to
-	TCPsocket connection;
 	SDLNet_SocketSet serverSocketSet;
 	TCPsocket *connectedSockets;
 	int nbConnectedSockets;

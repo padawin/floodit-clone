@@ -28,13 +28,19 @@ void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber) 
 	socketWrapper->connectedSockets = (TCPsocket *) malloc(playersNumber * sizeof(TCPsocket));
 }
 
-void multiplayer_check_connections(s_SocketConnection *socket) {
-	socket->connection = SDLNet_TCP_Accept(socket->socket);
-	if (socket->connection != 0) {
+void multiplayer_check_connections(s_SocketConnection *socketWrapper) {
+	if (socketWrapper->nbConnectedSockets >= socketWrapper->nbMaxSockets) {
+		return;
+	}
+
+	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper->socket);
+	if (socket != 0) {
 		printf("Client found, send him a message\n");
 		const char *message = "Hello World\n";
-		SDLNet_TCP_Send(socket->connection, message, strlen(message) + 1);
-		SDLNet_TCP_Close(socket->connection);
+		SDLNet_TCP_Send(socket, message, strlen(message) + 1);
+		SDLNet_TCP_AddSocket(socketWrapper->serverSocketSet, socket);
+		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = socket;
+		socketWrapper->nbConnectedSockets++;
 	}
 }
 
