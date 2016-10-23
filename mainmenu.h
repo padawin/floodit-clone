@@ -1,5 +1,5 @@
-#ifndef __MAIN_MENU__
-#define __MAIN_MENU__
+#ifndef __MAINMENU__
+#define __MAINMENU__
 
 #include "game.h"
 #include "menu.h"

@@ -6,12 +6,48 @@
 void generateGrid(s_Game* game);
 
 void game_init(s_Game *game) {
-	game->iState = STATE_MAIN_MENU;
-	game->cFlags = FLAG_NEEDS_RESTART;
+	game->scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	game->endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	game->menuFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	game->selectedMenuFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
+	game->highScoreTitleFont = TTF_OpenFont("ClearSans-Medium.ttf", 24);
+	game->highScoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
+	game->colors[0][0] = 255;
+	game->colors[0][1] = 0;
+	game->colors[0][2] = 0;
+	game->colors[1][0] = 0;
+	game->colors[1][1] = 255;
+	game->colors[1][2] = 0;
+	game->colors[2][0] = 0;
+	game->colors[2][1] = 0;
+	game->colors[2][2] = 255;
+	game->colors[3][0] = 255;
+	game->colors[3][1] = 255;
+	game->colors[3][2] = 0;
+	game->colors[4][0] = 255;
+	game->colors[4][1] = 0;
+	game->colors[4][2] = 255;
+	game->colors[5][0] = 0;
+	game->colors[5][1] = 255;
+	game->colors[5][2] = 255;
+}
+
+void game_clean(s_Game *game) {
+	TTF_CloseFont(game->scoreFont);
+	game->scoreFont = NULL;
+	TTF_CloseFont(game->endFont);
+	game->endFont = NULL;
+	TTF_CloseFont(game->menuFont);
+	game->menuFont = NULL;
+	TTF_CloseFont(game->selectedMenuFont);
+	game->selectedMenuFont = NULL;
+	TTF_CloseFont(game->highScoreFont);
+	game->highScoreFont = NULL;
+	TTF_CloseFont(game->highScoreTitleFont);
+	game->highScoreTitleFont = NULL;
 }
 
 void game_start(s_Game *game, game_mode mode) {
-	game->iState = STATE_PLAY;
 	game->mode = mode;
 	game->timeStarted = 0;
 	game->timeFinished = 0;
@@ -25,7 +61,6 @@ void game_start(s_Game *game, game_mode mode) {
 	// program main loop
 	game->iSelectedColor = 0;
 	game->iTurns = 1;
-	game_unSetFlag(game, FLAG_NEEDS_RESTART);
 }
 
 void game_restart(s_Game *game) {
@@ -147,18 +182,6 @@ void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
 		neighbours[*nbNeighbours][1] = y + 1;
 		(*nbNeighbours) += 1;
 	}
-}
-
-char game_is(s_Game *game, char flag) {
-	return (game->cFlags & flag) == flag;
-}
-
-void game_setFlag(s_Game *game, char flag) {
-	game->cFlags |= flag;
-}
-
-void game_unSetFlag(s_Game *game, char flag) {
-	game->cFlags &= ~flag;
 }
 
 void game_finish(s_Game *game, const char won) {

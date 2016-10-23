@@ -7,6 +7,7 @@
 #include "IPConfigurator.h"
 #include "multiplayer.h"
 #include "multiplayer_setup_state.h"
+#include "fsm.h"
 #include "utils.h"
 #include "net.h"
 
@@ -111,7 +112,7 @@ void _initMenus(s_Game *game) {
 	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectNumberTexture);
 }
 
-void multiplayer_setup_state_clean(s_Game *game) {
+void multiplayer_setup_state_clean() {
 	menu_free(&g_hostJoinMenu);
 	SDL_DestroyTexture(selectNumberTexture);
 	SDL_DestroyTexture(selectPlayersTexture);
@@ -124,13 +125,13 @@ void multiplayer_setup_state_clean(s_Game *game) {
 	}
 }
 
-void multiplayer_setup_update(s_Game* game) {
+void multiplayer_setup_state_update(s_Game* game) {
 	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		multiplayer_check_connections(&game->socketConnection);
 	}
 }
 
-void multiplayer_setup_render(s_Game* game) {
+void multiplayer_setup_state_render(s_Game* game) {
 	int textWidth, textHeight;
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_render(game, &g_hostJoinMenu);
@@ -196,7 +197,7 @@ void multiplayer_setup_render(s_Game* game) {
 	}
 }
 
-void multiplayer_setup_handleEvent(s_Game* game, int key) {
+void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 
 	if (g_localState == STATE_HOST_JOIN) {
 		if (key == SDLK_ESCAPE) {
@@ -245,8 +246,7 @@ void _joinGameAction(s_Game *game) {
 }
 
 void _backAction(s_Game *game) {
-	multiplayer_setup_state_clean(game);
-	game_init(game);
+	fsm_setState(game, mainmenu);
 }
 
 void _handleIPSelectionEvent(s_Game *game, int key) {
