@@ -249,6 +249,11 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			--g_playersNumber;
 		}
 	}
+	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
+		if (key == SDLK_ESCAPE) {
+			g_localState = STATE_HOST_SETUP;
+		}
+	}
 	else if (g_localState == STATE_JOIN_SETUP) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
