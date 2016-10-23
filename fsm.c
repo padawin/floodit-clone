@@ -43,7 +43,7 @@ void _executeCallback(s_Game *game, enum fsm_state_action action) {
 
 void fsm_init(s_Game *game) {
 	g_stateMachine.currentState = FSM_ENTRY_STATE;
-	_executeCallback(game, fsm_state_init);
+	fsm_initState(game);
 }
 
 void fsm_setState(s_Game *game, enum fsm_state_code state) {
