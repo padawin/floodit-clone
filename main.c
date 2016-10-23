@@ -103,8 +103,6 @@ void handleEvents() {
 					case STATE_MAINMENU:
 						mainmenu_state_handleEvent(&g_game, event.key.keysym.sym);
 						break;
-					case STATE_FINISH_WON:
-					case STATE_FINISH_LOST:
 					case STATE_PLAY:
 						play_state_handleEvent(&g_game, event.key.keysym.sym);
 						break;
@@ -134,9 +132,7 @@ void render() {
 		mainmenu_state_render(&g_game);
 	}
 	else if (
-		g_game.iState == STATE_PLAY ||
-		g_game.iState == STATE_FINISH_WON ||
-		g_game.iState == STATE_FINISH_LOST
+		g_game.iState == STATE_PLAY
 	) {
 		play_state_render(&g_game);
 	}

@@ -12,6 +12,12 @@ SDL_Color g_White = {255, 255, 255};
 SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 	*currentTurnText, *timerText;
 
+#define STATE_ONGOING 1
+#define STATE_FINISH_WON 2
+#define STATE_FINISH_LOST 3
+
+int g_state;
+
 void _play(s_Game* game);
 void _renderGrid(s_Game* game);
 void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom);
@@ -35,6 +41,7 @@ void play_state_init(s_Game *game) {
 
 	currentTurnText = 0;
 	timerText = 0;
+	g_state = STATE_ONGOING;
 }
 
 void play_state_clean() {
@@ -55,10 +62,10 @@ void play_state_render(s_Game* game) {
 		_renderTimer(game);
 	}
 
-	if (game->iState == STATE_FINISH_WON) {
+	if (g_state == STATE_FINISH_WON) {
 		_renderEndScreen(game, 1);
 	}
-	else if (game->iState == STATE_FINISH_LOST) {
+	else if (g_state == STATE_FINISH_LOST) {
 		_renderEndScreen(game, 0);
 	}
 }
@@ -196,7 +203,7 @@ void play_state_handleEvent(s_Game* game, int key) {
 		play_state_clean();
 		game_init(game);
 	}
-	else if (game->iState == STATE_PLAY) {
+	else if (g_state == STATE_ONGOING) {
 		if (key == SDLK_UP) {
 			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
 		}
@@ -213,18 +220,19 @@ void play_state_handleEvent(s_Game* game, int key) {
 }
 
 void _play(s_Game* game) {
-	if (game->iState != STATE_PLAY) {
+	if (g_state != STATE_ONGOING) {
 		game_restart(game);
+		g_state = STATE_ONGOING;
 		return;
 	}
 	else if (game_selectColor(game)) {
 		char finished = game_checkBoard(game);
 		if (finished) {
-			game->iState = STATE_FINISH_WON;
+			g_state = STATE_FINISH_WON;
 			game_finish(game, 1);
 		}
 		else if (game->iTurns == MAX_TURNS) {
-			game->iState = STATE_FINISH_LOST;
+			g_state = STATE_FINISH_LOST;
 			game_finish(game, 0);
 		}
 		else {
