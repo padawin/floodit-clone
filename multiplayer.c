@@ -21,6 +21,13 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 	return 1;
 }
 
+void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber) {
+	socketWrapper->serverSocketSet = SDLNet_AllocSocketSet(playersNumber);
+	socketWrapper->nbMaxSockets = playersNumber;
+	socketWrapper->nbConnectedSockets = 0;
+	socketWrapper->connectedSockets = (TCPsocket *) malloc(playersNumber * sizeof(TCPsocket));
+}
+
 void multiplayer_check_connections(s_SocketConnection *socket) {
 	socket->connection = SDLNet_TCP_Accept(socket->socket);
 	if (socket->connection != 0) {

@@ -49,6 +49,13 @@ void game_clean(s_Game *game) {
 
 	if (game_is(game, FLAG_MULTIPLAYER)) {
 		multiplayer_close_connection(game->socketConnection.socket);
+		while (game->socketConnection.nbConnectedSockets--) {
+			SDLNet_TCP_Close(game->socketConnection.connectedSockets[game->nbConnectedSockets]);
+		}
+
+		free(game->socketConnection.connectedSockets);
+		SDLNet_FreeSocketSet(game->socketConnection.serverSocketSet);
+		game->socketConnection.serverSocketSet = NULL;
 	}
 }
 

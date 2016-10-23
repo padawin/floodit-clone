@@ -214,6 +214,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 		) {
 			multiplayer_create_connection(&game->socketConnection, 0);
 			game_setFlag(game, FLAG_MULTIPLAYER);
+			multiplayer_initHost(&game->socketConnection, g_playersNumber);
 			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
 		else if (key == SDLK_ESCAPE) {
