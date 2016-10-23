@@ -16,5 +16,6 @@ typedef struct {
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip);
 void multiplayer_check_connections(s_SocketConnection *socket);
+void multiplayer_close_connection(TCPsocket socket);
 
 #endif

@@ -46,6 +46,10 @@ void game_clean(s_Game *game) {
 	game->highScoreFont = NULL;
 	TTF_CloseFont(game->highScoreTitleFont);
 	game->highScoreTitleFont = NULL;
+
+	if (game_is(game, FLAG_MULTIPLAYER)) {
+		multiplayer_close_connection(game->socketConnection.socket);
+	}
 }
 
 void game_start(s_Game *game, game_mode mode) {

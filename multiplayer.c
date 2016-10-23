@@ -30,3 +30,7 @@ void multiplayer_check_connections(s_SocketConnection *socket) {
 		SDLNet_TCP_Close(socket->connection);
 	}
 }
+
+void multiplayer_close_connection(TCPsocket socket) {
+	SDLNet_TCP_Close(socket);
+}
