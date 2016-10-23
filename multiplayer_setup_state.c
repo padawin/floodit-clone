@@ -32,6 +32,7 @@ int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
 int STATE_WAIT_FOR_CLIENTS = 3;
 int STATE_JOIN_SETUP = 4;
+int STATE_WAIT_FOR_GAME = 5;
 int g_localState;
 struct ifaddrs *g_ifap;
 
@@ -286,6 +287,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 			char ip[16];
 			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 			multiplayer_create_connection(&game->socketConnection, ip);
+			g_localState = STATE_WAIT_FOR_GAME;
 		}
 		return;
 	}
