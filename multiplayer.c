@@ -41,3 +41,16 @@ void multiplayer_check_connections(s_SocketConnection *socket) {
 void multiplayer_close_connection(TCPsocket socket) {
 	SDLNet_TCP_Close(socket);
 }
+
+void multiplayer_clean(s_SocketConnection *socketWrapper) {
+	multiplayer_close_connection(socketWrapper->socket);
+	while (socketWrapper->nbConnectedSockets--) {
+		SDLNet_TCP_Close(
+			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
+		);
+	}
+
+	free(socketWrapper->connectedSockets);
+	SDLNet_FreeSocketSet(socketWrapper->serverSocketSet);
+	socketWrapper->serverSocketSet = NULL;
+}
