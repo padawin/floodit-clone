@@ -19,6 +19,7 @@ SDL_Texture *IPTexture;
 SDL_Texture *selectNumberTexture;
 SDL_Texture *hostIpTexture;
 SDL_Texture *ipsTextures[5];
+SDL_Texture *connectedClientsTexture;
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -119,6 +120,7 @@ void multiplayer_setup_state_clean() {
 	SDL_DestroyTexture(serverIPTexture);
 	SDL_DestroyTexture(IPTexture);
 	SDL_DestroyTexture(hostIpTexture);
+	SDL_DestroyTexture(connectedClientsTexture);
 	net_freeIfAddr(g_ifap);
 	while (g_nbIps--) {
 		SDL_DestroyTexture(ipsTextures[g_nbIps]);
@@ -161,6 +163,26 @@ void multiplayer_setup_state_render(s_Game* game) {
 			SDL_Rect rect = {50, 55 + 24 * i, textWidth, textHeight};
 			SDL_RenderCopy(game->renderer, ipsTextures[i], NULL, &rect);
 		}
+
+		char connectedClientsText[25];
+		SDL_DestroyTexture(connectedClientsTexture);
+		snprintf(
+			connectedClientsText,
+			25,
+			"Connected clients: %d / %d",
+			game->socketConnection.nbConnectedSockets,
+			game->socketConnection.nbMaxSockets
+		);
+		utils_createTextTexture(
+			game->renderer,
+			game->menuFont,
+			connectedClientsText,
+			white,
+			&connectedClientsTexture
+		);
+		SDL_QueryTexture(connectedClientsTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect connectedClientsRect = {50, 55 + 24 * g_nbIps + 14, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, connectedClientsTexture, NULL, &connectedClientsRect);
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
 		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
