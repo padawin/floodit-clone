@@ -4,13 +4,10 @@
 #include <stdlib.h>
 #include "globals.h"
 #include "game.h"
-#include "menu.h"
-#include "mainmenu_state.h"
-#include "play_state.h"
-#include "high_scores_state.h"
-#include "multiplayer_setup_state.h"
+#include "fsm.h"
 
 s_Game g_game;
+s_StateMachine g_stateMachine;
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h);
 void initMainMenu();
@@ -25,11 +22,11 @@ int main() {
 
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	game_init(&g_game);
-	mainmenu_state_init(&g_game);
+	fsm_init(&g_game);
 
 	Uint32 nextFrame;
 	nextFrame = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
-	while (!game_is(&g_game, FLAG_DONE)) {
+	while (fsm_isRunning()) {
 		handleEvents();
 		update();
 		render();
@@ -95,64 +92,31 @@ void handleEvents() {
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_QUIT:
-				game_setFlag(&g_game, FLAG_DONE);
+				fsm_setState(&g_game, end);
 				break;
 
 			case SDL_KEYDOWN:
-				switch (g_game.iState) {
-					case STATE_MAINMENU:
-						mainmenu_state_handleEvent(&g_game, event.key.keysym.sym);
-						break;
-					case STATE_FINISH_WON:
-					case STATE_FINISH_LOST:
-					case STATE_PLAY:
-						play_state_handleEvent(&g_game, event.key.keysym.sym);
-						break;
-					case STATE_HIGH_SCORES:
-						high_scores_state_handleEvent(&g_game, event.key.keysym.sym);
-						break;
-					case STATE_MULTIPLAYER_SETUP:
-						multiplayer_setup_state_handleEvent(&g_game, event.key.keysym.sym);
-						break;
-				}
+				fsm_handleEvent(&g_game, event.key.keysym.sym);
 				break;
 		}
 	}
 }
 
 void update() {
-	if (g_game.iState == STATE_MULTIPLAYER_SETUP) {
-		multiplayer_setup_state_update(&g_game);
-	}
+	fsm_update(&g_game);
 }
 
 void render() {
 	SDL_SetRenderDrawColor(g_game.renderer, 0, 0, 0, 255);
 	SDL_RenderClear(g_game.renderer);
 
-	if (g_game.iState == STATE_MAINMENU) {
-		mainmenu_state_render(&g_game);
-	}
-	else if (
-		g_game.iState == STATE_PLAY ||
-		g_game.iState == STATE_FINISH_WON ||
-		g_game.iState == STATE_FINISH_LOST
-	) {
-		play_state_render(&g_game);
-	}
-	else if (g_game.iState == STATE_HIGH_SCORES) {
-		high_scores_state_render(&g_game);
-	}
-	else if (g_game.iState == STATE_MULTIPLAYER_SETUP) {
-		multiplayer_setup_state_render(&g_game);
-	}
+	fsm_render(&g_game);
 
 	SDL_RenderPresent(g_game.renderer);
 }
 
 void clean() {
 	game_clean(&g_game);
-	mainmenu_state_clean();
 	SDLNet_TCP_Close(g_game.socketConnection.socket);
 	TTF_Quit();
 	SDLNet_Quit();

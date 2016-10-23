@@ -7,6 +7,7 @@
 #include "IPConfigurator.h"
 #include "multiplayer.h"
 #include "multiplayer_setup_state.h"
+#include "fsm.h"
 #include "utils.h"
 #include "net.h"
 
@@ -245,8 +246,7 @@ void _joinGameAction(s_Game *game) {
 }
 
 void _backAction(s_Game *game) {
-	multiplayer_setup_state_clean();
-	game_init(game);
+	fsm_setState(game, mainmenu);
 }
 
 void _handleIPSelectionEvent(s_Game *game, int key) {

@@ -30,8 +30,6 @@ void game_init(s_Game *game) {
 	game->colors[5][0] = 0;
 	game->colors[5][1] = 255;
 	game->colors[5][2] = 255;
-
-	game->iState = STATE_MAINMENU;
 }
 
 void game_clean(s_Game *game) {
@@ -50,7 +48,6 @@ void game_clean(s_Game *game) {
 }
 
 void game_start(s_Game *game, game_mode mode) {
-	game->iState = STATE_PLAY;
 	game->mode = mode;
 	game->timeStarted = 0;
 	game->timeFinished = 0;
@@ -185,18 +182,6 @@ void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
 		neighbours[*nbNeighbours][1] = y + 1;
 		(*nbNeighbours) += 1;
 	}
-}
-
-char game_is(s_Game *game, char flag) {
-	return (game->cFlags & flag) == flag;
-}
-
-void game_setFlag(s_Game *game, char flag) {
-	game->cFlags |= flag;
-}
-
-void game_unSetFlag(s_Game *game, char flag) {
-	game->cFlags &= ~flag;
 }
 
 void game_finish(s_Game *game, const char won) {

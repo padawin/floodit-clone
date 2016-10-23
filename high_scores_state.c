@@ -4,6 +4,7 @@
 #include "high_scores_state.h"
 #include "high_score.h"
 #include "utils.h"
+#include "fsm.h"
 
 SDL_Texture *highScoresTitle;
 SDL_Texture *highScoreTextures[MAX_HIGH_SCORES_NUMBER][2];
@@ -105,7 +106,6 @@ void high_scores_state_render(s_Game* game) {
 void high_scores_state_handleEvent(s_Game* game, int key) {
 	// exit if ESCAPE is pressed
 	if (key == SDLK_ESCAPE) {
-		high_scores_state_clean();
-		game_init(game);
+		fsm_setState(game, mainmenu);
 	}
 }
