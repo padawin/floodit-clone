@@ -7,7 +7,6 @@
 #include "multiplayer.h"
 
 #define FLAG_DONE 0x1
-#define FLAG_NEEDS_RESTART 0x2
 
 #define STATE_MAINMENU 1
 #define STATE_PLAY 2

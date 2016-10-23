@@ -32,7 +32,6 @@ void game_init(s_Game *game) {
 	game->colors[5][2] = 255;
 
 	game->iState = STATE_MAINMENU;
-	game->cFlags = FLAG_NEEDS_RESTART;
 }
 
 void game_clean(s_Game *game) {
@@ -65,7 +64,6 @@ void game_start(s_Game *game, game_mode mode) {
 	// program main loop
 	game->iSelectedColor = 0;
 	game->iTurns = 1;
-	game_unSetFlag(game, FLAG_NEEDS_RESTART);
 }
 
 void game_restart(s_Game *game) {
