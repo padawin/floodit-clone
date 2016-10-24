@@ -117,7 +117,6 @@ void render() {
 
 void clean() {
 	game_clean(&g_game);
-	SDLNet_TCP_Close(g_game.socketConnection.socket);
 	TTF_Quit();
 	SDLNet_Quit();
 	SDL_Quit();

@@ -19,6 +19,7 @@ SDL_Texture *IPTexture;
 SDL_Texture *selectNumberTexture;
 SDL_Texture *hostIpTexture;
 SDL_Texture *ipsTextures[5];
+SDL_Texture *connectedClientsTexture;
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -31,6 +32,7 @@ int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
 int STATE_WAIT_FOR_CLIENTS = 3;
 int STATE_JOIN_SETUP = 4;
+int STATE_WAIT_FOR_GAME = 5;
 int g_localState;
 struct ifaddrs *g_ifap;
 
@@ -119,6 +121,7 @@ void multiplayer_setup_state_clean() {
 	SDL_DestroyTexture(serverIPTexture);
 	SDL_DestroyTexture(IPTexture);
 	SDL_DestroyTexture(hostIpTexture);
+	SDL_DestroyTexture(connectedClientsTexture);
 	net_freeIfAddr(g_ifap);
 	while (g_nbIps--) {
 		SDL_DestroyTexture(ipsTextures[g_nbIps]);
@@ -161,6 +164,26 @@ void multiplayer_setup_state_render(s_Game* game) {
 			SDL_Rect rect = {50, 55 + 24 * i, textWidth, textHeight};
 			SDL_RenderCopy(game->renderer, ipsTextures[i], NULL, &rect);
 		}
+
+		char connectedClientsText[25];
+		SDL_DestroyTexture(connectedClientsTexture);
+		snprintf(
+			connectedClientsText,
+			25,
+			"Connected clients: %d / %d",
+			game->socketConnection.nbConnectedSockets,
+			game->socketConnection.nbMaxSockets
+		);
+		utils_createTextTexture(
+			game->renderer,
+			game->menuFont,
+			connectedClientsText,
+			white,
+			&connectedClientsTexture
+		);
+		SDL_QueryTexture(connectedClientsTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect connectedClientsRect = {50, 55 + 24 * g_nbIps + 14, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, connectedClientsTexture, NULL, &connectedClientsRect);
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
 		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
@@ -213,6 +236,8 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
 			multiplayer_create_connection(&game->socketConnection, 0);
+			game_setFlag(game, FLAG_MULTIPLAYER);
+			multiplayer_initHost(&game->socketConnection, g_playersNumber);
 			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
 		else if (key == SDLK_ESCAPE) {
@@ -223,6 +248,11 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 		}
 		else if (key == SDLK_DOWN && g_playersNumber > MULTIPLAYER_MIN_PLAYERS_NUMBER) {
 			--g_playersNumber;
+		}
+	}
+	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
+		if (key == SDLK_ESCAPE) {
+			g_localState = STATE_HOST_SETUP;
 		}
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
@@ -257,6 +287,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 			char ip[16];
 			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 			multiplayer_create_connection(&game->socketConnection, ip);
+			g_localState = STATE_WAIT_FOR_GAME;
 		}
 		return;
 	}

@@ -10,11 +10,16 @@ typedef struct {
 	e_SocketType type;
 	// current socket
 	TCPsocket socket;
-	// socket which it is connected to
-	TCPsocket connection;
+	SDLNet_SocketSet serverSocketSet;
+	TCPsocket *connectedSockets;
+	int nbConnectedSockets;
+	int nbMaxSockets;
 } s_SocketConnection;
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip);
+void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber);
 void multiplayer_check_connections(s_SocketConnection *socket);
+void multiplayer_close_connection(TCPsocket socket);
+void multiplayer_clean(s_SocketConnection *socketWrapper);
 
 #endif
