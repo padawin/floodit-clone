@@ -28,7 +28,9 @@ void (*fsm_state_callbacks[][5])() = {
 		multiplayer_setup_state_update,
 		multiplayer_setup_state_render,
 		multiplayer_setup_state_clean
-	}
+	},
+	// end state
+	{0, 0, 0, 0, 0}
 };
 
 s_StateMachine g_stateMachine;
