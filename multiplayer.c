@@ -66,7 +66,9 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 		);
 	}
 
-	free(socketWrapper->connectedSockets);
+	if (socketWrapper->connectedSockets != 0) {
+		free(socketWrapper->connectedSockets);
+	}
 	SDLNet_FreeSocketSet(socketWrapper->socketSet);
 	socketWrapper->socketSet = NULL;
 }
