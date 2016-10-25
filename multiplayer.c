@@ -22,7 +22,7 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 }
 
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber) {
-	socketWrapper->serverSocketSet = SDLNet_AllocSocketSet(playersNumber);
+	socketWrapper->socketSet = SDLNet_AllocSocketSet(playersNumber);
 	socketWrapper->nbMaxSockets = playersNumber;
 	socketWrapper->nbConnectedSockets = 0;
 	socketWrapper->connectedSockets = (TCPsocket *) malloc(playersNumber * sizeof(TCPsocket));
@@ -38,7 +38,7 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 		printf("Client found, send him a message\n");
 		const char *message = "Hello World\n";
 		SDLNet_TCP_Send(socket, message, strlen(message) + 1);
-		SDLNet_TCP_AddSocket(socketWrapper->serverSocketSet, socket);
+		SDLNet_TCP_AddSocket(socketWrapper->socketSet, socket);
 		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = socket;
 		socketWrapper->nbConnectedSockets++;
 	}
@@ -58,7 +58,7 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	multiplayer_close_connection(socketWrapper->socket);
 	while (socketWrapper->nbConnectedSockets--) {
 		SDLNet_TCP_DelSocket(
-			socketWrapper->serverSocketSet,
+			socketWrapper->socketSet,
 			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
 		);
 		SDLNet_TCP_Close(
@@ -67,6 +67,6 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	}
 
 	free(socketWrapper->connectedSockets);
-	SDLNet_FreeSocketSet(socketWrapper->serverSocketSet);
-	socketWrapper->serverSocketSet = NULL;
+	SDLNet_FreeSocketSet(socketWrapper->socketSet);
+	socketWrapper->socketSet = NULL;
 }
