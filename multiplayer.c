@@ -51,6 +51,10 @@ void multiplayer_close_connection(TCPsocket socket) {
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	multiplayer_close_connection(socketWrapper->socket);
 	while (socketWrapper->nbConnectedSockets--) {
+		SDLNet_TCP_DelSocket(
+			socketWrapper->serverSocketSet,
+			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
+		);
 		SDLNet_TCP_Close(
 			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
 		);
