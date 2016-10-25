@@ -44,6 +44,12 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
+void multiplayer_check_clients(s_SocketConnection *socketWrapper) {
+}
+
+char multiplayer_check_server(s_SocketConnection *socketWrapper) {
+}
+
 void multiplayer_close_connection(TCPsocket socket) {
 	SDLNet_TCP_Close(socket);
 }
