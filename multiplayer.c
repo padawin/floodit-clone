@@ -53,6 +53,34 @@ void multiplayer_check_clients(s_SocketConnection *socketWrapper) {
 }
 
 char multiplayer_check_server(s_SocketConnection *socketWrapper) {
+	int serverActive = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
+	if (serverActive == -1) {
+		// an error occured, it can be read in SDLNet_GetError()
+		return ERROR_CHECK_SERVER;
+	}
+	if (serverActive > 0) {
+		int bufferSize = 255;
+		char buffer[bufferSize];
+
+		int byteCount = SDLNet_TCP_Recv(
+			socketWrapper->socket,
+			buffer,
+			bufferSize
+		);
+
+		if (byteCount < 0) {
+			// an error occured, it can be read in SDLNet_GetError()
+			return ERROR;
+		}
+		else if (byteCount == 0) {
+			return CONNECTION_LOST;
+		}
+		else if (byteCount > 0 && byteCount >= bufferSize) {
+			return TOO_MUCH_DATA_TO_RECEIVE;
+		}
+	}
+
+	return OK;
 }
 
 void multiplayer_close_connection(TCPsocket socket) {

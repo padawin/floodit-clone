@@ -134,7 +134,11 @@ void multiplayer_setup_state_update(s_Game* game) {
 		multiplayer_check_clients(&game->socketConnection);
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
-		multiplayer_check_server(&game->socketConnection);
+		char state = multiplayer_check_server(&game->socketConnection);
+		if (state == CONNECTION_LOST) {
+			multiplayer_clean(&game->socketConnection);
+			g_localState = STATE_HOST_JOIN;
+		}
 	}
 }
 

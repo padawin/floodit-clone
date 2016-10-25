@@ -3,6 +3,12 @@
 
 #include <SDL2/SDL_net.h>
 
+#define OK 0
+#define CONNECTION_LOST 1
+#define ERROR 2
+#define ERROR_CHECK_SERVER 3
+#define TOO_MUCH_DATA_TO_RECEIVE 4
+
 typedef enum {CLIENT, SERVER} e_SocketType;
 
 typedef struct {
