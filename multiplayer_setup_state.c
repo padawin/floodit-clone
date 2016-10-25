@@ -291,6 +291,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 			char ip[16];
 			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 			multiplayer_create_connection(&game->socketConnection, ip);
+			multiplayer_initClient(&game->socketConnection);
 			g_localState = STATE_WAIT_FOR_GAME;
 		}
 		return;

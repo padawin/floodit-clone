@@ -18,6 +18,7 @@ typedef struct {
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip);
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber);
+void multiplayer_initClient(s_SocketConnection *socketWrapper);
 void multiplayer_accept_client(s_SocketConnection *socket);
 void multiplayer_check_clients(s_SocketConnection *socket);
 char multiplayer_check_server(s_SocketConnection *socketWrapper);
