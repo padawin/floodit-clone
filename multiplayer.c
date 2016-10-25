@@ -28,7 +28,7 @@ void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber) 
 	socketWrapper->connectedSockets = (TCPsocket *) malloc(playersNumber * sizeof(TCPsocket));
 }
 
-void multiplayer_check_connections(s_SocketConnection *socketWrapper) {
+void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	if (socketWrapper->nbConnectedSockets >= socketWrapper->nbMaxSockets) {
 		return;
 	}

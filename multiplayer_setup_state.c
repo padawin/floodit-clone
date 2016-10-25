@@ -130,7 +130,7 @@ void multiplayer_setup_state_clean() {
 
 void multiplayer_setup_state_update(s_Game* game) {
 	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
-		multiplayer_check_connections(&game->socketConnection);
+		multiplayer_accept_client(&game->socketConnection);
 	}
 }
 
