@@ -180,7 +180,7 @@ void multiplayer_setup_state_render(s_Game* game) {
 			25,
 			"Connected clients: %d / %d",
 			game->socketConnection.nbConnectedSockets,
-			game->socketConnection.nbMaxSockets
+			game->socketConnection.nbMaxSockets - 1
 		);
 		utils_createTextTexture(
 			game->renderer,
