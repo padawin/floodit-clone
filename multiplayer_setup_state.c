@@ -261,6 +261,8 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_SETUP;
+			multiplayer_clean(&game->socketConnection);
+			game_unSetFlag(game, FLAG_MULTIPLAYER);
 		}
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
