@@ -2,6 +2,8 @@
 #include "globals.h"
 #include "string.h"
 
+void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
+
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip) {
 	int success = SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT);
 
@@ -49,7 +51,52 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
+/**
+ * Check if any client disconnected, if so update the list of sockets and the
+ * set
+ */
 void multiplayer_check_clients(s_SocketConnection *socketWrapper) {
+	int numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
+	while (numSockets > 0) {
+		_removeDisconnectedSockets(socketWrapper);
+		numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
+	}
+
+	if (numSockets == -1) {
+		printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
+	}
+}
+
+void _removeDisconnectedSockets(s_SocketConnection *socketWrapper) {
+	int socket = 0;
+	while (socket < socketWrapper->nbConnectedSockets) {
+		// if this socket has nothing to say, skip it
+		if (!SDLNet_SocketReady(socketWrapper->connectedSockets[socket])) {
+			++socket;
+			continue;
+		}
+
+		int bufferSize = 255;
+		char buffer[bufferSize];
+		int byteCount = SDLNet_TCP_Recv(
+			socketWrapper->connectedSockets[socket],
+			buffer,
+			bufferSize
+		);
+		if (byteCount) {
+			++socket;
+			continue;
+		}
+
+		SDLNet_TCP_DelSocket(
+			socketWrapper->socketSet,
+			socketWrapper->connectedSockets[socket]
+		);
+		SDLNet_TCP_Close(socketWrapper->connectedSockets[socket]);
+		--socketWrapper->nbConnectedSockets;
+		socketWrapper->connectedSockets[socket] = socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets];
+		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = 0;
+	}
 }
 
 char multiplayer_check_server(s_SocketConnection *socketWrapper) {
