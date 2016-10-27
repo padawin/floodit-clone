@@ -30,7 +30,7 @@ void multiplayer_initClient(s_SocketConnection *socketWrapper) {
 
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber) {
 	socketWrapper->socketSet = SDLNet_AllocSocketSet(playersNumber);
-	socketWrapper->nbMaxSockets = playersNumber;
+	socketWrapper->nbMaxSockets = playersNumber - 1;
 	socketWrapper->nbConnectedSockets = 0;
 	socketWrapper->connectedSockets = (TCPsocket *) malloc(playersNumber * sizeof(TCPsocket));
 }
