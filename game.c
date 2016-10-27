@@ -31,6 +31,7 @@ void game_init(s_Game *game) {
 	game->colors[5][1] = 255;
 	game->colors[5][2] = 255;
 	game->cFlags = 0;
+	game->mode = MODE_CLASSIC;
 }
 
 void game_clean(s_Game *game) {
@@ -52,12 +53,11 @@ void game_clean(s_Game *game) {
 	}
 }
 
-void game_start(s_Game *game, game_mode mode) {
-	game->mode = mode;
+void game_start(s_Game *game) {
 	game->timeStarted = 0;
 	game->timeFinished = 0;
 
-	if (mode == MODE_TIMED) {
+	if (game->mode == MODE_TIMED) {
 		game->timeStarted = SDL_GetTicks();
 	}
 
@@ -69,7 +69,7 @@ void game_start(s_Game *game, game_mode mode) {
 }
 
 void game_restart(s_Game *game) {
-	game_start(game, game->mode);
+	game_start(game);
 }
 
 void generateGrid(s_Game* game) {
@@ -199,6 +199,10 @@ void game_setFlag(s_Game *game, char flag) {
 
 void game_unSetFlag(s_Game *game, char flag) {
 	game->cFlags &= ~flag;
+}
+
+void game_setMode(s_Game *game, game_mode mode) {
+	game->mode = mode;
 }
 
 void game_finish(s_Game *game, const char won) {

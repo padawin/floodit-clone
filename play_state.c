@@ -43,6 +43,7 @@ void play_state_init(s_Game *game) {
 	currentTurnText = 0;
 	timerText = 0;
 	g_state = STATE_ONGOING;
+	game_start(game);
 }
 
 void play_state_clean() {
