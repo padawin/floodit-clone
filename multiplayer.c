@@ -152,3 +152,7 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	SDLNet_FreeSocketSet(socketWrapper->socketSet);
 	socketWrapper->socketSet = NULL;
 }
+
+char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
+	return socketWrapper.nbConnectedSockets == socketWrapper.nbMaxSockets;
+}

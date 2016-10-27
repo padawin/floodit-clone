@@ -132,6 +132,10 @@ void multiplayer_setup_state_update(s_Game* game) {
 	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		multiplayer_accept_client(&game->socketConnection);
 		multiplayer_check_clients(&game->socketConnection);
+
+		if (multiplayer_is_room_full(game->socketConnection)) {
+			fsm_setState(game, play);
+		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
 		char state = multiplayer_check_server(&game->socketConnection);
