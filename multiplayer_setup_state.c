@@ -244,7 +244,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
 			multiplayer_create_connection(&game->socketConnection, 0);
-			game_setFlag(game, FLAG_MULTIPLAYER);
+			game_setMode(game, MODE_MULTIPLAYER);
 			multiplayer_initHost(&game->socketConnection, g_playersNumber);
 			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
@@ -262,7 +262,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_SETUP;
 			multiplayer_clean(&game->socketConnection);
-			game_unSetFlag(game, FLAG_MULTIPLAYER);
+			game_setMode(game, MODE_CLASSIC);
 		}
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
