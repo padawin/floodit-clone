@@ -42,9 +42,6 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 
 	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper->socket);
 	if (socket != 0) {
-		printf("Client found, send him a message\n");
-		const char *message = "Hello World\n";
-		multiplayer_send_message(socket, (void*) message, (size_t) strlen(message) + 1);
 		SDLNet_TCP_AddSocket(socketWrapper->socketSet, socket);
 		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = socket;
 		socketWrapper->nbConnectedSockets++;
