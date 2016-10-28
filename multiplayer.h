@@ -31,5 +31,6 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper);
 void multiplayer_close_connection(TCPsocket socket);
 void multiplayer_clean(s_SocketConnection *socketWrapper);
 char multiplayer_is_room_full(s_SocketConnection socketWrapper);
+void multiplayer_send_message(TCPsocket socket, void* message, size_t size);
 
 #endif

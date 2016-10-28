@@ -44,7 +44,7 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	if (socket != 0) {
 		printf("Client found, send him a message\n");
 		const char *message = "Hello World\n";
-		SDLNet_TCP_Send(socket, message, strlen(message) + 1);
+		multiplayer_send_message(socket, (void*) message, (size_t) strlen(message) + 1);
 		SDLNet_TCP_AddSocket(socketWrapper->socketSet, socket);
 		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = socket;
 		socketWrapper->nbConnectedSockets++;
@@ -155,4 +155,8 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 
 char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
 	return socketWrapper.nbConnectedSockets == socketWrapper.nbMaxSockets;
+}
+
+void multiplayer_send_message(TCPsocket socket, void* message, size_t size) {
+	SDLNet_TCP_Send(socket, message, size);
 }
