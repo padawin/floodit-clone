@@ -6,9 +6,9 @@ OPTS := -g -O2 -Wall
 LIB := -lSDL2 -lSDL2_ttf
 CC := $(CROSS_COMPILE)gcc
 
-SYSROOT := $(shell $(CC) --print-sysroot)
-CFLAGS += $(shell $(SYSROOT)/usr/bin/sdl2-config --cflags)
-LDFLAGS += $(shell $(SYSROOT)/usr/bin/sdl2-config --libs)
+SDL2CONF = $(shell which sdl2-config)
+CFLAGS += $(shell $(SDL2CONF) --cflags)
+LDFLAGS += $(shell $(SDL2CONF) --libs)
 
 $(TARGET): $(OBJS)
 	    $(CC) $(OPTS) $(CFLAGS) $^ -o $(NAME) $(LIB)
