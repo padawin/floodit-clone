@@ -60,7 +60,7 @@ void play_state_render(s_Game* game) {
 	_renderCurrentTurn(game);
 	_renderControls(game);
 
-	if (game->mode == MODE_TIMED) {
+	if (game_is(game, MODE_TIMED)) {
 		_renderTimer(game);
 	}
 

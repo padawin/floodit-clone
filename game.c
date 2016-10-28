@@ -57,7 +57,7 @@ void game_start(s_Game *game) {
 	game->timeStarted = 0;
 	game->timeFinished = 0;
 
-	if (game->mode == MODE_TIMED) {
+	if (game_is(game, MODE_TIMED)) {
 		game->timeStarted = SDL_GetTicks();
 	}
 
@@ -211,7 +211,7 @@ void game_setMode(s_Game *game, game_mode mode) {
 }
 
 void game_finish(s_Game *game, const char won) {
-	if (game->mode == MODE_TIMED) {
+	if (game_is(game, MODE_TIMED)) {
 		game->timeFinished = SDL_GetTicks();
 		if (won) {
 			high_score_save(game->timeFinished - game->timeStarted, game->iTurns);
