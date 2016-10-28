@@ -22,10 +22,6 @@ console's website), then:
 
 	make gcw CROSS_COMPILE=/opt/gcw0-toolchain/usr/bin/mipsel-linux-
 
-To compile on OSX:
-
-	gcc -Wall -g -framework SDL2 -framework SDL2_ttf *.c -o floodit
-
 To package for the gcw zero, you will need the package squashfs-tools, then run
 
 	make opk
