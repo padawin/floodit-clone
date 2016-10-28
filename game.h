@@ -26,6 +26,7 @@ typedef struct {
 	int colors[NB_COLORS][3];
 	int iTurns;
 	int iSelectedColor;
+	int currentPlayerIndex;
 } s_Game;
 
 void game_init(s_Game *game);

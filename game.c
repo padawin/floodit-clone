@@ -4,6 +4,7 @@
 #include "high_score.h"
 
 void generateGrid(s_Game* game);
+void _generateFirstPlayer(s_Game *game);
 
 void game_init(s_Game *game) {
 	game->scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
@@ -65,6 +66,19 @@ void game_start(s_Game *game) {
 	// program main loop
 	game->iSelectedColor = 0;
 	game->iTurns = 1;
+
+	_generateFirstPlayer(game);
+}
+
+void _generateFirstPlayer(s_Game *game) {
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		game->currentPlayerIndex = 0;
+	}
+	else {
+		time_t t;
+		srand((unsigned) time(&t));
+		game->currentPlayerIndex = rand() % game->socketConnection.nbConnectedSockets + 1;
+	}
 }
 
 void game_restart(s_Game *game) {
