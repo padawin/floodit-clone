@@ -214,7 +214,7 @@ char _computePacket(s_TCPpacket packet, char *message, size_t *size) {
 			++(*size);
 		}
 		else {
-			message[current + 2] = '\0';
+			message[current + 2] = 0;
 		}
 	}
 
