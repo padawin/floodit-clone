@@ -151,6 +151,9 @@ void multiplayer_setup_state_update(s_Game* game) {
 			multiplayer_clean(&game->socketConnection);
 			g_localState = STATE_HOST_JOIN;
 		}
+		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GAME_START) {
+			fsm_setState(game, play);
+		}
 	}
 }
 
