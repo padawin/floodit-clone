@@ -4,6 +4,7 @@
 #include "high_score.h"
 #include "multiplayer.h"
 
+char _spreadColor(s_Game *game);
 void generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _broadcastGrid(s_Game *game);
@@ -171,18 +172,24 @@ char game_checkBoard(s_Game* game) {
 }
 
 char game_selectColor(s_Game* game) {
+	char ret = _spreadColor(game);
+
+	return ret;
+}
+
+char _spreadColor(s_Game *game) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
-	int oldColor = game->grid[0][0];
-	int i, j, nbToVisit, selectedColor;
-	selectedColor = game->iSelectedColor;
-	if (selectedColor == oldColor) {
-		return 0;
-	}
-
+	int i, j, nbToVisit, selectedColor, oldColor;
 	int *toVisit;
 	int **visited;
 
+	oldColor = game->grid[0][0];
+	if (game->iSelectedColor == oldColor) {
+		return 0;
+	}
+
+	selectedColor = game->iSelectedColor;
 	visited = (int **) malloc(HEIGHT_GRID * sizeof(int *));
 	for (i = 0; i < HEIGHT_GRID; i++) {
 		visited[i] = (int *) malloc(WIDTH_GRID * sizeof(int));
@@ -228,6 +235,7 @@ char game_selectColor(s_Game* game) {
 	}
 	free(visited);
 	free(toVisit);
+
 	return 1;
 }
 
