@@ -43,6 +43,7 @@ void play_state_init(s_Game *game) {
 	currentTurnText = 0;
 	timerText = 0;
 	g_state = STATE_ONGOING;
+	game_start(game);
 }
 
 void play_state_clean() {
@@ -54,12 +55,34 @@ void play_state_clean() {
 	SDL_DestroyTexture(timerText);
 }
 
+void play_state_update(s_Game *game) {
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		return;
+	}
+
+	if (game->socketConnection.type == CLIENT) {
+		s_TCPpacket packet;
+		char state = multiplayer_check_server(&game->socketConnection, &packet);
+		if (state == CONNECTION_LOST) {
+			fsm_setState(game, mainmenu);
+		}
+		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
+			game_setGrid(game, packet);
+			game->receivedGrid = 1;
+		}
+	}
+}
+
 void play_state_render(s_Game* game) {
+	if (!game->receivedGrid) {
+		return;
+	}
+
 	_renderGrid(game);
 	_renderCurrentTurn(game);
 	_renderControls(game);
 
-	if (game->mode == MODE_TIMED) {
+	if (game_is(game, MODE_TIMED)) {
 		_renderTimer(game);
 	}
 
@@ -112,8 +135,8 @@ void _renderCurrentTurn(s_Game* game) {
 
 void _renderGrid(s_Game* game) {
 	int i, j, margin = 1;
-	for (j = 0; j < HEIGHT_GRID; ++j){
-		for (i = 0; i < WIDTH_GRID; ++i){
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
 			SDL_Rect r;
 			int cR, cG,cB;
 			r.x = margin + i * WIDTH_GRID_PX;
@@ -134,7 +157,7 @@ void _renderControls(s_Game* game) {
 	int c,
 		thicknessSelectedX = (SELECTED_WIDTH_CONTROL_PX - WIDTH_CONTROL_PX) / 2,
 		thicknessSelectedY = (SELECTED_HEIGHT_CONTROL_PX - HEIGHT_CONTROL_PX) / 2;
-	for (c = 0; c < NB_COLORS; ++c){
+	for (c = 0; c < NB_COLORS; ++c) {
 		SDL_Rect r;
 		int cR, cG, cB;
 		if (c == game->iSelectedColor) {
@@ -193,15 +216,17 @@ void _renderEndScreen(s_Game* game, const char won) {
 }
 
 void play_state_handleEvent(s_Game* game, int key) {
-	if (
+	if (key == SDLK_ESCAPE) {
+		fsm_setState(game, mainmenu);
+	}
+	else if (!game->canPlay) {
+		return;
+	}
+	else if (
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
 		_play(game);
-	}
-	// exit if ESCAPE is pressed
-	else if (key == SDLK_ESCAPE) {
-		fsm_setState(game, mainmenu);
 	}
 	else if (g_state == STATE_ONGOING) {
 		if (key == SDLK_UP) {

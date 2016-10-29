@@ -2,13 +2,13 @@
 #include "fsm.h"
 
 void mainmenu_classicMode(s_Game* game) {
+	game_setMode(game, MODE_CLASSIC);
 	fsm_setState(game, play);
-	game_start(game, MODE_CLASSIC);
 }
 
 void mainmenu_timedMode(s_Game* game) {
+	game_setMode(game, MODE_TIMED);
 	fsm_setState(game, play);
-	game_start(game, MODE_TIMED);
 }
 
 void mainmenu_multiplayerMode(s_Game* game) {

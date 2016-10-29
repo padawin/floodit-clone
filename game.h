@@ -6,9 +6,10 @@
 #include "globals.h"
 #include "multiplayer.h"
 
-#define FLAG_MULTIPLAYER 0x1
+#define MULTIPLAYER_MESSAGE_TYPE_GAME_START 0
+#define MULTIPLAYER_MESSAGE_TYPE_GRID 2
 
-typedef enum {MODE_CLASSIC, MODE_TIMED} game_mode;
+typedef enum {MODE_CLASSIC, MODE_TIMED, MODE_MULTIPLAYER} game_mode;
 
 typedef struct {
 	SDL_Renderer* renderer;
@@ -27,20 +28,22 @@ typedef struct {
 	int colors[NB_COLORS][3];
 	int iTurns;
 	int iSelectedColor;
-	char cFlags;
+	int currentPlayerIndex;
+	char canPlay;
+	char receivedGrid;
 } s_Game;
 
 void game_init(s_Game *game);
 void game_clean(s_Game *game);
-void game_start(s_Game *game, game_mode mode);
+void game_start(s_Game *game);
 void game_restart(s_Game *game);
 char game_checkBoard(s_Game* game);
 char game_selectColor(s_Game* game);
 void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
-char game_is(s_Game *game, char flag);
-void game_setFlag(s_Game *game, char flag);
-void game_unSetFlag(s_Game *game, char flag);
+char game_is(s_Game *game, game_mode mode);
+void game_setMode(s_Game* game, game_mode mode);
 void game_finish(s_Game *game, const char won);
 void game_getTimer(s_Game *game, char *timer);
+void game_setGrid(s_Game* game, s_TCPpacket packet);
 
 #endif

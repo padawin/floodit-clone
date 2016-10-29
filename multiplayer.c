@@ -3,6 +3,8 @@
 #include "string.h"
 
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
+char _computePacket(s_TCPpacket packet, char *message);
+void _parsePacket(s_TCPpacket *packet, char *message);
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip) {
 	int success = SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT);
@@ -26,13 +28,15 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 void multiplayer_initClient(s_SocketConnection *socketWrapper) {
 	socketWrapper->socketSet = SDLNet_AllocSocketSet(1);
 	SDLNet_TCP_AddSocket(socketWrapper->socketSet, socketWrapper->socket);
+	socketWrapper->type = CLIENT;
 }
 
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber) {
 	socketWrapper->socketSet = SDLNet_AllocSocketSet(playersNumber);
-	socketWrapper->nbMaxSockets = playersNumber;
+	socketWrapper->nbMaxSockets = playersNumber - 1;
 	socketWrapper->nbConnectedSockets = 0;
 	socketWrapper->connectedSockets = (TCPsocket *) malloc(playersNumber * sizeof(TCPsocket));
+	socketWrapper->type = SERVER;
 }
 
 void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
@@ -42,9 +46,6 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 
 	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper->socket);
 	if (socket != 0) {
-		printf("Client found, send him a message\n");
-		const char *message = "Hello World\n";
-		SDLNet_TCP_Send(socket, message, strlen(message) + 1);
 		SDLNet_TCP_AddSocket(socketWrapper->socketSet, socket);
 		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = socket;
 		socketWrapper->nbConnectedSockets++;
@@ -99,21 +100,21 @@ void _removeDisconnectedSockets(s_SocketConnection *socketWrapper) {
 	}
 }
 
-char multiplayer_check_server(s_SocketConnection *socketWrapper) {
+char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *packet) {
 	int serverActive = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
 	if (serverActive == -1) {
 		// an error occured, it can be read in SDLNet_GetError()
 		return ERROR_CHECK_SERVER;
 	}
 	if (serverActive > 0) {
-		int bufferSize = 255;
-		char buffer[bufferSize];
-
+		char message[TCP_PACKET_MAX_SIZE];
+		size_t size = TCP_PACKET_MAX_SIZE;
 		int byteCount = SDLNet_TCP_Recv(
 			socketWrapper->socket,
-			buffer,
-			bufferSize
+			message,
+			size
 		);
+		_parsePacket(packet, message);
 
 		if (byteCount < 0) {
 			// an error occured, it can be read in SDLNet_GetError()
@@ -122,8 +123,13 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper) {
 		else if (byteCount == 0) {
 			return CONNECTION_LOST;
 		}
-		else if (byteCount > 0 && byteCount >= bufferSize) {
-			return TOO_MUCH_DATA_TO_RECEIVE;
+		else if (byteCount > 0) {
+			if (byteCount > size) {
+				return TOO_MUCH_DATA_TO_RECEIVE;
+			}
+			else {
+				return MESSAGE_RECEIVED;
+			}
 		}
 	}
 
@@ -151,4 +157,63 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	}
 	SDLNet_FreeSocketSet(socketWrapper->socketSet);
 	socketWrapper->socketSet = NULL;
+}
+
+char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
+	return socketWrapper.nbConnectedSockets == socketWrapper.nbMaxSockets;
+}
+
+void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet) {
+	int s;
+	for (s = 0; s < socketWrapper.nbConnectedSockets; ++s) {
+		multiplayer_send_message(socketWrapper.connectedSockets[s], packet);
+	}
+}
+
+void multiplayer_send_message(TCPsocket socket, s_TCPpacket packet) {
+	char message[TCP_PACKET_MAX_SIZE];
+	if (_computePacket(packet, message) != 0) {
+		printf("Packet size too large\n");
+	}
+	else {
+		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
+	}
+}
+
+void _parsePacket(s_TCPpacket *packet, char *message) {
+	packet->type = message[0];
+	packet->size = message[1];
+
+	int current;
+	for (current = 0; current < TCP_PACKET_DATA_MAX_SIZE; ++current) {
+		if (current < packet->size) {
+			packet->data[current] = message[current + 2];
+		}
+		else {
+			packet->data[current] = '\0';
+		}
+	}
+}
+
+char _computePacket(s_TCPpacket packet, char *message) {
+	if (packet.size > TCP_PACKET_DATA_MAX_SIZE) {
+		return -1;
+	}
+
+	// packet.size does not include the header (1 char for the type + 1 char
+	// for the size)
+	message[0] = packet.type;
+	message[1] = packet.size;
+
+	int current;
+	for (current = 0; current < TCP_PACKET_DATA_MAX_SIZE; ++current) {
+		if (current < packet.size) {
+			message[current + 2] = packet.data[current];
+		}
+		else {
+			message[current + 2] = 0;
+		}
+	}
+
+	return 0;
 }

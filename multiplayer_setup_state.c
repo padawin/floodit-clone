@@ -20,6 +20,7 @@ SDL_Texture *selectNumberTexture;
 SDL_Texture *hostIpTexture;
 SDL_Texture *ipsTextures[5];
 SDL_Texture *connectedClientsTexture;
+SDL_Texture *waitForGameTexture;
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -49,6 +50,7 @@ void _createIPTexture(s_Game *game);
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
 	_initIPs(game);
+	utils_createTextTexture(game->renderer, game->menuFont, "Wait for game to start...", white, &waitForGameTexture);
 	g_localState = STATE_HOST_JOIN;
 }
 
@@ -122,6 +124,7 @@ void multiplayer_setup_state_clean() {
 	SDL_DestroyTexture(IPTexture);
 	SDL_DestroyTexture(hostIpTexture);
 	SDL_DestroyTexture(connectedClientsTexture);
+	SDL_DestroyTexture(waitForGameTexture);
 	net_freeIfAddr(g_ifap);
 	while (g_nbIps--) {
 		SDL_DestroyTexture(ipsTextures[g_nbIps]);
@@ -132,12 +135,24 @@ void multiplayer_setup_state_update(s_Game* game) {
 	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		multiplayer_accept_client(&game->socketConnection);
 		multiplayer_check_clients(&game->socketConnection);
+
+		if (multiplayer_is_room_full(game->socketConnection)) {
+			s_TCPpacket packet;
+			packet.type = MULTIPLAYER_MESSAGE_TYPE_GAME_START;
+			packet.size = 0;
+			multiplayer_broadcast(game->socketConnection, packet);
+			fsm_setState(game, play);
+		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
-		char state = multiplayer_check_server(&game->socketConnection);
+		s_TCPpacket packet;
+		char state = multiplayer_check_server(&game->socketConnection, &packet);
 		if (state == CONNECTION_LOST) {
 			multiplayer_clean(&game->socketConnection);
 			g_localState = STATE_HOST_JOIN;
+		}
+		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GAME_START) {
+			fsm_setState(game, play);
 		}
 	}
 }
@@ -180,7 +195,7 @@ void multiplayer_setup_state_render(s_Game* game) {
 			25,
 			"Connected clients: %d / %d",
 			game->socketConnection.nbConnectedSockets,
-			game->socketConnection.nbMaxSockets - 1
+			game->socketConnection.nbMaxSockets
 		);
 		utils_createTextTexture(
 			game->renderer,
@@ -226,6 +241,12 @@ void multiplayer_setup_state_render(s_Game* game) {
 			);
 		}
 	}
+	else if (g_localState == STATE_WAIT_FOR_GAME) {
+		int textWidth, textHeight;
+		SDL_QueryTexture(waitForGameTexture, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect rect = {50, 30, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, waitForGameTexture, NULL, &rect);
+	}
 }
 
 void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
@@ -244,7 +265,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
 			multiplayer_create_connection(&game->socketConnection, 0);
-			game_setFlag(game, FLAG_MULTIPLAYER);
+			game_setMode(game, MODE_MULTIPLAYER);
 			multiplayer_initHost(&game->socketConnection, g_playersNumber);
 			g_localState = STATE_WAIT_FOR_CLIENTS;
 		}
@@ -262,7 +283,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_SETUP;
 			multiplayer_clean(&game->socketConnection);
-			game_unSetFlag(game, FLAG_MULTIPLAYER);
+			game_setMode(game, MODE_CLASSIC);
 		}
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
@@ -299,6 +320,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 			multiplayer_create_connection(&game->socketConnection, ip);
 			multiplayer_initClient(&game->socketConnection);
 			g_localState = STATE_WAIT_FOR_GAME;
+			game_setMode(game, MODE_MULTIPLAYER);
 		}
 		return;
 	}
