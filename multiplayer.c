@@ -166,17 +166,21 @@ char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
 void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet) {
 	int s;
 	for (s = 0; s < socketWrapper.nbConnectedSockets; ++s) {
-		multiplayer_send_message(socketWrapper.connectedSockets[s], packet);
+		multiplayer_send_message(socketWrapper, s, packet);
 	}
 }
 
-void multiplayer_send_message(TCPsocket socket, s_TCPpacket packet) {
+void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex, s_TCPpacket packet) {
 	char message[TCP_PACKET_MAX_SIZE];
 	if (_computePacket(packet, message) != 0) {
 		printf("Packet size too large\n");
 	}
 	else {
-		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
+		SDLNet_TCP_Send(
+			socketWrapper.connectedSockets[socketIndex],
+			message,
+			TCP_PACKET_MAX_SIZE
+		);
 	}
 }
 
