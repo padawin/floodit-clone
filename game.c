@@ -62,13 +62,15 @@ void game_start(s_Game *game) {
 		game->timeStarted = SDL_GetTicks();
 	}
 
-	generateGrid(game);
+	char isMultiplayer = game_is(game, MODE_MULTIPLAYER);
+	if (!isMultiplayer || (isMultiplayer && game->socketConnection.type == SERVER)) {
+		generateGrid(game);
+		_generateFirstPlayer(game);
+	}
 
 	// program main loop
 	game->iSelectedColor = 0;
 	game->iTurns = 1;
-
-	_generateFirstPlayer(game);
 }
 
 void _generateFirstPlayer(s_Game *game) {
