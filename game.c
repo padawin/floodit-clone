@@ -80,6 +80,17 @@ void game_start(s_Game *game) {
 		if (game->currentPlayerIndex == 0) {
 			game->canPlay = 1;
 		}
+		else {
+			// notify first player
+			s_TCPpacket packet;
+			packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
+			packet.size = 0;
+			multiplayer_send_message(
+				game->socketConnection,
+				game->currentPlayerIndex - 1,
+				packet
+			);
+		}
 	}
 
 	// program main loop

@@ -66,9 +66,14 @@ void play_state_update(s_Game *game) {
 		if (state == CONNECTION_LOST) {
 			fsm_setState(game, mainmenu);
 		}
-		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
-			game_setGrid(game, packet);
-			game->receivedGrid = 1;
+		else if (state == MESSAGE_RECEIVED) {
+			if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
+				game_setGrid(game, packet);
+				game->receivedGrid = 1;
+			}
+			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+				game->canPlay = 1;
+			}
 		}
 	}
 }
