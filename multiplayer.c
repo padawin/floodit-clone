@@ -3,6 +3,8 @@
 #include "string.h"
 
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
+char _computePacket(s_TCPpacket packet, char *message, size_t *size);
+void _parsePacket(s_TCPpacket *packet, char *message, size_t size);
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip) {
 	int success = SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT);
@@ -98,21 +100,21 @@ void _removeDisconnectedSockets(s_SocketConnection *socketWrapper) {
 	}
 }
 
-char multiplayer_check_server(s_SocketConnection *socketWrapper) {
+char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *packet) {
 	int serverActive = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
 	if (serverActive == -1) {
 		// an error occured, it can be read in SDLNet_GetError()
 		return ERROR_CHECK_SERVER;
 	}
 	if (serverActive > 0) {
-		int bufferSize = 255;
-		char buffer[bufferSize];
-
+		char message[TCP_PACKET_MAX_SIZE];
+		size_t size = TCP_PACKET_MAX_SIZE;
 		int byteCount = SDLNet_TCP_Recv(
 			socketWrapper->socket,
-			buffer,
-			bufferSize
+			(void *) message,
+			size
 		);
+		_parsePacket(packet, message, size);
 
 		if (byteCount < 0) {
 			// an error occured, it can be read in SDLNet_GetError()
@@ -156,6 +158,53 @@ char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
 	return socketWrapper.nbConnectedSockets == socketWrapper.nbMaxSockets;
 }
 
-void multiplayer_send_message(TCPsocket socket, void* message, size_t size) {
-	SDLNet_TCP_Send(socket, message, size);
+void multiplayer_send_message(TCPsocket socket, s_TCPpacket packet) {
+	char message[TCP_PACKET_MAX_SIZE];
+	size_t size = 0;
+	if (_computePacket(packet, message, &size) != 0) {
+		printf("Packet size too large\n");
+	}
+	else {
+		SDLNet_TCP_Send(socket, message, size);
+	}
+}
+
+void _parsePacket(s_TCPpacket *packet, char *message, size_t size) {
+	packet->type = message[0];
+	packet->size = message[1];
+
+	int current;
+	for (current = 0; current < TCP_PACKET_DATA_MAX_SIZE; ++current) {
+		if (current < packet->size) {
+			packet->data[current] = message[current + 2];
+		}
+		else {
+			packet->data[current] = '\0';
+		}
+	}
+}
+
+char _computePacket(s_TCPpacket packet, char *message, size_t *size) {
+	if (packet.size > TCP_PACKET_DATA_MAX_SIZE) {
+		return -1;
+	}
+
+	// packet.size does not include the header (1 char for the type + 1 char
+	// for the size)
+	message[0] = packet.type;
+	message[1] = packet.size;
+	*size = 2;
+
+	int current;
+	for (current = 0; current < TCP_PACKET_DATA_MAX_SIZE; ++current) {
+		if (current < packet.size) {
+			message[current + 2] = packet.data[current];
+			++(*size);
+		}
+		else {
+			message[current + 2] = '\0';
+		}
+	}
+
+	return 0;
 }
