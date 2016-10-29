@@ -111,7 +111,7 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 		size_t size = TCP_PACKET_MAX_SIZE;
 		int byteCount = SDLNet_TCP_Recv(
 			socketWrapper->socket,
-			(void *) message,
+			message,
 			size
 		);
 		_parsePacket(packet, message);
