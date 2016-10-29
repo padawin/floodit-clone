@@ -255,7 +255,7 @@ void _play(s_Game* game) {
 		g_state = STATE_ONGOING;
 		return;
 	}
-	else if (game_selectColor(game)) {
+	else if (game_selectColor(game) > 0) {
 		char finished = game_checkBoard(game);
 		if (finished) {
 			g_state = STATE_FINISH_WON;

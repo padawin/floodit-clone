@@ -172,6 +172,15 @@ char game_checkBoard(s_Game* game) {
 }
 
 char game_selectColor(s_Game* game) {
+	if (game_is(game, MODE_MULTIPLAYER) && game->socketConnection.type == CLIENT) {
+		s_TCPpacket packet;
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
+		packet.size = 1;
+		packet.data[0] = game->iSelectedColor;
+		multiplayer_send_message(game->socketConnection, -1, packet);
+		return -1;
+	}
+
 	char ret = _spreadColor(game, 0, 0);
 
 	return ret;
