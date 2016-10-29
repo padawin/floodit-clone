@@ -55,6 +55,24 @@ void play_state_clean() {
 	SDL_DestroyTexture(timerText);
 }
 
+void play_state_update(s_Game *game) {
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		return;
+	}
+
+	if (game->socketConnection.type == CLIENT) {
+		s_TCPpacket packet;
+		char state = multiplayer_check_server(&game->socketConnection, &packet);
+		if (state == CONNECTION_LOST) {
+			fsm_setState(game, mainmenu);
+		}
+		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
+			game_setGrid(game, packet);
+			game->receivedGrid = 1;
+		}
+	}
+}
+
 void play_state_render(s_Game* game) {
 	if (!game->receivedGrid) {
 		return;

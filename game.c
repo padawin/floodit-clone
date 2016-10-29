@@ -2,9 +2,11 @@
 #include "game.h"
 #include "utils.h"
 #include "high_score.h"
+#include "multiplayer.h"
 
 void generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
+void _broadcastGrid(s_Game *game);
 
 void game_init(s_Game *game) {
 	game->scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
@@ -67,6 +69,12 @@ void game_start(s_Game *game) {
 	game->canPlay = 0;
 	if (!isMultiplayer || (isMultiplayer && game->socketConnection.type == SERVER)) {
 		generateGrid(game);
+
+		if (isMultiplayer) {
+			//send grid to players
+			_broadcastGrid(game);
+		}
+
 		_generateFirstPlayer(game);
 
 		if (game->currentPlayerIndex == 0) {
@@ -77,6 +85,21 @@ void game_start(s_Game *game) {
 	// program main loop
 	game->iSelectedColor = 0;
 	game->iTurns = 1;
+}
+
+void _broadcastGrid(s_Game *game) {
+	s_TCPpacket packet;
+	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
+	packet.size = 196;
+	int i, j;
+
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			packet.data[j * WIDTH_GRID + i] = game->grid[j][i];
+		}
+	}
+
+	multiplayer_broadcast(game->socketConnection, packet);
 }
 
 void _generateFirstPlayer(s_Game *game) {
@@ -102,6 +125,17 @@ void generateGrid(s_Game* game) {
 	for (j = 0; j < HEIGHT_GRID; ++j){
 		for (i = 0; i < WIDTH_GRID; ++i){
 			game->grid[j][i] = rand() % NB_COLORS;
+		}
+	}
+
+	game->receivedGrid = 1;
+}
+
+void game_setGrid(s_Game* game, s_TCPpacket packet) {
+	int i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			game->grid[j][i] = packet.data[j * WIDTH_GRID + i];
 		}
 	}
 

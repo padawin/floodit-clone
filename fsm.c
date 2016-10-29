@@ -11,7 +11,7 @@ void (*fsm_state_callbacks[][5])() = {
 	{
 		play_state_init,
 		play_state_handleEvent,
-		0,
+		play_state_update,
 		play_state_render,
 		play_state_clean
 	},
