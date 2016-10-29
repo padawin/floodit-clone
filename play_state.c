@@ -56,6 +56,10 @@ void play_state_clean() {
 }
 
 void play_state_render(s_Game* game) {
+	if (!game->receivedGrid) {
+		return;
+	}
+
 	_renderGrid(game);
 	_renderCurrentTurn(game);
 	_renderControls(game);

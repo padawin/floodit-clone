@@ -32,6 +32,7 @@ void game_init(s_Game *game) {
 	game->colors[5][1] = 255;
 	game->colors[5][2] = 255;
 	game->mode = MODE_CLASSIC;
+	game->receivedGrid = 0;
 }
 
 void game_clean(s_Game *game) {
@@ -95,6 +96,8 @@ void generateGrid(s_Game* game) {
 			game->grid[j][i] = rand() % NB_COLORS;
 		}
 	}
+
+	game->receivedGrid = 1;
 }
 
 char game_checkBoard(s_Game* game) {

@@ -28,6 +28,7 @@ typedef struct {
 	int iTurns;
 	int iSelectedColor;
 	int currentPlayerIndex;
+	char receivedGrid;
 } s_Game;
 
 void game_init(s_Game *game);
