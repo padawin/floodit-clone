@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "multiplayer.h"
 
+#define MULTIPLAYER_MESSAGE_TYPE_GAME_START 0
 
 typedef enum {MODE_CLASSIC, MODE_TIMED, MODE_MULTIPLAYER} game_mode;
 
