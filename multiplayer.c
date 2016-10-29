@@ -163,6 +163,13 @@ char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
 	return socketWrapper.nbConnectedSockets == socketWrapper.nbMaxSockets;
 }
 
+void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet) {
+	int s;
+	for (s = 0; s < socketWrapper.nbConnectedSockets; ++s) {
+		multiplayer_send_message(socketWrapper.connectedSockets[s], packet);
+	}
+}
+
 void multiplayer_send_message(TCPsocket socket, s_TCPpacket packet) {
 	char message[TCP_PACKET_MAX_SIZE];
 	size_t size = 0;
