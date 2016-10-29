@@ -317,6 +317,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 			multiplayer_create_connection(&game->socketConnection, ip);
 			multiplayer_initClient(&game->socketConnection);
 			g_localState = STATE_WAIT_FOR_GAME;
+			game_setMode(game, MODE_MULTIPLAYER);
 		}
 		return;
 	}
