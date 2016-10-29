@@ -32,6 +32,7 @@ void game_init(s_Game *game) {
 	game->colors[5][1] = 255;
 	game->colors[5][2] = 255;
 	game->mode = MODE_CLASSIC;
+	game->canPlay = 0;
 	game->receivedGrid = 0;
 }
 
@@ -63,9 +64,14 @@ void game_start(s_Game *game) {
 	}
 
 	char isMultiplayer = game_is(game, MODE_MULTIPLAYER);
+	game->canPlay = 0;
 	if (!isMultiplayer || (isMultiplayer && game->socketConnection.type == SERVER)) {
 		generateGrid(game);
 		_generateFirstPlayer(game);
+
+		if (game->currentPlayerIndex == 0) {
+			game->canPlay = 1;
+		}
 	}
 
 	// program main loop

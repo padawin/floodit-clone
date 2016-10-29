@@ -198,15 +198,17 @@ void _renderEndScreen(s_Game* game, const char won) {
 }
 
 void play_state_handleEvent(s_Game* game, int key) {
-	if (
+	if (key == SDLK_ESCAPE) {
+		fsm_setState(game, mainmenu);
+	}
+	else if (!game->canPlay) {
+		return;
+	}
+	else if (
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
 		_play(game);
-	}
-	// exit if ESCAPE is pressed
-	else if (key == SDLK_ESCAPE) {
-		fsm_setState(game, mainmenu);
 	}
 	else if (g_state == STATE_ONGOING) {
 		if (key == SDLK_UP) {
