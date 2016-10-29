@@ -122,8 +122,8 @@ void generateGrid(s_Game* game) {
 	time_t t;
 
 	srand((unsigned) time(&t));
-	for (j = 0; j < HEIGHT_GRID; ++j){
-		for (i = 0; i < WIDTH_GRID; ++i){
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
 			game->grid[j][i] = rand() % NB_COLORS;
 		}
 	}
@@ -145,8 +145,8 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 char game_checkBoard(s_Game* game) {
 	signed char color = -1;
 	int i, j;
-	for (j = 0; j < HEIGHT_GRID; ++j){
-		for (i = 0; i < WIDTH_GRID; ++i){
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
 			if (color != -1 && game->grid[j][i] != color) {
 				return 0;
 			}
@@ -179,8 +179,8 @@ char game_selectColor(s_Game* game) {
 
 	toVisit = (int *) malloc(WIDTH_GRID * HEIGHT_GRID * sizeof(int *));
 
-	for (j = 0; j < HEIGHT_GRID; ++j){
-		for (i = 0; i < WIDTH_GRID; ++i){
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
 			visited[j][i] = 0;
 			toVisit[j * WIDTH_GRID + i] = 0;
 		}

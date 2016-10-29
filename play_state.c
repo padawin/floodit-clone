@@ -135,8 +135,8 @@ void _renderCurrentTurn(s_Game* game) {
 
 void _renderGrid(s_Game* game) {
 	int i, j, margin = 1;
-	for (j = 0; j < HEIGHT_GRID; ++j){
-		for (i = 0; i < WIDTH_GRID; ++i){
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
 			SDL_Rect r;
 			int cR, cG,cB;
 			r.x = margin + i * WIDTH_GRID_PX;
@@ -157,7 +157,7 @@ void _renderControls(s_Game* game) {
 	int c,
 		thicknessSelectedX = (SELECTED_WIDTH_CONTROL_PX - WIDTH_CONTROL_PX) / 2,
 		thicknessSelectedY = (SELECTED_HEIGHT_CONTROL_PX - HEIGHT_CONTROL_PX) / 2;
-	for (c = 0; c < NB_COLORS; ++c){
+	for (c = 0; c < NB_COLORS; ++c) {
 		SDL_Rect r;
 		int cR, cG, cB;
 		if (c == game->iSelectedColor) {
