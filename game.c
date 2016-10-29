@@ -4,7 +4,7 @@
 #include "high_score.h"
 #include "multiplayer.h"
 
-char _spreadColor(s_Game *game);
+char _spreadColor(s_Game *game, int startX, int startY);
 void generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _broadcastGrid(s_Game *game);
@@ -172,19 +172,19 @@ char game_checkBoard(s_Game* game) {
 }
 
 char game_selectColor(s_Game* game) {
-	char ret = _spreadColor(game);
+	char ret = _spreadColor(game, 0, 0);
 
 	return ret;
 }
 
-char _spreadColor(s_Game *game) {
+char _spreadColor(s_Game *game, int startX, int startY) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
 	int i, j, nbToVisit, selectedColor, oldColor;
 	int *toVisit;
 	int **visited;
 
-	oldColor = game->grid[0][0];
+	oldColor = game->grid[startY][startX];
 	if (game->iSelectedColor == oldColor) {
 		return 0;
 	}
