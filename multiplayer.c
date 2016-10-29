@@ -3,8 +3,8 @@
 #include "string.h"
 
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
-char _computePacket(s_TCPpacket packet, char *message, size_t *size);
-void _parsePacket(s_TCPpacket *packet, char *message, size_t size);
+char _computePacket(s_TCPpacket packet, char *message);
+void _parsePacket(s_TCPpacket *packet, char *message);
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip) {
 	int success = SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT);
@@ -114,7 +114,7 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 			(void *) message,
 			size
 		);
-		_parsePacket(packet, message, size);
+		_parsePacket(packet, message);
 
 		if (byteCount < 0) {
 			// an error occured, it can be read in SDLNet_GetError()
@@ -124,7 +124,7 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 			return CONNECTION_LOST;
 		}
 		else if (byteCount > 0) {
-			if (byteCount >= size) {
+			if (byteCount > size) {
 				return TOO_MUCH_DATA_TO_RECEIVE;
 			}
 			else {
@@ -172,16 +172,15 @@ void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet)
 
 void multiplayer_send_message(TCPsocket socket, s_TCPpacket packet) {
 	char message[TCP_PACKET_MAX_SIZE];
-	size_t size = 0;
-	if (_computePacket(packet, message, &size) != 0) {
+	if (_computePacket(packet, message) != 0) {
 		printf("Packet size too large\n");
 	}
 	else {
-		SDLNet_TCP_Send(socket, message, size);
+		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
 	}
 }
 
-void _parsePacket(s_TCPpacket *packet, char *message, size_t size) {
+void _parsePacket(s_TCPpacket *packet, char *message) {
 	packet->type = message[0];
 	packet->size = message[1];
 
@@ -196,7 +195,7 @@ void _parsePacket(s_TCPpacket *packet, char *message, size_t size) {
 	}
 }
 
-char _computePacket(s_TCPpacket packet, char *message, size_t *size) {
+char _computePacket(s_TCPpacket packet, char *message) {
 	if (packet.size > TCP_PACKET_DATA_MAX_SIZE) {
 		return -1;
 	}
@@ -205,13 +204,11 @@ char _computePacket(s_TCPpacket packet, char *message, size_t *size) {
 	// for the size)
 	message[0] = packet.type;
 	message[1] = packet.size;
-	*size = 2;
 
 	int current;
 	for (current = 0; current < TCP_PACKET_DATA_MAX_SIZE; ++current) {
 		if (current < packet.size) {
 			message[current + 2] = packet.data[current];
-			++(*size);
 		}
 		else {
 			message[current + 2] = 0;
