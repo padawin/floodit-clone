@@ -123,8 +123,13 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 		else if (byteCount == 0) {
 			return CONNECTION_LOST;
 		}
-		else if (byteCount > 0 && byteCount >= bufferSize) {
-			return TOO_MUCH_DATA_TO_RECEIVE;
+		else if (byteCount > 0) {
+			if (byteCount >= size) {
+				return TOO_MUCH_DATA_TO_RECEIVE;
+			}
+			else {
+				return MESSAGE_RECEIVED;
+			}
 		}
 	}
 
