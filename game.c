@@ -77,7 +77,7 @@ void _generateFirstPlayer(s_Game *game) {
 	else {
 		time_t t;
 		srand((unsigned) time(&t));
-		game->currentPlayerIndex = rand() % game->socketConnection.nbConnectedSockets + 1;
+		game->currentPlayerIndex = rand() % (game->socketConnection.nbConnectedSockets + 1);
 	}
 }
 
