@@ -49,5 +49,6 @@ void game_getTimer(s_Game *game, char *timer);
 void game_setGrid(s_Game* game, s_TCPpacket packet);
 void game_broadcastGrid(s_Game *game);
 void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn);
+void game_selectNextPlayer(s_Game *game);
 
 #endif

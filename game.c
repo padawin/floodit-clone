@@ -148,6 +148,12 @@ void _generateFirstPlayer(s_Game *game) {
 	}
 }
 
+void game_selectNextPlayer(s_Game *game) {
+	if (game_is(game, MODE_MULTIPLAYER)) {
+		game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
+	}
+}
+
 void game_restart(s_Game *game) {
 	game_start(game);
 }
