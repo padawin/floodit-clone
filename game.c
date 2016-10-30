@@ -4,9 +4,16 @@
 #include "high_score.h"
 #include "multiplayer.h"
 
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
 void generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
-void _broadcastGrid(s_Game *game);
+
+int g_startPositionPlayers[4][2] = {
+	{0, 0},
+	{WIDTH_GRID - 1, HEIGHT_GRID - 1},
+	{WIDTH_GRID - 1, 0},
+	{0, HEIGHT_GRID - 1}
+};
 
 void game_init(s_Game *game) {
 	game->scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
@@ -72,13 +79,20 @@ void game_start(s_Game *game) {
 
 		if (isMultiplayer) {
 			//send grid to players
-			_broadcastGrid(game);
+			game_broadcastGrid(game);
 		}
 
 		_generateFirstPlayer(game);
 
 		if (game->currentPlayerIndex == 0) {
 			game->canPlay = 1;
+		}
+		else {
+			// notify first player
+			game_notifyCurrentPlayerTurn(
+				game,
+				MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
+			);
 		}
 	}
 
@@ -87,7 +101,28 @@ void game_start(s_Game *game) {
 	game->iTurns = 1;
 }
 
-void _broadcastGrid(s_Game *game) {
+void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
+	if (game->currentPlayerIndex == 0) {
+		game->canPlay = isTurn;
+		return;
+	}
+
+	s_TCPpacket packet;
+	if (isTurn) {
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
+	}
+	else {
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN;
+	}
+	packet.size = 0;
+	multiplayer_send_message(
+		game->socketConnection,
+		game->currentPlayerIndex - 1,
+		packet
+	);
+}
+
+void game_broadcastGrid(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
 	packet.size = 196;
@@ -110,6 +145,12 @@ void _generateFirstPlayer(s_Game *game) {
 		time_t t;
 		srand((unsigned) time(&t));
 		game->currentPlayerIndex = rand() % (game->socketConnection.nbConnectedSockets + 1);
+	}
+}
+
+void game_selectNextPlayer(s_Game *game) {
+	if (game_is(game, MODE_MULTIPLAYER)) {
+		game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
 	}
 }
 
@@ -159,18 +200,35 @@ char game_checkBoard(s_Game* game) {
 	return 1;
 }
 
-char game_selectColor(s_Game* game) {
+char game_selectColor(s_Game* game, int color) {
+	if (game_is(game, MODE_MULTIPLAYER) && game->socketConnection.type == CLIENT) {
+		s_TCPpacket packet;
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
+		packet.size = 1;
+		packet.data[0] = game->iSelectedColor;
+		multiplayer_send_message(game->socketConnection, -1, packet);
+		return -1;
+	}
+
+	int startX, startY;
+	startX = g_startPositionPlayers[game->currentPlayerIndex][0];
+	startY = g_startPositionPlayers[game->currentPlayerIndex][1];
+	char ret = _spreadColor(game, color, startX, startY);
+
+	return ret;
+}
+
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
-	int oldColor = game->grid[0][0];
-	int i, j, nbToVisit, selectedColor;
-	selectedColor = game->iSelectedColor;
+	int i, j, nbToVisit, oldColor;
+	int *toVisit;
+	int **visited;
+
+	oldColor = game->grid[startY][startX];
 	if (selectedColor == oldColor) {
 		return 0;
 	}
-
-	int *toVisit;
-	int **visited;
 
 	visited = (int **) malloc(HEIGHT_GRID * sizeof(int *));
 	for (i = 0; i < HEIGHT_GRID; i++) {
@@ -186,8 +244,8 @@ char game_selectColor(s_Game* game) {
 		}
 	}
 
-	toVisit[0] = 0;
-	visited[0][0] |= toVisitFlag;
+	toVisit[0] = startY * WIDTH_GRID + startX;
+	visited[startY][startX] |= toVisitFlag;
 	nbToVisit = 1;
 
 	while (nbToVisit > 0) {
@@ -217,6 +275,7 @@ char game_selectColor(s_Game* game) {
 	}
 	free(visited);
 	free(toVisit);
+
 	return 1;
 }
 

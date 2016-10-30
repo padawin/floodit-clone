@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "string.h"
 
+char _receiveMessage(TCPsocket socket, s_TCPpacket *packet);
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
 char _computePacket(s_TCPpacket packet, char *message);
 void _parsePacket(s_TCPpacket *packet, char *message);
@@ -52,52 +53,44 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
-/**
- * Check if any client disconnected, if so update the list of sockets and the
- * set
- */
-void multiplayer_check_clients(s_SocketConnection *socketWrapper) {
+char multiplayer_check_clients(s_SocketConnection *socketWrapper, s_TCPpacket *packet, int *fromIndex) {
 	int numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
-	while (numSockets > 0) {
-		_removeDisconnectedSockets(socketWrapper);
-		numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
-	}
-
-	if (!~numSockets) {
+	if (numSockets == -1) {
 		printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
 	}
-}
+	else if (numSockets > 0) {
+		int socket = 0;
+		while (socket < socketWrapper->nbConnectedSockets) {
+			// if this socket has nothing to say, skip it
+			if (!SDLNet_SocketReady(socketWrapper->connectedSockets[socket])) {
+				++socket;
+				continue;
+			}
 
-void _removeDisconnectedSockets(s_SocketConnection *socketWrapper) {
-	int socket = 0;
-	while (socket < socketWrapper->nbConnectedSockets) {
-		// if this socket has nothing to say, skip it
-		if (!SDLNet_SocketReady(socketWrapper->connectedSockets[socket])) {
-			++socket;
-			continue;
+			char responseCode = _receiveMessage(
+				socketWrapper->connectedSockets[socket],
+				packet
+			);
+
+			if (responseCode == CONNECTION_LOST) {
+				SDLNet_TCP_DelSocket(
+					socketWrapper->socketSet,
+					socketWrapper->connectedSockets[socket]
+				);
+				SDLNet_TCP_Close(socketWrapper->connectedSockets[socket]);
+				--socketWrapper->nbConnectedSockets;
+				socketWrapper->connectedSockets[socket] = socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets];
+				socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = 0;
+			}
+			else if (responseCode != ERROR) {
+				*fromIndex = socket + 1;
+				++socket;
+				return responseCode;
+			}
 		}
-
-		int bufferSize = 255;
-		char buffer[bufferSize];
-		int byteCount = SDLNet_TCP_Recv(
-			socketWrapper->connectedSockets[socket],
-			buffer,
-			bufferSize
-		);
-		if (byteCount) {
-			++socket;
-			continue;
-		}
-
-		SDLNet_TCP_DelSocket(
-			socketWrapper->socketSet,
-			socketWrapper->connectedSockets[socket]
-		);
-		SDLNet_TCP_Close(socketWrapper->connectedSockets[socket]);
-		--socketWrapper->nbConnectedSockets;
-		socketWrapper->connectedSockets[socket] = socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets];
-		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = 0;
 	}
+
+	return OK;
 }
 
 char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *packet) {
@@ -107,30 +100,7 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 		return ERROR_CHECK_SERVER;
 	}
 	if (serverActive > 0) {
-		char message[TCP_PACKET_MAX_SIZE];
-		size_t size = TCP_PACKET_MAX_SIZE;
-		int byteCount = SDLNet_TCP_Recv(
-			socketWrapper->socket,
-			message,
-			size
-		);
-		_parsePacket(packet, message);
-
-		if (byteCount < 0) {
-			// an error occured, it can be read in SDLNet_GetError()
-			return ERROR;
-		}
-		else if (byteCount == 0) {
-			return CONNECTION_LOST;
-		}
-		else if (byteCount > 0) {
-			if (byteCount > size) {
-				return TOO_MUCH_DATA_TO_RECEIVE;
-			}
-			else {
-				return MESSAGE_RECEIVED;
-			}
-		}
+		return _receiveMessage(socketWrapper->socket, packet);
 	}
 
 	return OK;
@@ -166,16 +136,23 @@ char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
 void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet) {
 	int s;
 	for (s = 0; s < socketWrapper.nbConnectedSockets; ++s) {
-		multiplayer_send_message(socketWrapper.connectedSockets[s], packet);
+		multiplayer_send_message(socketWrapper, s, packet);
 	}
 }
 
-void multiplayer_send_message(TCPsocket socket, s_TCPpacket packet) {
+void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex, s_TCPpacket packet) {
 	char message[TCP_PACKET_MAX_SIZE];
 	if (_computePacket(packet, message) != 0) {
 		printf("Packet size too large\n");
 	}
 	else {
+		TCPsocket socket;
+		if (socketIndex == -1) {
+			socket = socketWrapper.socket;
+		}
+		else {
+			socket = socketWrapper.connectedSockets[socketIndex];
+		}
 		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
 	}
 }
@@ -216,4 +193,26 @@ char _computePacket(s_TCPpacket packet, char *message) {
 	}
 
 	return 0;
+}
+
+char _receiveMessage(TCPsocket socket, s_TCPpacket *packet) {
+	char message[TCP_PACKET_MAX_SIZE];
+	int byteCount = SDLNet_TCP_Recv(socket, message, TCP_PACKET_MAX_SIZE);
+
+	if (byteCount < 0) {
+		// an error occured, it can be read in SDLNet_GetError()
+		return ERROR;
+	}
+	else if (byteCount == 0) {
+		return CONNECTION_LOST;
+	}
+	else {
+		if (byteCount > TCP_PACKET_MAX_SIZE) {
+			return TOO_MUCH_DATA_TO_RECEIVE;
+		}
+		else {
+			_parsePacket(packet, message);
+			return MESSAGE_RECEIVED;
+		}
+	}
 }

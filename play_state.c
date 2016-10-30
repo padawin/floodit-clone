@@ -19,7 +19,8 @@ SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 
 int g_state;
 
-void _play(s_Game* game);
+void _play(s_Game* game, int color);
+void _multiplayerPlay(s_Game* game, int color);
 void _renderGrid(s_Game* game);
 void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom);
 void _renderTimer(s_Game* game);
@@ -60,15 +61,46 @@ void play_state_update(s_Game *game) {
 		return;
 	}
 
-	if (game->socketConnection.type == CLIENT) {
+	if (game->socketConnection.type == SERVER) {
+		s_TCPpacket packet;
+		int indexSocketSendingMessage = -1;
+		char foundMessage = multiplayer_check_clients(
+			&game->socketConnection,
+			&packet,
+			&indexSocketSendingMessage
+		);
+
+		// the current player played and we received its choice
+		if (foundMessage == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+			// check message comes from good socket
+			if (indexSocketSendingMessage != game->currentPlayerIndex) {
+				// comes from someone else, ignore it
+				return;
+			}
+
+			_multiplayerPlay(game, packet.data[0]);
+		}
+	}
+	else {
 		s_TCPpacket packet;
 		char state = multiplayer_check_server(&game->socketConnection, &packet);
 		if (state == CONNECTION_LOST) {
 			fsm_setState(game, mainmenu);
 		}
-		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
-			game_setGrid(game, packet);
-			game->receivedGrid = 1;
+		else if (state == MESSAGE_RECEIVED) {
+			if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
+				game_setGrid(game, packet);
+				game->receivedGrid = 1;
+			}
+			// We received a message from the server telling us it is our turn
+			// to play
+			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+				game->canPlay = 1;
+			}
+			// The server is now telling us it is not our turn anymore
+			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN) {
+				game->canPlay = 0;
+			}
 		}
 	}
 }
@@ -79,7 +111,9 @@ void play_state_render(s_Game* game) {
 	}
 
 	_renderGrid(game);
-	_renderCurrentTurn(game);
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		_renderCurrentTurn(game);
+	}
 	_renderControls(game);
 
 	if (game_is(game, MODE_TIMED)) {
@@ -226,7 +260,7 @@ void play_state_handleEvent(s_Game* game, int key) {
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
-		_play(game);
+		_play(game, game->iSelectedColor);
 	}
 	else if (g_state == STATE_ONGOING) {
 		if (key == SDLK_UP) {
@@ -244,13 +278,18 @@ void play_state_handleEvent(s_Game* game, int key) {
 	}
 }
 
-void _play(s_Game* game) {
+void _play(s_Game* game, int color) {
+	if (game_is(game, MODE_MULTIPLAYER)) {
+		_multiplayerPlay(game, color);
+		return;
+	}
+
 	if (g_state != STATE_ONGOING) {
 		game_restart(game);
 		g_state = STATE_ONGOING;
 		return;
 	}
-	else if (game_selectColor(game)) {
+	else if (game_selectColor(game, color) > 0) {
 		char finished = game_checkBoard(game);
 		if (finished) {
 			g_state = STATE_FINISH_WON;
@@ -263,5 +302,14 @@ void _play(s_Game* game) {
 		else {
 			game->iTurns++;
 		}
+	}
+}
+
+void _multiplayerPlay(s_Game* game, int color) {
+	if (game_selectColor(game, color) > 0) {
+		game_notifyCurrentPlayerTurn(game, 0);
+		game_selectNextPlayer(game);
+		game_notifyCurrentPlayerTurn(game, 1);
+		game_broadcastGrid(game);
 	}
 }

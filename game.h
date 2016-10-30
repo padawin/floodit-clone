@@ -8,6 +8,8 @@
 
 #define MULTIPLAYER_MESSAGE_TYPE_GAME_START 0
 #define MULTIPLAYER_MESSAGE_TYPE_GRID 2
+#define MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN 3
+#define MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN 4
 
 typedef enum {MODE_CLASSIC, MODE_TIMED, MODE_MULTIPLAYER} game_mode;
 
@@ -38,12 +40,15 @@ void game_clean(s_Game *game);
 void game_start(s_Game *game);
 void game_restart(s_Game *game);
 char game_checkBoard(s_Game* game);
-char game_selectColor(s_Game* game);
+char game_selectColor(s_Game* game, int color);
 void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 char game_is(s_Game *game, game_mode mode);
 void game_setMode(s_Game* game, game_mode mode);
 void game_finish(s_Game *game, const char won);
 void game_getTimer(s_Game *game, char *timer);
 void game_setGrid(s_Game* game, s_TCPpacket packet);
+void game_broadcastGrid(s_Game *game);
+void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn);
+void game_selectNextPlayer(s_Game *game);
 
 #endif
