@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "string.h"
 
+char _receiveMessage(TCPsocket socket, s_TCPpacket *packet);
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
 char _computePacket(s_TCPpacket packet, char *message);
 void _parsePacket(s_TCPpacket *packet, char *message);
@@ -106,30 +107,7 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 		return ERROR_CHECK_SERVER;
 	}
 	if (serverActive > 0) {
-		char message[TCP_PACKET_MAX_SIZE];
-		size_t size = TCP_PACKET_MAX_SIZE;
-		int byteCount = SDLNet_TCP_Recv(
-			socketWrapper->socket,
-			message,
-			size
-		);
-		_parsePacket(packet, message);
-
-		if (byteCount < 0) {
-			// an error occured, it can be read in SDLNet_GetError()
-			return ERROR;
-		}
-		else if (byteCount == 0) {
-			return CONNECTION_LOST;
-		}
-		else if (byteCount > 0) {
-			if (byteCount > size) {
-				return TOO_MUCH_DATA_TO_RECEIVE;
-			}
-			else {
-				return MESSAGE_RECEIVED;
-			}
-		}
+		return _receiveMessage(socketWrapper->socket, packet);
 	}
 
 	return OK;
@@ -222,4 +200,26 @@ char _computePacket(s_TCPpacket packet, char *message) {
 	}
 
 	return 0;
+}
+
+char _receiveMessage(TCPsocket socket, s_TCPpacket *packet) {
+	char message[TCP_PACKET_MAX_SIZE];
+	int byteCount = SDLNet_TCP_Recv(socket, message, TCP_PACKET_MAX_SIZE);
+
+	if (byteCount < 0) {
+		// an error occured, it can be read in SDLNet_GetError()
+		return ERROR;
+	}
+	else if (byteCount == 0) {
+		return CONNECTION_LOST;
+	}
+	else {
+		if (byteCount > TCP_PACKET_MAX_SIZE) {
+			return TOO_MUCH_DATA_TO_RECEIVE;
+		}
+		else {
+			_parsePacket(packet, message);
+			return MESSAGE_RECEIVED;
+		}
+	}
 }
