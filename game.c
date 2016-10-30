@@ -45,25 +45,6 @@ void game_init(s_Game *game) {
 	game->receivedGrid = 0;
 }
 
-void game_clean(s_Game *game) {
-	TTF_CloseFont(game->scoreFont);
-	game->scoreFont = NULL;
-	TTF_CloseFont(game->endFont);
-	game->endFont = NULL;
-	TTF_CloseFont(game->menuFont);
-	game->menuFont = NULL;
-	TTF_CloseFont(game->selectedMenuFont);
-	game->selectedMenuFont = NULL;
-	TTF_CloseFont(game->highScoreFont);
-	game->highScoreFont = NULL;
-	TTF_CloseFont(game->highScoreTitleFont);
-	game->highScoreTitleFont = NULL;
-
-	if (game_is(game, MODE_MULTIPLAYER)) {
-		multiplayer_clean(&game->socketConnection);
-	}
-}
-
 void game_start(s_Game *game) {
 	game->timeStarted = 0;
 	game->timeFinished = 0;
@@ -101,87 +82,66 @@ void game_start(s_Game *game) {
 	game->iTurns = 1;
 }
 
-void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
-	if (game->currentPlayerIndex == 0) {
-		game->canPlay = isTurn;
-		return;
-	}
-
-	s_TCPpacket packet;
-	if (isTurn) {
-		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
-	}
-	else {
-		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN;
-	}
-	packet.size = 0;
-	multiplayer_send_message(
-		game->socketConnection,
-		game->currentPlayerIndex - 1,
-		packet
-	);
-}
-
-void game_broadcastGrid(s_Game *game) {
-	s_TCPpacket packet;
-	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
-	packet.size = 196;
-	int i, j;
-
-	for (j = 0; j < HEIGHT_GRID; ++j) {
-		for (i = 0; i < WIDTH_GRID; ++i) {
-			packet.data[j * WIDTH_GRID + i] = game->grid[j][i];
-		}
-	}
-
-	multiplayer_broadcast(game->socketConnection, packet);
-}
-
-void _generateFirstPlayer(s_Game *game) {
-	if (!game_is(game, MODE_MULTIPLAYER)) {
-		game->currentPlayerIndex = 0;
-	}
-	else {
-		time_t t;
-		srand((unsigned) time(&t));
-		game->currentPlayerIndex = rand() % (game->socketConnection.nbConnectedSockets + 1);
-	}
-}
-
-void game_selectNextPlayer(s_Game *game) {
-	if (game_is(game, MODE_MULTIPLAYER)) {
-		game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
-	}
-}
-
 void game_restart(s_Game *game) {
 	game_start(game);
 }
 
-void _generateGrid(s_Game* game) {
-	int i, j;
-	time_t t;
-
-	srand((unsigned) time(&t));
-	for (j = 0; j < HEIGHT_GRID; ++j) {
-		for (i = 0; i < WIDTH_GRID; ++i) {
-			game->grid[j][i] = rand() % NB_COLORS;
+void game_finish(s_Game *game, const char won) {
+	if (game_is(game, MODE_TIMED)) {
+		game->timeFinished = SDL_GetTicks();
+		if (won) {
+			high_score_save(game->timeFinished - game->timeStarted, game->iTurns);
 		}
 	}
-
-	game->receivedGrid = 1;
 }
 
-void game_setGrid(s_Game* game, s_TCPpacket packet) {
-	int i, j;
-	for (j = 0; j < HEIGHT_GRID; ++j) {
-		for (i = 0; i < WIDTH_GRID; ++i) {
-			game->grid[j][i] = packet.data[j * WIDTH_GRID + i];
-		}
+void game_clean(s_Game *game) {
+	TTF_CloseFont(game->scoreFont);
+	game->scoreFont = NULL;
+	TTF_CloseFont(game->endFont);
+	game->endFont = NULL;
+	TTF_CloseFont(game->menuFont);
+	game->menuFont = NULL;
+	TTF_CloseFont(game->selectedMenuFont);
+	game->selectedMenuFont = NULL;
+	TTF_CloseFont(game->highScoreFont);
+	game->highScoreFont = NULL;
+	TTF_CloseFont(game->highScoreTitleFont);
+	game->highScoreTitleFont = NULL;
+
+	if (game_is(game, MODE_MULTIPLAYER)) {
+		multiplayer_clean(&game->socketConnection);
+	}
+}
+
+
+char game_is(s_Game *game, game_mode mode) {
+	return game->mode == mode;
+}
+
+void game_setMode(s_Game *game, game_mode mode) {
+	game->mode = mode;
+}
+
+void game_getTimer(s_Game *game, char *timer) {
+	Uint32 seconds = 0,
+		minutes = 0,
+		totalSeconds,
+		endTime;
+
+	if (game->timeFinished == 0) {
+		endTime = SDL_GetTicks();
+	}
+	else {
+		endTime = game->timeFinished;
 	}
 
-	game->receivedGrid = 1;
+	totalSeconds = (endTime - game->timeStarted) / 1000;
+	seconds = totalSeconds % 60;
+	minutes = totalSeconds / 60;
+	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }
+
 
 char game_checkBoard(s_Game* game) {
 	signed char color = -1;
@@ -218,6 +178,121 @@ char game_selectColor(s_Game* game, int color) {
 	return ret;
 }
 
+void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
+	(*nbNeighbours) = 0;
+	if (x > 0) {
+		neighbours[*nbNeighbours][0] = x - 1;
+		neighbours[*nbNeighbours][1] = y;
+		(*nbNeighbours) += 1;
+	}
+
+	if (x < WIDTH_GRID - 1) {
+		neighbours[*nbNeighbours][0] = x + 1;
+		neighbours[*nbNeighbours][1] = y;
+		(*nbNeighbours) += 1;
+	}
+
+	if (y > 0) {
+		neighbours[*nbNeighbours][0] = x;
+		neighbours[*nbNeighbours][1] = y - 1;
+		(*nbNeighbours) += 1;
+	}
+
+	if (y < HEIGHT_GRID - 1) {
+		neighbours[*nbNeighbours][0] = x;
+		neighbours[*nbNeighbours][1] = y + 1;
+		(*nbNeighbours) += 1;
+	}
+}
+
+void game_setGrid(s_Game* game, s_TCPpacket packet) {
+	int i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			game->grid[j][i] = packet.data[j * WIDTH_GRID + i];
+		}
+	}
+
+	game->receivedGrid = 1;
+}
+
+
+void game_broadcastGrid(s_Game *game) {
+	s_TCPpacket packet;
+	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
+	packet.size = 196;
+	int i, j;
+
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			packet.data[j * WIDTH_GRID + i] = game->grid[j][i];
+		}
+	}
+
+	multiplayer_broadcast(game->socketConnection, packet);
+}
+
+void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
+	if (game->currentPlayerIndex == 0) {
+		game->canPlay = isTurn;
+		return;
+	}
+
+	s_TCPpacket packet;
+	if (isTurn) {
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
+	}
+	else {
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN;
+	}
+	packet.size = 0;
+	multiplayer_send_message(
+		game->socketConnection,
+		game->currentPlayerIndex - 1,
+		packet
+	);
+}
+
+void game_selectNextPlayer(s_Game *game) {
+	if (game_is(game, MODE_MULTIPLAYER)) {
+		game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
+	}
+}
+
+
+/** PRIVATE FUNCTIONS **/
+
+void _generateFirstPlayer(s_Game *game) {
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		game->currentPlayerIndex = 0;
+	}
+	else {
+		time_t t;
+		srand((unsigned) time(&t));
+		game->currentPlayerIndex = rand() % (game->socketConnection.nbConnectedSockets + 1);
+	}
+}
+
+/**
+ * Generate a random grid
+ */
+void _generateGrid(s_Game* game) {
+	int i, j;
+	time_t t;
+
+	srand((unsigned) time(&t));
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			game->grid[j][i] = rand() % NB_COLORS;
+		}
+	}
+
+	game->receivedGrid = 1;
+}
+
+/**
+ * Change the colors of the grid from [startX, startY] with selectedColor
+ */
 char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
@@ -277,67 +352,4 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 	free(toVisit);
 
 	return 1;
-}
-
-void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours) {
-	(*nbNeighbours) = 0;
-	if (x > 0) {
-		neighbours[*nbNeighbours][0] = x - 1;
-		neighbours[*nbNeighbours][1] = y;
-		(*nbNeighbours) += 1;
-	}
-
-	if (x < WIDTH_GRID - 1) {
-		neighbours[*nbNeighbours][0] = x + 1;
-		neighbours[*nbNeighbours][1] = y;
-		(*nbNeighbours) += 1;
-	}
-
-	if (y > 0) {
-		neighbours[*nbNeighbours][0] = x;
-		neighbours[*nbNeighbours][1] = y - 1;
-		(*nbNeighbours) += 1;
-	}
-
-	if (y < HEIGHT_GRID - 1) {
-		neighbours[*nbNeighbours][0] = x;
-		neighbours[*nbNeighbours][1] = y + 1;
-		(*nbNeighbours) += 1;
-	}
-}
-
-char game_is(s_Game *game, game_mode mode) {
-	return game->mode == mode;
-}
-
-void game_setMode(s_Game *game, game_mode mode) {
-	game->mode = mode;
-}
-
-void game_finish(s_Game *game, const char won) {
-	if (game_is(game, MODE_TIMED)) {
-		game->timeFinished = SDL_GetTicks();
-		if (won) {
-			high_score_save(game->timeFinished - game->timeStarted, game->iTurns);
-		}
-	}
-}
-
-void game_getTimer(s_Game *game, char *timer) {
-	Uint32 seconds = 0,
-		minutes = 0,
-		totalSeconds,
-		endTime;
-
-	if (game->timeFinished == 0) {
-		endTime = SDL_GetTicks();
-	}
-	else {
-		endTime = game->timeFinished;
-	}
-
-	totalSeconds = (endTime - game->timeStarted) / 1000;
-	seconds = totalSeconds % 60;
-	minutes = totalSeconds / 60;
-	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }

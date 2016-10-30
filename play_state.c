@@ -47,13 +47,33 @@ void play_state_init(s_Game *game) {
 	game_start(game);
 }
 
-void play_state_clean() {
-	SDL_DestroyTexture(winEndText);
-	SDL_DestroyTexture(loseEndText);
-	SDL_DestroyTexture(restartEndText);
-	SDL_DestroyTexture(quitEndText);
-	SDL_DestroyTexture(currentTurnText);
-	SDL_DestroyTexture(timerText);
+void play_state_handleEvent(s_Game* game, int key) {
+	if (key == SDLK_ESCAPE) {
+		fsm_setState(game, mainmenu);
+	}
+	else if (!game->canPlay) {
+		return;
+	}
+	else if (
+		(IS_GCW && key == SDLK_LCTRL)
+		|| (!IS_GCW && key == SDLK_SPACE)
+	) {
+		_play(game, game->iSelectedColor);
+	}
+	else if (g_state == STATE_ONGOING) {
+		if (key == SDLK_UP) {
+			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
+		}
+		else if (key == SDLK_DOWN) {
+			game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
+		}
+		else if (key == SDLK_LEFT) {
+			game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
+		}
+		else if (key == SDLK_RIGHT) {
+			game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
+		}
+	}
 }
 
 void play_state_update(s_Game *game) {
@@ -127,6 +147,19 @@ void play_state_render(s_Game* game) {
 		_renderEndScreen(game, 0);
 	}
 }
+
+void play_state_clean() {
+	SDL_DestroyTexture(winEndText);
+	SDL_DestroyTexture(loseEndText);
+	SDL_DestroyTexture(restartEndText);
+	SDL_DestroyTexture(quitEndText);
+	SDL_DestroyTexture(currentTurnText);
+	SDL_DestroyTexture(timerText);
+	// @TODO If is multiplayer, leave game
+}
+
+
+/** PRIVATE FUNCTIONS **/
 
 void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom) {
 	int textX, textY,
@@ -218,9 +251,6 @@ void _renderControls(s_Game* game) {
 	}
 }
 
-/**
- * Text dimension very hacked
- */
 void _renderEndScreen(s_Game* game, const char won) {
 	int textWidth, textHeight, t;
 	SDL_Texture *texts[3];
@@ -246,35 +276,6 @@ void _renderEndScreen(s_Game* game, const char won) {
 		rect.w = textWidth;
 		rect.h = textHeight;
 		SDL_RenderCopy(game->renderer, texts[t], NULL, &rect);
-	}
-}
-
-void play_state_handleEvent(s_Game* game, int key) {
-	if (key == SDLK_ESCAPE) {
-		fsm_setState(game, mainmenu);
-	}
-	else if (!game->canPlay) {
-		return;
-	}
-	else if (
-		(IS_GCW && key == SDLK_LCTRL)
-		|| (!IS_GCW && key == SDLK_SPACE)
-	) {
-		_play(game, game->iSelectedColor);
-	}
-	else if (g_state == STATE_ONGOING) {
-		if (key == SDLK_UP) {
-			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-		}
-		else if (key == SDLK_DOWN) {
-			game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-		}
-		else if (key == SDLK_LEFT) {
-			game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-		}
-		else if (key == SDLK_RIGHT) {
-			game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
-		}
 	}
 }
 
