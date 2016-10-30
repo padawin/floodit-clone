@@ -89,13 +89,9 @@ void game_start(s_Game *game) {
 		}
 		else {
 			// notify first player
-			s_TCPpacket packet;
-			packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
-			packet.size = 0;
-			multiplayer_send_message(
-				game->socketConnection,
-				game->currentPlayerIndex - 1,
-				packet
+			game_notifyCurrentPlayerTurn(
+				game,
+				MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
 			);
 		}
 	}
@@ -103,6 +99,22 @@ void game_start(s_Game *game) {
 	// program main loop
 	game->iSelectedColor = 0;
 	game->iTurns = 1;
+}
+
+void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
+	s_TCPpacket packet;
+	if (isTurn) {
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
+	}
+	else {
+		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN;
+	}
+	packet.size = 0;
+	multiplayer_send_message(
+		game->socketConnection,
+		game->currentPlayerIndex - 1,
+		packet
+	);
 }
 
 void game_broadcastGrid(s_Game *game) {
