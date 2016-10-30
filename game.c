@@ -102,6 +102,11 @@ void game_start(s_Game *game) {
 }
 
 void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
+	if (game->currentPlayerIndex == 0) {
+		game->canPlay = isTurn;
+		return;
+	}
+
 	s_TCPpacket packet;
 	if (isTurn) {
 		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
