@@ -175,11 +175,14 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 		printf("Packet size too large\n");
 	}
 	else {
-		SDLNet_TCP_Send(
-			socketWrapper.connectedSockets[socketIndex],
-			message,
-			TCP_PACKET_MAX_SIZE
-		);
+		TCPsocket socket;
+		if (socketIndex == -1) {
+			socket = socketWrapper.socket;
+		}
+		else {
+			socket = socketWrapper.connectedSockets[socketIndex];
+		}
+		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
 	}
 }
 
