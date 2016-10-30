@@ -62,7 +62,24 @@ void play_state_update(s_Game *game) {
 	}
 
 	if (game->socketConnection.type == SERVER) {
-		multiplayer_check_clients(&game->socketConnection, 0, 0);
+		s_TCPpacket packet;
+		int indexSocketSendingMessage = -1;
+		char foundMessage = multiplayer_check_clients(
+			&game->socketConnection,
+			&packet,
+			&indexSocketSendingMessage
+		);
+
+		// the current player played and we received its choice
+		if (foundMessage == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+			// check message comes from good socket
+			if (indexSocketSendingMessage != game->currentPlayerIndex) {
+				// comes from someone else, ignore it
+				return;
+			}
+
+			_multiplayerPlay(game, packet.data[0]);
+		}
 	}
 	else {
 		s_TCPpacket packet;
