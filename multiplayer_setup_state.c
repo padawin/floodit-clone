@@ -134,7 +134,7 @@ void multiplayer_setup_state_clean() {
 void multiplayer_setup_state_update(s_Game* game) {
 	if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		multiplayer_accept_client(&game->socketConnection);
-		multiplayer_check_clients(&game->socketConnection);
+		multiplayer_check_disconnected_clients(&game->socketConnection);
 
 		if (multiplayer_is_room_full(game->socketConnection)) {
 			s_TCPpacket packet;

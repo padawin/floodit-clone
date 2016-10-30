@@ -56,7 +56,7 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
  * Check if any client disconnected, if so update the list of sockets and the
  * set
  */
-void multiplayer_check_clients(s_SocketConnection *socketWrapper) {
+void multiplayer_check_disconnected_clients(s_SocketConnection *socketWrapper) {
 	int numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
 	while (numSockets > 0) {
 		_removeDisconnectedSockets(socketWrapper);
