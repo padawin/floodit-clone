@@ -5,7 +5,7 @@
 #include "multiplayer.h"
 
 char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
-void generateGrid(s_Game* game);
+void _generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 
 int g_startPositionPlayers[4][2] = {
@@ -75,7 +75,7 @@ void game_start(s_Game *game) {
 	char isMultiplayer = game_is(game, MODE_MULTIPLAYER);
 	game->canPlay = 0;
 	if (!isMultiplayer || (isMultiplayer && game->socketConnection.type == SERVER)) {
-		generateGrid(game);
+		_generateGrid(game);
 
 		if (isMultiplayer) {
 			//send grid to players
@@ -158,7 +158,7 @@ void game_restart(s_Game *game) {
 	game_start(game);
 }
 
-void generateGrid(s_Game* game) {
+void _generateGrid(s_Game* game) {
 	int i, j;
 	time_t t;
 
