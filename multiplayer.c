@@ -53,7 +53,7 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
-char multiplayer_check_clients(s_SocketConnection *socketWrapper, s_TCPpacket *packet) {
+char multiplayer_check_clients(s_SocketConnection *socketWrapper, s_TCPpacket *packet, int *fromIndex) {
 	int numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
 	if (numSockets == -1) {
 		printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
@@ -83,6 +83,7 @@ char multiplayer_check_clients(s_SocketConnection *socketWrapper, s_TCPpacket *p
 				socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = 0;
 			}
 			else if (responseCode != ERROR) {
+				*fromIndex = socket + 1;
 				++socket;
 				return responseCode;
 			}

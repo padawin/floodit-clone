@@ -61,7 +61,7 @@ void play_state_update(s_Game *game) {
 	}
 
 	if (game->socketConnection.type == SERVER) {
-		multiplayer_check_clients(&game->socketConnection, 0);
+		multiplayer_check_clients(&game->socketConnection, 0, 0);
 	}
 	else {
 		s_TCPpacket packet;
