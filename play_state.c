@@ -95,6 +95,9 @@ void play_state_update(s_Game *game) {
 			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
 				game->canPlay = 1;
 			}
+			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN) {
+				game->canPlay = 0;
+			}
 		}
 	}
 }
