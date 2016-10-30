@@ -46,5 +46,6 @@ void game_setMode(s_Game* game, game_mode mode);
 void game_finish(s_Game *game, const char won);
 void game_getTimer(s_Game *game, char *timer);
 void game_setGrid(s_Game* game, s_TCPpacket packet);
+void game_broadcastGrid(s_Game *game);
 
 #endif

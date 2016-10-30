@@ -7,7 +7,6 @@
 char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
 void generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
-void _broadcastGrid(s_Game *game);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -80,7 +79,7 @@ void game_start(s_Game *game) {
 
 		if (isMultiplayer) {
 			//send grid to players
-			_broadcastGrid(game);
+			game_broadcastGrid(game);
 		}
 
 		_generateFirstPlayer(game);
@@ -106,7 +105,7 @@ void game_start(s_Game *game) {
 	game->iTurns = 1;
 }
 
-void _broadcastGrid(s_Game *game) {
+void game_broadcastGrid(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
 	packet.size = 196;
