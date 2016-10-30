@@ -9,6 +9,13 @@ void generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _broadcastGrid(s_Game *game);
 
+int g_startPositionPlayers[4][2] = {
+	{0, 0},
+	{WIDTH_GRID - 1, HEIGHT_GRID - 1},
+	{WIDTH_GRID - 1, 0},
+	{0, HEIGHT_GRID - 1}
+};
+
 void game_init(s_Game *game) {
 	game->scoreFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
 	game->endFont = TTF_OpenFont("ClearSans-Medium.ttf", 18);
@@ -181,7 +188,10 @@ char game_selectColor(s_Game* game, int color) {
 		return -1;
 	}
 
-	char ret = _spreadColor(game, color, 0, 0);
+	int startX, startY;
+	startX = g_startPositionPlayers[game->currentPlayerIndex][0];
+	startY = g_startPositionPlayers[game->currentPlayerIndex][1];
+	char ret = _spreadColor(game, color, startX, startY);
 
 	return ret;
 }
@@ -212,8 +222,8 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 		}
 	}
 
-	toVisit[0] = 0;
-	visited[0][0] |= toVisitFlag;
+	toVisit[0] = startY * WIDTH_GRID + startX;
+	visited[startY][startX] |= toVisitFlag;
 	nbToVisit = 1;
 
 	while (nbToVisit > 0) {
