@@ -19,7 +19,7 @@ SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 
 int g_state;
 
-void _play(s_Game* game);
+void _play(s_Game* game, int color);
 void _renderGrid(s_Game* game);
 void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom);
 void _renderTimer(s_Game* game);
@@ -234,7 +234,7 @@ void play_state_handleEvent(s_Game* game, int key) {
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
-		_play(game);
+		_play(game, game->iSelectedColor);
 	}
 	else if (g_state == STATE_ONGOING) {
 		if (key == SDLK_UP) {
@@ -252,13 +252,13 @@ void play_state_handleEvent(s_Game* game, int key) {
 	}
 }
 
-void _play(s_Game* game) {
+void _play(s_Game* game, int color) {
 	if (g_state != STATE_ONGOING) {
 		game_restart(game);
 		g_state = STATE_ONGOING;
 		return;
 	}
-	else if (game_selectColor(game) > 0) {
+	else if (game_selectColor(game, color) > 0) {
 		char finished = game_checkBoard(game);
 		if (finished) {
 			g_state = STATE_FINISH_WON;

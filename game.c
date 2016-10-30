@@ -4,7 +4,7 @@
 #include "high_score.h"
 #include "multiplayer.h"
 
-char _spreadColor(s_Game *game, int startX, int startY);
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
 void generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _broadcastGrid(s_Game *game);
@@ -171,7 +171,7 @@ char game_checkBoard(s_Game* game) {
 	return 1;
 }
 
-char game_selectColor(s_Game* game) {
+char game_selectColor(s_Game* game, int color) {
 	if (game_is(game, MODE_MULTIPLAYER) && game->socketConnection.type == CLIENT) {
 		s_TCPpacket packet;
 		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
@@ -181,24 +181,23 @@ char game_selectColor(s_Game* game) {
 		return -1;
 	}
 
-	char ret = _spreadColor(game, 0, 0);
+	char ret = _spreadColor(game, color, 0, 0);
 
 	return ret;
 }
 
-char _spreadColor(s_Game *game, int startX, int startY) {
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
-	int i, j, nbToVisit, selectedColor, oldColor;
+	int i, j, nbToVisit, oldColor;
 	int *toVisit;
 	int **visited;
 
 	oldColor = game->grid[startY][startX];
-	if (game->iSelectedColor == oldColor) {
+	if (selectedColor == oldColor) {
 		return 0;
 	}
 
-	selectedColor = game->iSelectedColor;
 	visited = (int **) malloc(HEIGHT_GRID * sizeof(int *));
 	for (i = 0; i < HEIGHT_GRID; i++) {
 		visited[i] = (int *) malloc(WIDTH_GRID * sizeof(int));
