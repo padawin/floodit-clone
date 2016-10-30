@@ -60,7 +60,10 @@ void play_state_update(s_Game *game) {
 		return;
 	}
 
-	if (game->socketConnection.type == CLIENT) {
+	if (game->socketConnection.type == SERVER) {
+		multiplayer_check_disconnected_clients(&game->socketConnection);
+	}
+	else {
 		s_TCPpacket packet;
 		char state = multiplayer_check_server(&game->socketConnection, &packet);
 		if (state == CONNECTION_LOST) {
