@@ -57,10 +57,9 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
  * set
  */
 void multiplayer_check_disconnected_clients(s_SocketConnection *socketWrapper) {
-	int numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
-	while (numSockets > 0) {
+	int numSockets;
+	while ((numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0)) > 0) {
 		_removeDisconnectedSockets(socketWrapper);
-		numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
 	}
 
 	if (!~numSockets) {
