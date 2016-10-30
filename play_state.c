@@ -111,7 +111,9 @@ void play_state_render(s_Game* game) {
 	}
 
 	_renderGrid(game);
-	_renderCurrentTurn(game);
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		_renderCurrentTurn(game);
+	}
 	_renderControls(game);
 
 	if (game_is(game, MODE_TIMED)) {
