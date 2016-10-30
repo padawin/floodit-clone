@@ -39,7 +39,7 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber);
 void multiplayer_initClient(s_SocketConnection *socketWrapper);
 void multiplayer_accept_client(s_SocketConnection *socket);
-void multiplayer_check_disconnected_clients(s_SocketConnection *socket);
+char multiplayer_check_clients(s_SocketConnection *socket, s_TCPpacket *packet);
 char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *packet);
 void multiplayer_close_connection(TCPsocket socket);
 void multiplayer_clean(s_SocketConnection *socketWrapper);
