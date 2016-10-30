@@ -92,9 +92,12 @@ void play_state_update(s_Game *game) {
 				game_setGrid(game, packet);
 				game->receivedGrid = 1;
 			}
+			// We received a message from the server telling us it is our turn
+			// to play
 			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
 				game->canPlay = 1;
 			}
+			// The server is now telling us it is not our turn anymore
 			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN) {
 				game->canPlay = 0;
 			}
