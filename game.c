@@ -133,8 +133,10 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		result = boardFull ? GAME_WON : GAME_LOST;
 	}
 	else {
-		game->iTurns++;
-		if (isMultiplayer) {
+		if (!isMultiplayer) {
+			game->iTurns++;
+		}
+		else {
 			game_notifyCurrentPlayerTurn(game, 0);
 			game_selectNextPlayer(game);
 			game_notifyCurrentPlayerTurn(game, 1);
