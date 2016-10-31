@@ -8,6 +8,8 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
 void _generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _notifyServerPlayerTurn(s_Game *game);
+void _processServerPackets(s_Game *game);
+char _processClientPackets(s_Game *game);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -285,8 +287,69 @@ void game_selectNextPlayer(s_Game *game) {
 	}
 }
 
+/**
+ * Will return 0 if the game is a client and if the server disconnected, 1
+ * otherwise
+ */
+char game_processIncomingPackets(s_Game *game) {
+	if (game->socketConnection.type == SERVER) {
+		_processServerPackets(game);
+	}
+	else if (!_processClientPackets(game)) {
+		return 0;
+	}
+
+	return 1;
+}
+
 
 /** PRIVATE FUNCTIONS **/
+
+void _processServerPackets(s_Game *game) {
+	s_TCPpacket packet;
+	int indexSocketSendingMessage = -1;
+	char foundMessage = multiplayer_check_clients(
+		&game->socketConnection,
+		&packet,
+		&indexSocketSendingMessage
+	);
+
+	// the current player played and we received its choice
+	if (foundMessage == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+		// check message comes from good socket
+		if (indexSocketSendingMessage != game->currentPlayerIndex) {
+			// comes from someone else, ignore it
+			return;
+		}
+
+		game_play(game, packet.data[0]);
+	}
+}
+
+char _processClientPackets(s_Game *game) {
+	s_TCPpacket packet;
+	char state = multiplayer_check_server(&game->socketConnection, &packet);
+	if (state == CONNECTION_LOST) {
+		return 0;
+	}
+	else if (state == MESSAGE_RECEIVED) {
+		if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
+			game_setGrid(game, packet);
+			game->receivedGrid = 1;
+		}
+		// We received a message from the server telling us it is our turn
+		// to play
+		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+			game->canPlay = 1;
+		}
+		// The server is now telling us it is not our turn anymore
+		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN) {
+			game->canPlay = 0;
+		}
+	}
+
+	return 1;
+}
 
 void _generateFirstPlayer(s_Game *game) {
 	if (!game_is(game, MODE_MULTIPLAYER)) {

@@ -80,47 +80,8 @@ void play_state_update(s_Game *game) {
 		return;
 	}
 
-	if (game->socketConnection.type == SERVER) {
-		s_TCPpacket packet;
-		int indexSocketSendingMessage = -1;
-		char foundMessage = multiplayer_check_clients(
-			&game->socketConnection,
-			&packet,
-			&indexSocketSendingMessage
-		);
-
-		// the current player played and we received its choice
-		if (foundMessage == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
-			// check message comes from good socket
-			if (indexSocketSendingMessage != game->currentPlayerIndex) {
-				// comes from someone else, ignore it
-				return;
-			}
-
-			game_play(game, packet.data[0]);
-		}
-	}
-	else {
-		s_TCPpacket packet;
-		char state = multiplayer_check_server(&game->socketConnection, &packet);
-		if (state == CONNECTION_LOST) {
-			fsm_setState(game, mainmenu);
-		}
-		else if (state == MESSAGE_RECEIVED) {
-			if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
-				game_setGrid(game, packet);
-				game->receivedGrid = 1;
-			}
-			// We received a message from the server telling us it is our turn
-			// to play
-			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
-				game->canPlay = 1;
-			}
-			// The server is now telling us it is not our turn anymore
-			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN) {
-				game->canPlay = 0;
-			}
-		}
+	if (!game_processIncomingPackets(game)) {
+		fsm_setState(game, mainmenu);
 	}
 }
 
