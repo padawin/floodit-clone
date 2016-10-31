@@ -20,7 +20,6 @@ SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 int g_state;
 
 void _play(s_Game* game, int color);
-void _multiplayerPlay(s_Game* game, int color);
 void _renderGrid(s_Game* game);
 void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom);
 void _renderTimer(s_Game* game);
@@ -98,7 +97,7 @@ void play_state_update(s_Game *game) {
 				return;
 			}
 
-			_multiplayerPlay(game, packet.data[0]);
+			_play(game, packet.data[0]);
 		}
 	}
 	else {
@@ -280,8 +279,11 @@ void _renderEndScreen(s_Game* game, const char won) {
 }
 
 void _play(s_Game* game, int color) {
-	if (game_is(game, MODE_MULTIPLAYER)) {
-		_multiplayerPlay(game, color);
+	if (game_is(game, MODE_MULTIPLAYER) && game_selectColor(game, color) > 0) {
+		game_notifyCurrentPlayerTurn(game, 0);
+		game_selectNextPlayer(game);
+		game_notifyCurrentPlayerTurn(game, 1);
+		game_broadcastGrid(game);
 		return;
 	}
 
@@ -303,14 +305,5 @@ void _play(s_Game* game, int color) {
 		else {
 			game->iTurns++;
 		}
-	}
-}
-
-void _multiplayerPlay(s_Game* game, int color) {
-	if (game_selectColor(game, color) > 0) {
-		game_notifyCurrentPlayerTurn(game, 0);
-		game_selectNextPlayer(game);
-		game_notifyCurrentPlayerTurn(game, 1);
-		game_broadcastGrid(game);
 	}
 }
