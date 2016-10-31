@@ -97,7 +97,7 @@ void play_state_update(s_Game *game) {
 				return;
 			}
 
-			_play(game, packet.data[0]);
+			game_play(game, packet.data[0]);
 		}
 	}
 	else {
@@ -279,31 +279,18 @@ void _renderEndScreen(s_Game* game, const char won) {
 }
 
 void _play(s_Game* game, int color) {
-	if (game_is(game, MODE_MULTIPLAYER) && game_selectColor(game, color) > 0) {
-		game_notifyCurrentPlayerTurn(game, 0);
-		game_selectNextPlayer(game);
-		game_notifyCurrentPlayerTurn(game, 1);
-		game_broadcastGrid(game);
-		return;
-	}
-
-	if (g_state != STATE_ONGOING) {
+	if (g_state != STATE_ONGOING && !game_is(game, MODE_MULTIPLAYER)) {
 		game_restart(game);
 		g_state = STATE_ONGOING;
 		return;
 	}
-	else if (game_selectColor(game, color) > 0) {
-		char finished = game_checkBoard(game);
-		if (finished) {
-			g_state = STATE_FINISH_WON;
-			game_finish(game, 1);
-		}
-		else if (game->iTurns == MAX_TURNS) {
-			g_state = STATE_FINISH_LOST;
-			game_finish(game, 0);
-		}
-		else {
-			game->iTurns++;
-		}
+
+	game_play_result result = game_play(game, color);
+	if (result == GAME_WON) {
+		g_state = STATE_FINISH_WON;
 	}
+	else if (result == GAME_LOST) {
+		g_state = STATE_FINISH_LOST;
+	}
+
 }

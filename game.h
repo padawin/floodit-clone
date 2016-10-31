@@ -12,6 +12,13 @@
 #define MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN 4
 
 typedef enum {MODE_CLASSIC, MODE_TIMED, MODE_MULTIPLAYER} game_mode;
+typedef enum {
+	CLIENT_PLAYED,
+	INVALID_PLAY,
+	GAME_WON,
+	GAME_LOST,
+	END_TURN
+} game_play_result;
 
 typedef struct {
 	SDL_Renderer* renderer;
@@ -41,6 +48,7 @@ void game_start(s_Game *game);
 void game_restart(s_Game *game);
 void game_finish(s_Game *game, const char won);
 void game_clean(s_Game *game);
+game_play_result game_play(s_Game *game, int selectedColor);
 
 // Game attributes
 char game_is(s_Game *game, game_mode mode);

@@ -7,6 +7,7 @@
 char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
 void _generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
+void _notifyServerPlayerTurn(s_Game *game);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -114,6 +115,38 @@ void game_clean(s_Game *game) {
 	}
 }
 
+game_play_result game_play(s_Game *game, int selectedColor) {
+	char isMultiplayer = game_is(game, MODE_MULTIPLAYER);
+	if (isMultiplayer && game->socketConnection.type == CLIENT) {
+		_notifyServerPlayerTurn(game);
+		return CLIENT_PLAYED;
+	}
+	else if (game_selectColor(game, selectedColor) <= 0) {
+		return INVALID_PLAY;
+	}
+
+	char boardFull = game_checkBoard(game);
+	char allTurnsDone = (game->iTurns == MAX_TURNS);
+	game_play_result result;
+	if (boardFull || allTurnsDone) {
+		game_finish(game, !allTurnsDone);
+		result = boardFull ? GAME_WON : GAME_LOST;
+	}
+	else {
+		game->iTurns++;
+		if (isMultiplayer) {
+			game_notifyCurrentPlayerTurn(game, 0);
+			game_selectNextPlayer(game);
+			game_notifyCurrentPlayerTurn(game, 1);
+			game_broadcastGrid(game);
+		}
+
+		result = END_TURN;
+	}
+
+	return result;
+}
+
 
 char game_is(s_Game *game, game_mode mode) {
 	return game->mode == mode;
@@ -161,15 +194,6 @@ char game_checkBoard(s_Game* game) {
 }
 
 char game_selectColor(s_Game* game, int color) {
-	if (game_is(game, MODE_MULTIPLAYER) && game->socketConnection.type == CLIENT) {
-		s_TCPpacket packet;
-		packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
-		packet.size = 1;
-		packet.data[0] = game->iSelectedColor;
-		multiplayer_send_message(game->socketConnection, -1, packet);
-		return -1;
-	}
-
 	int startX, startY;
 	startX = g_startPositionPlayers[game->currentPlayerIndex][0];
 	startY = g_startPositionPlayers[game->currentPlayerIndex][1];
@@ -352,4 +376,12 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 	free(toVisit);
 
 	return 1;
+}
+
+void _notifyServerPlayerTurn(s_Game *game) {
+	s_TCPpacket packet;
+	packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
+	packet.size = 1;
+	packet.data[0] = game->iSelectedColor;
+	multiplayer_send_message(game->socketConnection, -1, packet);
 }
