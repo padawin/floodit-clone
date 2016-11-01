@@ -4,7 +4,6 @@
 
 s_IpAddressConfigurator IPConfigurator_create() {
 	s_IpAddressConfigurator configurator;
-	configurator.selectedDigit = 0;
 	configurator.ipAddress = 0;
 	configurator.currentQuarter = 4;
 	return configurator;

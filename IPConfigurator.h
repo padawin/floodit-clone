@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 typedef struct {
-	char selectedDigit;
 	int8_t currentQuarter;
 	uint32_t ipAddress;
 } s_IpAddressConfigurator;
