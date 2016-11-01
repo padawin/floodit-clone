@@ -56,15 +56,11 @@ void game_setMode(s_Game* game, game_mode mode);
 void game_getTimer(s_Game *game, char *timer);
 
 // Board manipulation and analysis
-char game_checkBoard(s_Game* game);
 char game_selectColor(s_Game* game, int color);
 void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 void game_setGrid(s_Game* game, s_TCPpacket packet);
 
 // Multiplayer
-void game_broadcastGrid(s_Game *game);
-void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn);
-void game_selectNextPlayer(s_Game *game);
 char game_processIncomingPackets(s_Game *game);
 
 

@@ -11,6 +11,10 @@ void _notifyServerPlayerTurn(s_Game *game);
 void _processServerPackets(s_Game *game);
 char _processClientPackets(s_Game *game);
 void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix[2][2], int shift[2]);
+void _broadcastGrid(s_Game *game);
+void _notifyCurrentPlayerTurn(s_Game *game, char isTurn);
+void _selectNextPlayer(s_Game *game);
+char _checkBoard(s_Game* game);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -64,7 +68,7 @@ void game_start(s_Game *game) {
 
 		if (isMultiplayer) {
 			//send grid to players
-			game_broadcastGrid(game);
+			_broadcastGrid(game);
 		}
 
 		_generateFirstPlayer(game);
@@ -74,7 +78,7 @@ void game_start(s_Game *game) {
 		}
 		else {
 			// notify first player
-			game_notifyCurrentPlayerTurn(
+			_notifyCurrentPlayerTurn(
 				game,
 				MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
 			);
@@ -128,7 +132,7 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		return INVALID_PLAY;
 	}
 
-	char boardFull = game_checkBoard(game);
+	char boardFull = _checkBoard(game);
 	char allTurnsDone = (game->iTurns == MAX_TURNS);
 	game_play_result result;
 	if (boardFull || allTurnsDone) {
@@ -140,10 +144,10 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 			game->iTurns++;
 		}
 		else {
-			game_notifyCurrentPlayerTurn(game, 0);
-			game_selectNextPlayer(game);
-			game_notifyCurrentPlayerTurn(game, 1);
-			game_broadcastGrid(game);
+			_notifyCurrentPlayerTurn(game, 0);
+			_selectNextPlayer(game);
+			_notifyCurrentPlayerTurn(game, 1);
+			_broadcastGrid(game);
 		}
 
 		result = END_TURN;
@@ -181,7 +185,7 @@ void game_getTimer(s_Game *game, char *timer) {
 }
 
 
-char game_checkBoard(s_Game* game) {
+char _checkBoard(s_Game* game) {
 	signed char color = -1;
 	int i, j;
 	for (j = 0; j < HEIGHT_GRID; ++j) {
@@ -246,7 +250,7 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 }
 
 
-void game_broadcastGrid(s_Game *game) {
+void _broadcastGrid(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
 	packet.size = 196;
@@ -306,7 +310,7 @@ void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix
 	}
 }
 
-void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
+void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	if (game->currentPlayerIndex == 0) {
 		game->canPlay = isTurn;
 		return;
@@ -327,7 +331,7 @@ void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	);
 }
 
-void game_selectNextPlayer(s_Game *game) {
+void _selectNextPlayer(s_Game *game) {
 	if (game_is(game, MODE_MULTIPLAYER)) {
 		game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
 	}
