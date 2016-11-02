@@ -361,7 +361,8 @@ void _processServerPackets(s_Game *game) {
 	char foundMessage = multiplayer_check_clients(
 		&game->socketConnection,
 		&packet,
-		&indexSocketSendingMessage
+		&indexSocketSendingMessage,
+		0
 	);
 
 	// the current player played and we received its choice
