@@ -22,6 +22,7 @@ typedef enum {
 
 typedef struct {
 	int color;
+	char owner;
 } s_GridCell;
 
 typedef struct {

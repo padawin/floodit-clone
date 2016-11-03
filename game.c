@@ -15,6 +15,7 @@ void _broadcastGrid(s_Game *game);
 void _notifyCurrentPlayerTurn(s_Game *game, char isTurn);
 void _selectNextPlayer(s_Game *game);
 char _checkBoard(s_Game* game);
+void _setGridCellOwner(s_Game *game, int x, int y, int owner);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -256,6 +257,10 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 }
 
 
+void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
+	game->grid[y][x].owner = owner;
+}
+
 void _broadcastGrid(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
@@ -430,6 +435,7 @@ void _generateGrid(s_Game* game) {
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
 			game_setGridCellColor(game, i, j, rand() % NB_COLORS);
+			_setGridCellOwner(game, i, j, -1);
 		}
 	}
 
