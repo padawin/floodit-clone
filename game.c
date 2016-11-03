@@ -132,25 +132,23 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		return INVALID_PLAY;
 	}
 
-	char boardFull = _checkBoard(game);
-	char allTurnsDone = (game->iTurns == MAX_TURNS);
-	game_play_result result;
-	if (boardFull || allTurnsDone) {
-		game_finish(game, !allTurnsDone);
-		result = boardFull ? GAME_WON : GAME_LOST;
-	}
-	else {
-		if (!isMultiplayer) {
-			game->iTurns++;
+	game_play_result result = END_TURN;
+	if (!isMultiplayer) {
+		char boardFull = _checkBoard(game);
+		char allTurnsDone = (game->iTurns == MAX_TURNS);
+		if (boardFull || allTurnsDone) {
+			game_finish(game, !allTurnsDone);
+			result = boardFull ? GAME_WON : GAME_LOST;
 		}
 		else {
-			_notifyCurrentPlayerTurn(game, 0);
-			_selectNextPlayer(game);
-			_notifyCurrentPlayerTurn(game, 1);
-			_broadcastGrid(game);
+			game->iTurns++;
 		}
-
-		result = END_TURN;
+	}
+	else {
+		_notifyCurrentPlayerTurn(game, 0);
+		_selectNextPlayer(game);
+		_notifyCurrentPlayerTurn(game, 1);
+		_broadcastGrid(game);
 	}
 
 	return result;
