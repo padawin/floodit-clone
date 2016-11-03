@@ -15,6 +15,7 @@ void _broadcastGrid(s_Game *game);
 void _notifyCurrentPlayerTurn(s_Game *game, char isTurn);
 void _selectNextPlayer(s_Game *game);
 char _checkBoard(s_Game* game);
+void _setPlayersInitialPosition(s_Game *game);
 void _setGridCellOwner(s_Game *game, int x, int y, int owner);
 
 int g_startPositionPlayers[4][2] = {
@@ -68,6 +69,7 @@ void game_start(s_Game *game) {
 		_generateGrid(game);
 
 		if (isMultiplayer) {
+			_setPlayersInitialPosition(game);
 			//send grid to players
 			_broadcastGrid(game);
 		}
@@ -259,6 +261,18 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 
 void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
 	game->grid[y][x].owner = owner;
+}
+
+void _setPlayersInitialPosition(s_Game *game) {
+	int player;
+	for (player = 0; player < game->socketConnection.nbConnectedSockets + 1; ++player) {
+		_setGridCellOwner(
+			game,
+			g_startPositionPlayers[player][0],
+			g_startPositionPlayers[player][1],
+			player
+		);
+	}
 }
 
 void _broadcastGrid(s_Game *game) {
