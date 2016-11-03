@@ -183,11 +183,11 @@ void game_getTimer(s_Game *game, char *timer) {
 }
 
 int game_getGridCellColor(s_Game *game, int x, int y) {
-	return game->grid[y][x];
+	return game->grid[y][x].color;
 }
 
 void game_setGridCellColor(s_Game *game, int x, int y, int color) {
-	game->grid[y][x] = color;
+	game->grid[y][x].color = color;
 }
 
 
