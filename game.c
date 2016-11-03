@@ -182,17 +182,25 @@ void game_getTimer(s_Game *game, char *timer) {
 	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }
 
+int game_getGridCellColor(s_Game *game, int x, int y) {
+	return game->grid[y][x];
+}
+
+void game_setGridCellColor(s_Game *game, int x, int y, int color) {
+	game->grid[y][x] = color;
+}
+
 
 char _checkBoard(s_Game* game) {
 	signed char color = -1;
 	int i, j;
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
-			if (color != -1 && game->grid[j][i] != color) {
+			if (color != -1 && game_getGridCellColor(game, i, j) != color) {
 				return 0;
 			}
 			else {
-				color = game->grid[j][i];
+				color = game_getGridCellColor(game, i, j);
 			}
 		}
 	}
@@ -240,7 +248,7 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 	int i, j;
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
-			game->grid[j][i] = packet.data[j * WIDTH_GRID + i];
+			game_setGridCellColor(game, i, j, packet.data[j * WIDTH_GRID + i]);
 		}
 	}
 
@@ -303,7 +311,7 @@ void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix
 			// shift to go back in positives
 			x += shift[0];
 			y += shift[1];
-			packet->data[y * WIDTH_GRID + x] = game->grid[j][i];
+			packet->data[y * WIDTH_GRID + x] = game_getGridCellColor(game, i, j);
 		}
 	}
 }
@@ -421,7 +429,7 @@ void _generateGrid(s_Game* game) {
 	srand((unsigned) time(&t));
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
-			game->grid[j][i] = rand() % NB_COLORS;
+			game_setGridCellColor(game, i, j, rand() % NB_COLORS);
 		}
 	}
 
@@ -438,7 +446,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 	int *toVisit;
 	int **visited;
 
-	oldColor = game->grid[startY][startX];
+	oldColor = game_getGridCellColor(game, startX, startY);
 	if (selectedColor == oldColor) {
 		return 0;
 	}
@@ -467,7 +475,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
 		visited[y][x] |= visitedFlag;
-		game->grid[y][x] = selectedColor;
+		game_setGridCellColor(game, x, y, selectedColor);
 
 		int neighbours[4][2];
 		int nbNeighbours;
@@ -475,7 +483,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 		for (i = 0; i < nbNeighbours; ++i) {
 			if (
 				visited[neighbours[i][1]][neighbours[i][0]] == 0
-				&& game->grid[neighbours[i][1]][neighbours[i][0]] == oldColor
+				&& game_getGridCellColor(game, neighbours[i][0], neighbours[i][1]) == oldColor
 			) {
 				toVisit[nbToVisit++] = neighbours[i][1] * WIDTH_GRID + neighbours[i][0];
 				visited[neighbours[i][1]][neighbours[i][0]] = toVisitFlag;
