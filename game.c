@@ -470,8 +470,10 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 	int i, j, nbToVisit, oldColor;
 	int *toVisit;
 	int **visited;
+	int currentOwner;
 
 	oldColor = game_getGridCellColor(game, startX, startY);
+	currentOwner = _getGridCellOwner(game, startX, startY);
 	if (selectedColor == oldColor) {
 		return 0;
 	}
@@ -501,6 +503,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 		y = next / WIDTH_GRID;
 		visited[y][x] |= visitedFlag;
 		game_setGridCellColor(game, x, y, selectedColor);
+		_setGridCellOwner(game, x, y, currentOwner);
 
 		int neighbours[4][2];
 		int nbNeighbours;
