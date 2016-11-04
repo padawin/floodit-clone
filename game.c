@@ -16,6 +16,7 @@ void _notifyCurrentPlayerTurn(s_Game *game, char isTurn);
 void _selectNextPlayer(s_Game *game);
 char _checkBoard(s_Game* game);
 void _setPlayersInitialPosition(s_Game *game);
+int _getGridCellOwner(s_Game *game, int x, int y);
 void _setGridCellOwner(s_Game *game, int x, int y, int owner);
 
 int g_startPositionPlayers[4][2] = {
@@ -258,6 +259,10 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 	game->receivedGrid = 1;
 }
 
+
+int _getGridCellOwner(s_Game *game, int x, int y) {
+	return game->grid[y][x].owner;
+}
 
 void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
 	game->grid[y][x].owner = owner;
