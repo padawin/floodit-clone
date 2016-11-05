@@ -4,7 +4,7 @@
 #include "high_score.h"
 #include "multiplayer.h"
 
-char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char init);
 void _generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _notifyServerPlayerTurn(s_Game *game);
@@ -216,7 +216,7 @@ char game_selectColor(s_Game* game, int color) {
 	int startX, startY;
 	startX = g_startPositionPlayers[game->currentPlayerIndex][0];
 	startY = g_startPositionPlayers[game->currentPlayerIndex][1];
-	char ret = _spreadColor(game, color, startX, startY);
+	char ret = _spreadColor(game, color, startX, startY, 0);
 
 	return ret;
 }
@@ -271,11 +271,15 @@ void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
 void _setPlayersInitialPosition(s_Game *game) {
 	int player;
 	for (player = 0; player < game->socketConnection.nbConnectedSockets + 1; ++player) {
-		_setGridCellOwner(
+		int startX = g_startPositionPlayers[player][0],
+			startY = g_startPositionPlayers[player][1];
+		_setGridCellOwner(game, startX, startY, player);
+		_spreadColor(
 			game,
-			g_startPositionPlayers[player][0],
-			g_startPositionPlayers[player][1],
-			player
+			game_getGridCellColor(game, startX, startY),
+			startX,
+			startY,
+			1
 		);
 	}
 }
@@ -464,7 +468,7 @@ void _generateGrid(s_Game* game) {
 /**
  * Change the colors of the grid from [startX, startY] with selectedColor
  */
-char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char init) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
 	int i, j, nbToVisit, oldColor;
@@ -474,7 +478,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 
 	oldColor = game_getGridCellColor(game, startX, startY);
 	currentOwner = _getGridCellOwner(game, startX, startY);
-	if (selectedColor == oldColor) {
+	if (!init && selectedColor == oldColor) {
 		return 0;
 	}
 
