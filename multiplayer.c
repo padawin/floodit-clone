@@ -228,3 +228,11 @@ char _receiveMessage(TCPsocket socket, s_TCPpacket *packet) {
 		}
 	}
 }
+
+void multiplayer_client_leave(s_SocketConnection *socketWrapper) {
+	SDLNet_TCP_DelSocket(
+		socketWrapper->socketSet,
+		socketWrapper->socket
+	);
+	SDLNet_TCP_Close(socketWrapper->socket);
+}

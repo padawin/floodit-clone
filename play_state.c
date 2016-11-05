@@ -84,6 +84,9 @@ void play_state_update(s_Game *game) {
 		case GAME_UPDATE_RESULT_CONNECTION_LOST:
 			fsm_setState(game, mainmenu);
 			break;
+		case GAME_UPDATE_RESULT_PLAYER_LOST:
+			g_state = STATE_FINISH_LOST;
+			break;
 		default:
 			break;
 	}
