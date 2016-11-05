@@ -70,6 +70,7 @@ void game_start(s_Game *game) {
 		_generateGrid(game);
 
 		if (isMultiplayer) {
+			game->lost = 0;
 			_setPlayersInitialPosition(game);
 			//send grid to players
 			_broadcastGrid(game);

@@ -44,6 +44,7 @@ typedef struct {
 	int iSelectedColor;
 	int currentPlayerIndex;
 	char canPlay;
+	char lost;
 	char receivedGrid;
 } s_Game;
 
