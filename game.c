@@ -16,6 +16,7 @@ void _notifyCurrentPlayerTurn(s_Game *game, char isTurn);
 void _selectNextPlayer(s_Game *game);
 char _checkBoard(s_Game* game);
 void _setPlayersInitialPosition(s_Game *game);
+void _notifyCapturedPlayers(s_Game *game);
 int _getGridCellOwner(s_Game *game, int x, int y);
 void _setGridCellOwner(s_Game *game, int x, int y, int owner);
 
@@ -150,6 +151,7 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		}
 	}
 	else {
+		_notifyCapturedPlayers(game);
 		_notifyCurrentPlayerTurn(game, 0);
 		_selectNextPlayer(game);
 		_notifyCurrentPlayerTurn(game, 1);
@@ -558,4 +560,37 @@ void _notifyServerPlayerTurn(s_Game *game) {
 	packet.size = 1;
 	packet.data[0] = game->iSelectedColor;
 	multiplayer_send_message(game->socketConnection, -1, packet);
+}
+
+void _notifyCapturedPlayers(s_Game *game) {
+	int nbCapturedPlayers = 0;
+	for (int p = 0; p < 4; ++p) {
+		if (p == game->currentPlayerIndex) {
+			continue;
+		}
+
+		int ownerCorner = _getGridCellOwner(
+			game,
+			g_startPositionPlayers[p][0],
+			g_startPositionPlayers[p][1]
+		);
+		// the current player captured this corner
+		if (game->currentPlayerIndex == ownerCorner) {
+			++nbCapturedPlayers;
+			// the host
+			if (p == 0) {
+				game->lost = 1;
+			}
+			else {
+				s_TCPpacket packet;
+				packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST;
+				packet.size = 0;
+				multiplayer_send_message(
+					game->socketConnection,
+					p - 1,
+					packet
+				);
+			}
+		}
+	}
 }
