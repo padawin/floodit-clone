@@ -513,9 +513,22 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char 
 		int nbNeighbours;
 		game_getNeighbours(x, y, neighbours, &nbNeighbours);
 		for (i = 0; i < nbNeighbours; ++i) {
+			int neighbourColor = game_getGridCellColor(
+				game,
+				neighbours[i][0],
+				neighbours[i][1]
+			);
+			int neighbourOwner = _getGridCellOwner(
+				game,
+				neighbours[i][0],
+				neighbours[i][1]
+			);
 			if (
 				visited[neighbours[i][1]][neighbours[i][0]] == 0
-				&& game_getGridCellColor(game, neighbours[i][0], neighbours[i][1]) == oldColor
+				&& (
+					(neighbourColor == oldColor && neighbourOwner == currentOwner)
+					|| neighbourColor == selectedColor
+				)
 			) {
 				toVisit[nbToVisit++] = neighbours[i][1] * WIDTH_GRID + neighbours[i][0];
 				visited[neighbours[i][1]][neighbours[i][0]] = toVisitFlag;
