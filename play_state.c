@@ -80,8 +80,12 @@ void play_state_update(s_Game *game) {
 		return;
 	}
 
-	if (!game_processIncomingPackets(game)) {
-		fsm_setState(game, mainmenu);
+	switch (game_processIncomingPackets(game)) {
+		case GAME_UPDATE_RESULT_CONNECTION_LOST:
+			fsm_setState(game, mainmenu);
+			break;
+		default:
+			break;
 	}
 }
 

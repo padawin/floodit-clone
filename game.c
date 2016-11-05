@@ -387,12 +387,11 @@ void _selectNextPlayer(s_Game *game) {
 char game_processIncomingPackets(s_Game *game) {
 	if (game->socketConnection.type == SERVER) {
 		_processServerPackets(game);
+		return GAME_UPDATE_RESULT_CONTINUE;
 	}
-	else if (!_processClientPackets(game)) {
-		return 0;
+	else {
+		return _processClientPackets(game);
 	}
-
-	return 1;
 }
 
 
@@ -424,7 +423,7 @@ char _processClientPackets(s_Game *game) {
 	s_TCPpacket packet;
 	char state = multiplayer_check_server(&game->socketConnection, &packet);
 	if (state == CONNECTION_LOST) {
-		return 0;
+		return GAME_UPDATE_RESULT_CONNECTION_LOST;
 	}
 	else if (state == MESSAGE_RECEIVED) {
 		if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
@@ -442,7 +441,7 @@ char _processClientPackets(s_Game *game) {
 		}
 	}
 
-	return 1;
+	return GAME_UPDATE_RESULT_CONTINUE;
 }
 
 void _generateFirstPlayer(s_Game *game) {
