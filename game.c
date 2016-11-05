@@ -369,7 +369,12 @@ void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 
 void _selectNextPlayer(s_Game *game) {
 	if (game_is(game, MODE_MULTIPLAYER)) {
-		game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
+		if (!game->lost) {
+			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
+		}
+		else {
+			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % game->socketConnection.nbConnectedSockets + 1;
+		}
 	}
 }
 
