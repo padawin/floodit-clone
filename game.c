@@ -215,9 +215,10 @@ char _checkBoard(s_Game* game) {
 
 char game_selectColor(s_Game* game, int color) {
 	int startX, startY;
+	char ret;
 	startX = g_startPositionPlayers[game->currentPlayerIndex][0];
 	startY = g_startPositionPlayers[game->currentPlayerIndex][1];
-	char ret = _spreadColor(game, color, startX, startY, 0);
+	ret = _spreadColor(game, color, startX, startY, 0);
 
 	return ret;
 }
