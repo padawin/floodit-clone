@@ -161,7 +161,6 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 	return result;
 }
 
-
 char game_is(s_Game *game, game_mode mode) {
 	return game->mode == mode;
 }
@@ -197,23 +196,6 @@ void game_setGridCellColor(s_Game *game, int x, int y, int color) {
 	game->grid[y][x].color = color;
 }
 
-
-char _checkBoard(s_Game* game) {
-	signed char color = -1;
-	int i, j;
-	for (j = 0; j < HEIGHT_GRID; ++j) {
-		for (i = 0; i < WIDTH_GRID; ++i) {
-			if (color != -1 && game_getGridCellColor(game, i, j) != color) {
-				return 0;
-			}
-			else {
-				color = game_getGridCellColor(game, i, j);
-			}
-		}
-	}
-
-	return 1;
-}
 
 char game_selectColor(s_Game* game, int color) {
 	int startX, startY;
@@ -263,6 +245,39 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 	game->receivedGrid = 1;
 }
 
+/**
+ * Will return 0 if the game is a client and if the server disconnected, 1
+ * otherwise
+ */
+char game_processIncomingPackets(s_Game *game) {
+	if (game->socketConnection.type == SERVER) {
+		_processServerPackets(game);
+		return GAME_UPDATE_RESULT_CONTINUE;
+	}
+	else {
+		return _processClientPackets(game);
+	}
+}
+
+
+/** PRIVATE FUNCTIONS **/
+
+char _checkBoard(s_Game* game) {
+	signed char color = -1;
+	int i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			if (color != -1 && game_getGridCellColor(game, i, j) != color) {
+				return 0;
+			}
+			else {
+				color = game_getGridCellColor(game, i, j);
+			}
+		}
+	}
+
+	return 1;
+}
 
 int _getGridCellOwner(s_Game *game, int x, int y) {
 	return game->grid[y][x].owner;
@@ -379,23 +394,6 @@ void _selectNextPlayer(s_Game *game) {
 		}
 	}
 }
-
-/**
- * Will return 0 if the game is a client and if the server disconnected, 1
- * otherwise
- */
-char game_processIncomingPackets(s_Game *game) {
-	if (game->socketConnection.type == SERVER) {
-		_processServerPackets(game);
-		return GAME_UPDATE_RESULT_CONTINUE;
-	}
-	else {
-		return _processClientPackets(game);
-	}
-}
-
-
-/** PRIVATE FUNCTIONS **/
 
 void _processServerPackets(s_Game *game) {
 	s_TCPpacket packet;
