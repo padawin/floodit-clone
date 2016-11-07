@@ -10,6 +10,7 @@ void _generateFirstPlayer(s_Game *game);
 void _notifyServerPlayerTurn(s_Game *game);
 void _processServerPackets(s_Game *game);
 char _processClientPackets(s_Game *game);
+void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int playerIndex);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -249,15 +250,39 @@ void game_broadcastGrid(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
 	packet.size = 196;
-	int i, j;
+	int nbSockets;
+	for (nbSockets = 0; nbSockets < game->socketConnection.nbConnectedSockets; ++nbSockets) {
+		_setRotatedGridPacket(game, &packet, nbSockets);
+		multiplayer_send_message(game->socketConnection, nbSockets, packet);
+	}
+}
 
-	for (j = 0; j < HEIGHT_GRID; ++j) {
-		for (i = 0; i < WIDTH_GRID; ++i) {
-			packet.data[j * WIDTH_GRID + i] = game->grid[j][i];
+void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int playerIndex) {
+	if (playerIndex == 0) {
+		for (int j = HEIGHT_GRID - 1; j >= 0; --j) {
+			for (int i = WIDTH_GRID - 1; i >= 0; --i) {
+				int x = WIDTH_GRID - 1 - i;
+				int y = HEIGHT_GRID - 1 - j;
+				packet->data[y * WIDTH_GRID + x] = game->grid[j][i];
+			}
 		}
 	}
-
-	multiplayer_broadcast(game->socketConnection, packet);
+	else if (playerIndex == 1) {
+		for (int i = WIDTH_GRID - 1; i >= 0; --i) {
+			for (int j = 0; j < HEIGHT_GRID; ++j) {
+				int x = WIDTH_GRID - 1 - i;
+				packet->data[x * HEIGHT_GRID + j] = game->grid[j][i];
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < WIDTH_GRID; ++i) {
+			for (int j = HEIGHT_GRID - 1; j >= 0; --j) {
+				int y = HEIGHT_GRID - 1 - j;
+				packet->data[i * HEIGHT_GRID + y] = game->grid[j][i];
+			}
+		}
+	}
 }
 
 void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
