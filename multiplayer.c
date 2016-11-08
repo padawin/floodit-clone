@@ -53,7 +53,12 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
-char multiplayer_check_clients(s_SocketConnection *socketWrapper, s_TCPpacket *packet, int *fromIndex) {
+char multiplayer_check_clients(
+	s_SocketConnection *socketWrapper,
+	s_TCPpacket *packet,
+	int *fromIndex,
+	char removeDisconnected
+) {
 	int numSockets = SDLNet_CheckSockets(socketWrapper->socketSet, 0);
 	if (numSockets == -1) {
 		printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
@@ -78,9 +83,16 @@ char multiplayer_check_clients(s_SocketConnection *socketWrapper, s_TCPpacket *p
 					socketWrapper->connectedSockets[socket]
 				);
 				SDLNet_TCP_Close(socketWrapper->connectedSockets[socket]);
-				--socketWrapper->nbConnectedSockets;
-				socketWrapper->connectedSockets[socket] = socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets];
-				socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = 0;
+				if (removeDisconnected) {
+					--socketWrapper->nbConnectedSockets;
+					socketWrapper->connectedSockets[socket] = socketWrapper->connectedSockets[
+						socketWrapper->nbConnectedSockets
+					];
+					socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = 0;
+				}
+				else {
+					socketWrapper->connectedSockets[socket] = 0;
+				}
 			}
 			else if (responseCode != ERROR) {
 				*fromIndex = socket + 1;
@@ -215,4 +227,12 @@ char _receiveMessage(TCPsocket socket, s_TCPpacket *packet) {
 			return MESSAGE_RECEIVED;
 		}
 	}
+}
+
+void multiplayer_client_leave(s_SocketConnection *socketWrapper) {
+	SDLNet_TCP_DelSocket(
+		socketWrapper->socketSet,
+		socketWrapper->socket
+	);
+	SDLNet_TCP_Close(socketWrapper->socket);
 }

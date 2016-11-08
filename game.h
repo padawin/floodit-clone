@@ -10,6 +10,11 @@
 #define MULTIPLAYER_MESSAGE_TYPE_GRID 2
 #define MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN 3
 #define MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN 4
+#define MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST 5
+
+#define GAME_UPDATE_RESULT_CONTINUE 0
+#define GAME_UPDATE_RESULT_CONNECTION_LOST 1
+#define GAME_UPDATE_RESULT_PLAYER_LOST 2
 
 typedef enum {MODE_CLASSIC, MODE_TIMED, MODE_MULTIPLAYER} game_mode;
 typedef enum {
@@ -19,6 +24,11 @@ typedef enum {
 	GAME_LOST,
 	END_TURN
 } game_play_result;
+
+typedef struct {
+	int color;
+	char owner;
+} s_GridCell;
 
 typedef struct {
 	SDL_Renderer* renderer;
@@ -33,12 +43,13 @@ typedef struct {
 	game_mode mode;
 	Uint32 timeStarted;
 	Uint32 timeFinished;
-	int grid[HEIGHT_GRID][WIDTH_GRID];
+	s_GridCell grid[HEIGHT_GRID][WIDTH_GRID];
 	int colors[NB_COLORS][3];
 	int iTurns;
 	int iSelectedColor;
 	int currentPlayerIndex;
 	char canPlay;
+	char lost;
 	char receivedGrid;
 } s_Game;
 
@@ -54,17 +65,15 @@ game_play_result game_play(s_Game *game, int selectedColor);
 char game_is(s_Game *game, game_mode mode);
 void game_setMode(s_Game* game, game_mode mode);
 void game_getTimer(s_Game *game, char *timer);
+int game_getGridCellColor(s_Game *game, int x, int y);
+void game_setGridCellColor(s_Game *game, int x, int y, int color);
 
 // Board manipulation and analysis
-char game_checkBoard(s_Game* game);
 char game_selectColor(s_Game* game, int color);
 void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 void game_setGrid(s_Game* game, s_TCPpacket packet);
 
 // Multiplayer
-void game_broadcastGrid(s_Game *game);
-void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn);
-void game_selectNextPlayer(s_Game *game);
 char game_processIncomingPackets(s_Game *game);
 
 

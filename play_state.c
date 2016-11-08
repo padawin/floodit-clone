@@ -80,8 +80,15 @@ void play_state_update(s_Game *game) {
 		return;
 	}
 
-	if (!game_processIncomingPackets(game)) {
-		fsm_setState(game, mainmenu);
+	switch (game_processIncomingPackets(game)) {
+		case GAME_UPDATE_RESULT_CONNECTION_LOST:
+			fsm_setState(game, mainmenu);
+			break;
+		case GAME_UPDATE_RESULT_PLAYER_LOST:
+			g_state = STATE_FINISH_LOST;
+			break;
+		default:
+			break;
 	}
 }
 
@@ -165,14 +172,15 @@ void _renderGrid(s_Game* game) {
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
 			SDL_Rect r;
-			int cR, cG,cB;
+			int cR, cG, cB, cellColor;
 			r.x = margin + i * WIDTH_GRID_PX;
 			r.y = margin + j * HEIGHT_GRID_PX;
 			r.w = WIDTH_GRID_PX;
 			r.h = HEIGHT_GRID_PX;
-			cR = game->colors[game->grid[j][i]][0];
-			cG = game->colors[game->grid[j][i]][1];
-			cB = game->colors[game->grid[j][i]][2];
+			cellColor = game_getGridCellColor(game, i, j);
+			cR = game->colors[cellColor][0];
+			cG = game->colors[cellColor][1];
+			cB = game->colors[cellColor][2];
 
 			SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
 			SDL_RenderFillRect(game->renderer, &r);

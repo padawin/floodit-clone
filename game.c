@@ -4,13 +4,21 @@
 #include "high_score.h"
 #include "multiplayer.h"
 
-char _spreadColor(s_Game *game, int selectedColor, int startX, int startY);
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char init);
 void _generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _notifyServerPlayerTurn(s_Game *game);
 void _processServerPackets(s_Game *game);
 char _processClientPackets(s_Game *game);
 void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix[2][2], int shift[2]);
+void _broadcastGrid(s_Game *game);
+void _notifyCurrentPlayerTurn(s_Game *game, char isTurn);
+void _selectNextPlayer(s_Game *game);
+char _checkBoard(s_Game* game);
+void _setPlayersInitialPosition(s_Game *game);
+void _notifyCapturedPlayers(s_Game *game);
+int _getGridCellOwner(s_Game *game, int x, int y);
+void _setGridCellOwner(s_Game *game, int x, int y, int owner);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -63,8 +71,10 @@ void game_start(s_Game *game) {
 		_generateGrid(game);
 
 		if (isMultiplayer) {
+			game->lost = 0;
+			_setPlayersInitialPosition(game);
 			//send grid to players
-			game_broadcastGrid(game);
+			_broadcastGrid(game);
 		}
 
 		_generateFirstPlayer(game);
@@ -74,7 +84,7 @@ void game_start(s_Game *game) {
 		}
 		else {
 			// notify first player
-			game_notifyCurrentPlayerTurn(
+			_notifyCurrentPlayerTurn(
 				game,
 				MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
 			);
@@ -128,30 +138,28 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		return INVALID_PLAY;
 	}
 
-	char boardFull = game_checkBoard(game);
-	char allTurnsDone = (game->iTurns == MAX_TURNS);
-	game_play_result result;
-	if (boardFull || allTurnsDone) {
-		game_finish(game, !allTurnsDone);
-		result = boardFull ? GAME_WON : GAME_LOST;
-	}
-	else {
-		if (!isMultiplayer) {
-			game->iTurns++;
+	game_play_result result = END_TURN;
+	if (!isMultiplayer) {
+		char boardFull = _checkBoard(game);
+		char allTurnsDone = (game->iTurns == MAX_TURNS);
+		if (boardFull || allTurnsDone) {
+			game_finish(game, !allTurnsDone);
+			result = boardFull ? GAME_WON : GAME_LOST;
 		}
 		else {
-			game_notifyCurrentPlayerTurn(game, 0);
-			game_selectNextPlayer(game);
-			game_notifyCurrentPlayerTurn(game, 1);
-			game_broadcastGrid(game);
+			game->iTurns++;
 		}
-
-		result = END_TURN;
+	}
+	else {
+		_notifyCapturedPlayers(game);
+		_notifyCurrentPlayerTurn(game, 0);
+		_selectNextPlayer(game);
+		_notifyCurrentPlayerTurn(game, 1);
+		_broadcastGrid(game);
 	}
 
 	return result;
 }
-
 
 char game_is(s_Game *game, game_mode mode) {
 	return game->mode == mode;
@@ -180,29 +188,21 @@ void game_getTimer(s_Game *game, char *timer) {
 	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }
 
-
-char game_checkBoard(s_Game* game) {
-	signed char color = -1;
-	int i, j;
-	for (j = 0; j < HEIGHT_GRID; ++j) {
-		for (i = 0; i < WIDTH_GRID; ++i) {
-			if (color != -1 && game->grid[j][i] != color) {
-				return 0;
-			}
-			else {
-				color = game->grid[j][i];
-			}
-		}
-	}
-
-	return 1;
+int game_getGridCellColor(s_Game *game, int x, int y) {
+	return game->grid[y][x].color;
 }
+
+void game_setGridCellColor(s_Game *game, int x, int y, int color) {
+	game->grid[y][x].color = color;
+}
+
 
 char game_selectColor(s_Game* game, int color) {
 	int startX, startY;
+	char ret;
 	startX = g_startPositionPlayers[game->currentPlayerIndex][0];
 	startY = g_startPositionPlayers[game->currentPlayerIndex][1];
-	char ret = _spreadColor(game, color, startX, startY);
+	ret = _spreadColor(game, color, startX, startY, 0);
 
 	return ret;
 }
@@ -238,15 +238,72 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
 	int i, j;
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
-			game->grid[j][i] = packet.data[j * WIDTH_GRID + i];
+			game_setGridCellColor(game, i, j, packet.data[j * WIDTH_GRID + i]);
 		}
 	}
 
 	game->receivedGrid = 1;
 }
 
+/**
+ * Will return 0 if the game is a client and if the server disconnected, 1
+ * otherwise
+ */
+char game_processIncomingPackets(s_Game *game) {
+	if (game->socketConnection.type == SERVER) {
+		_processServerPackets(game);
+		return GAME_UPDATE_RESULT_CONTINUE;
+	}
+	else {
+		return _processClientPackets(game);
+	}
+}
 
-void game_broadcastGrid(s_Game *game) {
+
+/** PRIVATE FUNCTIONS **/
+
+char _checkBoard(s_Game* game) {
+	signed char color = -1;
+	int i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			if (color != -1 && game_getGridCellColor(game, i, j) != color) {
+				return 0;
+			}
+			else {
+				color = game_getGridCellColor(game, i, j);
+			}
+		}
+	}
+
+	return 1;
+}
+
+int _getGridCellOwner(s_Game *game, int x, int y) {
+	return game->grid[y][x].owner;
+}
+
+void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
+	game->grid[y][x].owner = owner;
+}
+
+void _setPlayersInitialPosition(s_Game *game) {
+	int player;
+	for (player = 0; player < game->socketConnection.nbConnectedSockets + 1; ++player) {
+		int startX = g_startPositionPlayers[player][0],
+			startY = g_startPositionPlayers[player][1];
+		_setGridCellOwner(game, startX, startY, player);
+		_spreadColor(
+			game,
+			game_getGridCellColor(game, startX, startY),
+			startX,
+			startY,
+			1
+		);
+	}
+}
+
+void _broadcastGrid(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
 	packet.size = 196;
@@ -301,12 +358,12 @@ void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix
 			// shift to go back in positives
 			x += shift[0];
 			y += shift[1];
-			packet->data[y * WIDTH_GRID + x] = game->grid[j][i];
+			packet->data[y * WIDTH_GRID + x] = game_getGridCellColor(game, i, j);
 		}
 	}
 }
 
-void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
+void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	if (game->currentPlayerIndex == 0) {
 		game->canPlay = isTurn;
 		return;
@@ -327,29 +384,16 @@ void game_notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	);
 }
 
-void game_selectNextPlayer(s_Game *game) {
+void _selectNextPlayer(s_Game *game) {
 	if (game_is(game, MODE_MULTIPLAYER)) {
-		game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
+		if (!game->lost) {
+			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
+		}
+		else {
+			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % game->socketConnection.nbConnectedSockets + 1;
+		}
 	}
 }
-
-/**
- * Will return 0 if the game is a client and if the server disconnected, 1
- * otherwise
- */
-char game_processIncomingPackets(s_Game *game) {
-	if (game->socketConnection.type == SERVER) {
-		_processServerPackets(game);
-	}
-	else if (!_processClientPackets(game)) {
-		return 0;
-	}
-
-	return 1;
-}
-
-
-/** PRIVATE FUNCTIONS **/
 
 void _processServerPackets(s_Game *game) {
 	s_TCPpacket packet;
@@ -357,7 +401,8 @@ void _processServerPackets(s_Game *game) {
 	char foundMessage = multiplayer_check_clients(
 		&game->socketConnection,
 		&packet,
-		&indexSocketSendingMessage
+		&indexSocketSendingMessage,
+		0
 	);
 
 	// the current player played and we received its choice
@@ -376,7 +421,7 @@ char _processClientPackets(s_Game *game) {
 	s_TCPpacket packet;
 	char state = multiplayer_check_server(&game->socketConnection, &packet);
 	if (state == CONNECTION_LOST) {
-		return 0;
+		return GAME_UPDATE_RESULT_CONNECTION_LOST;
 	}
 	else if (state == MESSAGE_RECEIVED) {
 		if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GRID) {
@@ -392,9 +437,13 @@ char _processClientPackets(s_Game *game) {
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN) {
 			game->canPlay = 0;
 		}
+		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST) {
+			multiplayer_client_leave(&game->socketConnection);
+			return GAME_UPDATE_RESULT_PLAYER_LOST;
+		}
 	}
 
-	return 1;
+	return GAME_UPDATE_RESULT_CONTINUE;
 }
 
 void _generateFirstPlayer(s_Game *game) {
@@ -418,7 +467,8 @@ void _generateGrid(s_Game* game) {
 	srand((unsigned) time(&t));
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
-			game->grid[j][i] = rand() % NB_COLORS;
+			game_setGridCellColor(game, i, j, rand() % NB_COLORS);
+			_setGridCellOwner(game, i, j, -1);
 		}
 	}
 
@@ -428,15 +478,17 @@ void _generateGrid(s_Game* game) {
 /**
  * Change the colors of the grid from [startX, startY] with selectedColor
  */
-char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
+char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char init) {
 	char toVisitFlag = 0x1,
 		 visitedFlag = 0x2;
 	int i, j, nbToVisit, oldColor;
 	int *toVisit;
 	int **visited;
+	int currentOwner;
 
-	oldColor = game->grid[startY][startX];
-	if (selectedColor == oldColor) {
+	oldColor = game_getGridCellColor(game, startX, startY);
+	currentOwner = _getGridCellOwner(game, startX, startY);
+	if (!init && selectedColor == oldColor) {
 		return 0;
 	}
 
@@ -464,15 +516,29 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY) {
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
 		visited[y][x] |= visitedFlag;
-		game->grid[y][x] = selectedColor;
+		game_setGridCellColor(game, x, y, selectedColor);
+		_setGridCellOwner(game, x, y, currentOwner);
 
 		int neighbours[4][2];
 		int nbNeighbours;
 		game_getNeighbours(x, y, neighbours, &nbNeighbours);
 		for (i = 0; i < nbNeighbours; ++i) {
+			int neighbourColor = game_getGridCellColor(
+				game,
+				neighbours[i][0],
+				neighbours[i][1]
+			);
+			int neighbourOwner = _getGridCellOwner(
+				game,
+				neighbours[i][0],
+				neighbours[i][1]
+			);
 			if (
 				visited[neighbours[i][1]][neighbours[i][0]] == 0
-				&& game->grid[neighbours[i][1]][neighbours[i][0]] == oldColor
+				&& (
+					(neighbourColor == oldColor && neighbourOwner == currentOwner)
+					|| neighbourColor == selectedColor
+				)
 			) {
 				toVisit[nbToVisit++] = neighbours[i][1] * WIDTH_GRID + neighbours[i][0];
 				visited[neighbours[i][1]][neighbours[i][0]] = toVisitFlag;
@@ -495,4 +561,37 @@ void _notifyServerPlayerTurn(s_Game *game) {
 	packet.size = 1;
 	packet.data[0] = game->iSelectedColor;
 	multiplayer_send_message(game->socketConnection, -1, packet);
+}
+
+void _notifyCapturedPlayers(s_Game *game) {
+	int nbCapturedPlayers = 0;
+	for (int p = 0; p < 4; ++p) {
+		if (p == game->currentPlayerIndex) {
+			continue;
+		}
+
+		int ownerCorner = _getGridCellOwner(
+			game,
+			g_startPositionPlayers[p][0],
+			g_startPositionPlayers[p][1]
+		);
+		// the current player captured this corner
+		if (game->currentPlayerIndex == ownerCorner) {
+			++nbCapturedPlayers;
+			// the host
+			if (p == 0) {
+				game->lost = 1;
+			}
+			else {
+				s_TCPpacket packet;
+				packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST;
+				packet.size = 0;
+				multiplayer_send_message(
+					game->socketConnection,
+					p - 1,
+					packet
+				);
+			}
+		}
+	}
 }
