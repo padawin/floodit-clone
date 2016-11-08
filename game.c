@@ -10,7 +10,7 @@ void _generateFirstPlayer(s_Game *game);
 void _notifyServerPlayerTurn(s_Game *game);
 void _processServerPackets(s_Game *game);
 char _processClientPackets(s_Game *game);
-void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int playerIndex);
+void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix[2][2], int shift[2]);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -251,36 +251,57 @@ void game_broadcastGrid(s_Game *game) {
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_GRID;
 	packet.size = 196;
 	int nbSockets;
+	// rotation matrix to turn the grid depending on the player
+	// |cos(a) -sin(a)|
+	// |sin(a)  cos(a)|
+	int rotationMatrix[2][2];
+	int shift[2];
 	for (nbSockets = 0; nbSockets < game->socketConnection.nbConnectedSockets; ++nbSockets) {
-		_setRotatedGridPacket(game, &packet, nbSockets);
+		if (nbSockets == 0) {
+			// matrix is rotation of 180 degrees
+			rotationMatrix[0][0] = -1;
+			rotationMatrix[1][0] = 0;
+			rotationMatrix[0][1] = 0;
+			rotationMatrix[1][1] = -1;
+			shift[0] = WIDTH_GRID - 1;
+			shift[1] = HEIGHT_GRID - 1;
+		}
+		else if (nbSockets == 1) {
+			// matrix is rotation of 90 degrees
+			rotationMatrix[0][0] = 0;
+			rotationMatrix[1][0] = 1;
+			rotationMatrix[0][1] = -1;
+			rotationMatrix[1][1] = 0;
+			shift[0] = 0;
+			shift[1] = HEIGHT_GRID - 1;
+		}
+		// nbSockets == 2
+		else {
+			// matrix is rotation of 180 degrees
+			rotationMatrix[0][0] = 0;
+			rotationMatrix[1][0] = -1;
+			rotationMatrix[0][1] = 1;
+			rotationMatrix[1][1] = 0;
+			shift[0] = WIDTH_GRID - 1;
+			shift[1] = 0;
+		}
+		_setRotatedGridPacket(game, &packet, rotationMatrix, shift);
 		multiplayer_send_message(game->socketConnection, nbSockets, packet);
 	}
 }
 
-void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int playerIndex) {
-	if (playerIndex == 0) {
-		for (int j = HEIGHT_GRID - 1; j >= 0; --j) {
-			for (int i = WIDTH_GRID - 1; i >= 0; --i) {
-				int x = WIDTH_GRID - 1 - i;
-				int y = HEIGHT_GRID - 1 - j;
-				packet->data[y * WIDTH_GRID + x] = game->grid[j][i];
-			}
-		}
-	}
-	else if (playerIndex == 1) {
-		for (int i = WIDTH_GRID - 1; i >= 0; --i) {
-			for (int j = 0; j < HEIGHT_GRID; ++j) {
-				int x = WIDTH_GRID - 1 - i;
-				packet->data[x * HEIGHT_GRID + j] = game->grid[j][i];
-			}
-		}
-	}
-	else {
-		for (int i = 0; i < WIDTH_GRID; ++i) {
-			for (int j = HEIGHT_GRID - 1; j >= 0; --j) {
-				int y = HEIGHT_GRID - 1 - j;
-				packet->data[i * HEIGHT_GRID + y] = game->grid[j][i];
-			}
+void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix[2][2], int shift[2]) {
+	int x, y, i, j;
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
+			// rotate point around 0 (values will then be between
+			// ]-WIDTH_GRID, 0] and ]-HEIGHT_GRID, 0]
+			x = i * rotationMatrix[0][0] + j * rotationMatrix[1][0];
+			y = i * rotationMatrix[0][1] + j * rotationMatrix[1][1];
+			// shift to go back in positives
+			x += shift[0];
+			y += shift[1];
+			packet->data[y * WIDTH_GRID + x] = game->grid[j][i];
 		}
 	}
 }
