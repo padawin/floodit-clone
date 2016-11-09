@@ -314,7 +314,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	int x = g_IPKeyboardSelectedValue % g_keypadWidth,
 		y = g_IPKeyboardSelectedValue / g_keypadWidth;
 	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
-		if (_addDigitToIP(game)) {
+		if (_addDigitToIP(game) && g_IPConfigurator.ipAddress > 0) {
 			char ip[16];
 			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 			multiplayer_create_connection(&game->socketConnection, ip);
