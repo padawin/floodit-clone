@@ -21,6 +21,7 @@ SDL_Texture *hostIpTexture;
 SDL_Texture *ipsTextures[5];
 SDL_Texture *connectedClientsTexture;
 SDL_Texture *waitForGameTexture;
+SDL_Texture *errorTexture;
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -46,6 +47,7 @@ void _handleIPSelectionEvent(s_Game *game, int key);
 char _addDigitToIP(s_Game *game);
 void _removeDigitFromIP(s_Game *game);
 void _createIPTexture(s_Game *game);
+void _setSetupError(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -125,6 +127,7 @@ void multiplayer_setup_state_clean() {
 	SDL_DestroyTexture(hostIpTexture);
 	SDL_DestroyTexture(connectedClientsTexture);
 	SDL_DestroyTexture(waitForGameTexture);
+	SDL_DestroyTexture(errorTexture);
 	net_freeIfAddr(g_ifap);
 	while (g_nbIps--) {
 		SDL_DestroyTexture(ipsTextures[g_nbIps]);
@@ -175,6 +178,12 @@ void multiplayer_setup_state_render(s_Game* game) {
 			&srcRect, &destRect,
 			0, 0, 0
 		);
+
+		if (errorTexture != 0) {
+			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
+			SDL_Rect rect = {50, 60, textWidth, textHeight};
+			SDL_RenderCopy(game->renderer, errorTexture, NULL, &rect);
+		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		SDL_QueryTexture(hostIpTexture, NULL, NULL, &textWidth, &textHeight);
@@ -240,6 +249,12 @@ void multiplayer_setup_state_render(s_Game* game) {
 				0, 0, 0
 			);
 		}
+
+		if (errorTexture != 0) {
+			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
+			SDL_Rect rect = {50, 210, textWidth, textHeight};
+			SDL_RenderCopy(game->renderer, errorTexture, NULL, &rect);
+		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
 		int textWidth, textHeight;
@@ -264,7 +279,10 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			(IS_GCW && key == SDLK_LCTRL)
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
-			if (multiplayer_create_connection(&game->socketConnection, 0)) {
+			if (!multiplayer_create_connection(&game->socketConnection, 0)) {
+				_setSetupError(game);
+			}
+			else {
 				game_setMode(game, MODE_MULTIPLAYER);
 				multiplayer_initHost(&game->socketConnection, g_playersNumber);
 				g_localState = STATE_WAIT_FOR_CLIENTS;
@@ -290,11 +308,23 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 	else if (g_localState == STATE_JOIN_SETUP) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
+			SDL_DestroyTexture(errorTexture);
 		}
 		else {
 			_handleIPSelectionEvent(game, key);
 		}
 	}
+}
+
+void _setSetupError(s_Game *game) {
+	SDL_DestroyTexture(errorTexture);
+	utils_createTextTexture(
+		game->renderer,
+		game->menuFont,
+		"Unable to create connection",
+		white,
+		&errorTexture
+	);
 }
 
 void _hostGameAction(s_Game *game) {
@@ -318,7 +348,10 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 		if (_addDigitToIP(game) && g_IPConfigurator.ipAddress > 0) {
 			char ip[16];
 			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
-			if (multiplayer_create_connection(&game->socketConnection, ip)) {
+			if (!multiplayer_create_connection(&game->socketConnection, ip)) {
+				_setSetupError(game);
+			}
+			else {
 				multiplayer_initClient(&game->socketConnection);
 				g_localState = STATE_WAIT_FOR_GAME;
 				game_setMode(game, MODE_MULTIPLAYER);
