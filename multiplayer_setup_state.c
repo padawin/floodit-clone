@@ -219,7 +219,7 @@ void multiplayer_setup_state_render(s_Game* game) {
 
 		if (IS_GCW) {
 			SDL_Rect srcRect = {0, 30, 69, 120};
-			SDL_Rect destRect = {(SCREEN_WIDTH - 69) / 2, 100, 69, 120};
+			SDL_Rect destRect = {(SCREEN_WIDTH - 69) / 2, 85, 69, 120};
 			SDL_RenderCopyEx(
 				game->renderer,
 				selectNumberTexture,
@@ -230,7 +230,7 @@ void multiplayer_setup_state_render(s_Game* game) {
 			SDL_Rect srcSelectRect = {46, 0, 23, 30};
 			SDL_Rect destSelectRect = {
 				(SCREEN_WIDTH - 69) / 2 + 23 * (g_IPKeyboardSelectedValue % g_keypadWidth),
-				100 + 30 * (g_IPKeyboardSelectedValue / g_keypadWidth),
+				85 + 30 * (g_IPKeyboardSelectedValue / g_keypadWidth),
 				23, 30
 			};
 			SDL_RenderCopyEx(
