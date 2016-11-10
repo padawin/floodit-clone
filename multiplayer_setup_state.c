@@ -317,10 +317,11 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 		if (_addDigitToIP(game) && g_IPConfigurator.ipAddress > 0) {
 			char ip[16];
 			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
-			multiplayer_create_connection(&game->socketConnection, ip);
-			multiplayer_initClient(&game->socketConnection);
-			g_localState = STATE_WAIT_FOR_GAME;
-			game_setMode(game, MODE_MULTIPLAYER);
+			if (multiplayer_create_connection(&game->socketConnection, ip)) {
+				multiplayer_initClient(&game->socketConnection);
+				g_localState = STATE_WAIT_FOR_GAME;
+				game_setMode(game, MODE_MULTIPLAYER);
+			}
 		}
 		return;
 	}
