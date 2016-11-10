@@ -264,10 +264,11 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			(IS_GCW && key == SDLK_LCTRL)
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
-			multiplayer_create_connection(&game->socketConnection, 0);
-			game_setMode(game, MODE_MULTIPLAYER);
-			multiplayer_initHost(&game->socketConnection, g_playersNumber);
-			g_localState = STATE_WAIT_FOR_CLIENTS;
+			if (multiplayer_create_connection(&game->socketConnection, 0)) {
+				game_setMode(game, MODE_MULTIPLAYER);
+				multiplayer_initHost(&game->socketConnection, g_playersNumber);
+				g_localState = STATE_WAIT_FOR_CLIENTS;
+			}
 		}
 		else if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
