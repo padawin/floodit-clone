@@ -46,7 +46,6 @@ char multiplayer_check_clients(
 	char removeDisconnected
 );
 char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *packet);
-void multiplayer_close_connection(TCPsocket socket);
 void multiplayer_clean(s_SocketConnection *socketWrapper);
 char multiplayer_is_room_full(s_SocketConnection socketWrapper);
 void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet);
