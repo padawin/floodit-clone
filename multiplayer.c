@@ -78,20 +78,13 @@ char multiplayer_check_clients(
 			);
 
 			if (responseCode == CONNECTION_LOST) {
-				SDLNet_TCP_DelSocket(
-					socketWrapper->socketSet,
-					socketWrapper->connectedSockets[socket]
-				);
-				SDLNet_TCP_Close(socketWrapper->connectedSockets[socket]);
+				multiplayer_close_client(socketWrapper, socket);
 				if (removeDisconnected) {
 					--socketWrapper->nbConnectedSockets;
 					socketWrapper->connectedSockets[socket] = socketWrapper->connectedSockets[
 						socketWrapper->nbConnectedSockets
 					];
 					socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = 0;
-				}
-				else {
-					socketWrapper->connectedSockets[socket] = 0;
 				}
 			}
 			else if (responseCode != ERROR) {
@@ -103,6 +96,15 @@ char multiplayer_check_clients(
 	}
 
 	return OK;
+}
+
+void multiplayer_close_client(s_SocketConnection *socketWrapper, int socket) {
+	SDLNet_TCP_DelSocket(
+		socketWrapper->socketSet,
+		socketWrapper->connectedSockets[socket]
+	);
+	SDLNet_TCP_Close(socketWrapper->connectedSockets[socket]);
+	socketWrapper->connectedSockets[socket] = 0;
 }
 
 char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *packet) {
@@ -118,12 +120,8 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 	return OK;
 }
 
-void multiplayer_close_connection(TCPsocket socket) {
-	SDLNet_TCP_Close(socket);
-}
-
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
-	multiplayer_close_connection(socketWrapper->socket);
+	SDLNet_TCP_Close(socketWrapper->socket);
 	while (socketWrapper->nbConnectedSockets--) {
 		SDLNet_TCP_DelSocket(
 			socketWrapper->socketSet,
@@ -167,6 +165,17 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 		}
 		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
 	}
+}
+
+int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
+	int nb = 0, client;
+	for (client = 0; client < socketWrapper.nbConnectedSockets; ++client) {
+		if (socketWrapper.connectedSockets[client]) {
+			++nb;
+		}
+	}
+
+	return nb;
 }
 
 void _parsePacket(s_TCPpacket *packet, char *message) {

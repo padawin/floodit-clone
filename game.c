@@ -8,7 +8,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char 
 void _generateGrid(s_Game* game);
 void _generateFirstPlayer(s_Game *game);
 void _notifyServerPlayerTurn(s_Game *game);
-void _processServerPackets(s_Game *game);
+char _processServerPackets(s_Game *game);
 char _processClientPackets(s_Game *game);
 void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix[2][2], int shift[2]);
 void _broadcastGrid(s_Game *game);
@@ -156,6 +156,10 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		_selectNextPlayer(game);
 		_notifyCurrentPlayerTurn(game, 1);
 		_broadcastGrid(game);
+		// the server lost
+		if (game->lost == 1) {
+			result = GAME_LOST;
+		}
 	}
 
 	return result;
@@ -251,8 +255,7 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
  */
 char game_processIncomingPackets(s_Game *game) {
 	if (game->socketConnection.type == SERVER) {
-		_processServerPackets(game);
-		return GAME_UPDATE_RESULT_CONTINUE;
+		return _processServerPackets(game);;
 	}
 	else {
 		return _processClientPackets(game);
@@ -395,7 +398,7 @@ void _selectNextPlayer(s_Game *game) {
 	}
 }
 
-void _processServerPackets(s_Game *game) {
+char _processServerPackets(s_Game *game) {
 	s_TCPpacket packet;
 	int indexSocketSendingMessage = -1;
 	char foundMessage = multiplayer_check_clients(
@@ -410,11 +413,16 @@ void _processServerPackets(s_Game *game) {
 		// check message comes from good socket
 		if (indexSocketSendingMessage != game->currentPlayerIndex) {
 			// comes from someone else, ignore it
-			return;
+			return GAME_UPDATE_RESULT_CONTINUE;
 		}
 
-		game_play(game, packet.data[0]);
+		game_play_result result = game_play(game, packet.data[0]);
+		if (result == GAME_LOST) {
+			return GAME_UPDATE_RESULT_PLAYER_LOST;
+		}
 	}
+
+	return GAME_UPDATE_RESULT_CONTINUE;
 }
 
 char _processClientPackets(s_Game *game) {
