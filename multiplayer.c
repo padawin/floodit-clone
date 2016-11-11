@@ -167,6 +167,17 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 	}
 }
 
+int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
+	int nb = 0, client;
+	for (client = 0; client < socketWrapper.nbConnectedSockets; ++client) {
+		if (socketWrapper.connectedSockets[client]) {
+			++nb;
+		}
+	}
+
+	return nb;
+}
+
 void _parsePacket(s_TCPpacket *packet, char *message) {
 	packet->type = message[0];
 	packet->size = message[1];
