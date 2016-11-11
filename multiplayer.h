@@ -52,5 +52,6 @@ char multiplayer_is_room_full(s_SocketConnection socketWrapper);
 void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet);
 void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex, s_TCPpacket packet);
 void multiplayer_client_leave(s_SocketConnection *socketWrapper);
+void multiplayer_close_client(s_SocketConnection *socketWrapper, int socket);
 
 #endif
