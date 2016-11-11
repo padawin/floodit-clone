@@ -19,6 +19,8 @@ void _setPlayersInitialPosition(s_Game *game);
 void _notifyCapturedPlayers(s_Game *game);
 int _getGridCellOwner(s_Game *game, int x, int y);
 void _setGridCellOwner(s_Game *game, int x, int y, int owner);
+char _hasWinner(s_Game *game);
+void _notifyWinner(s_Game *game);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -151,14 +153,26 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		}
 	}
 	else {
+		char hasWinner;
 		_notifyCapturedPlayers(game);
-		_notifyCurrentPlayerTurn(game, 0);
-		_selectNextPlayer(game);
-		_notifyCurrentPlayerTurn(game, 1);
-		_broadcastGrid(game);
+		hasWinner = _hasWinner(game);
+		// if only one player is remaining
+		if (hasWinner) {
+			_notifyWinner(game);
+		}
+		else {
+			_notifyCurrentPlayerTurn(game, 0);
+			_selectNextPlayer(game);
+			_notifyCurrentPlayerTurn(game, 1);
+			_broadcastGrid(game);
+		}
 		// the server lost
 		if (game->lost == 1) {
 			result = GAME_LOST;
+		}
+		// the host won
+		else if (hasWinner) {
+			result = GAME_WON;
 		}
 	}
 
@@ -420,6 +434,9 @@ char _processServerPackets(s_Game *game) {
 		if (result == GAME_LOST) {
 			return GAME_UPDATE_RESULT_PLAYER_LOST;
 		}
+		else if (result == GAME_WON) {
+			return GAME_UPDATE_RESULT_PLAYER_WON;
+		}
 	}
 
 	return GAME_UPDATE_RESULT_CONTINUE;
@@ -602,4 +619,24 @@ void _notifyCapturedPlayers(s_Game *game) {
 			}
 		}
 	}
+}
+
+void _notifyWinner(s_Game *game) {
+	if (game->currentPlayerIndex == 0) {
+		return;
+	}
+
+	s_TCPpacket packet;
+	packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_WON;
+	packet.size = 0;
+	multiplayer_send_message(
+		game->socketConnection,
+		game->currentPlayerIndex - 1,
+		packet
+	);
+}
+
+char _hasWinner(s_Game *game) {
+	int nbClients = multiplayer_get_number_clients(game->socketConnection);
+	return (game->lost && nbClients == 1) || (!game->lost && !nbClients);
 }
