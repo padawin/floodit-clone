@@ -616,6 +616,8 @@ void _notifyCapturedPlayers(s_Game *game) {
 					p - 1,
 					packet
 				);
+
+				multiplayer_close_client(&game->socketConnection, p - 1);
 			}
 		}
 	}
