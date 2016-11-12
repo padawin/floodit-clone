@@ -402,13 +402,27 @@ void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 }
 
 void _selectNextPlayer(s_Game *game) {
-	if (game_is(game, MODE_MULTIPLAYER)) {
-		if (!game->lost) {
-			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
-		}
-		else {
-			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % game->socketConnection.nbConnectedSockets + 1;
-		}
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		return;
+	}
+
+	int nextSocketIndex = multiplayer_get_next_connected_socket_index(
+		game->socketConnection,
+		game->currentPlayerIndex - 1
+	);
+
+	// host's turn
+	if (nextSocketIndex == -1 && !game->lost) {
+		game->currentPlayerIndex = 0;
+	}
+	else if (game->lost) {
+		game->currentPlayerIndex = 1 + multiplayer_get_next_connected_socket_index(
+			game->socketConnection,
+			-1
+		);
+	}
+	else {
+		game->currentPlayerIndex = nextSocketIndex + 1;
 	}
 }
 

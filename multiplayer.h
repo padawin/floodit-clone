@@ -53,5 +53,6 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 void multiplayer_client_leave(s_SocketConnection *socketWrapper);
 void multiplayer_close_client(s_SocketConnection *socketWrapper, int socket);
 int multiplayer_get_number_clients(s_SocketConnection socketWrapper);
+int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper, int currentIndex);
 
 #endif

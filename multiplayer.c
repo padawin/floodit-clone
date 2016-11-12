@@ -181,6 +181,19 @@ int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
 	return nb;
 }
 
+int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper, int currentIndex) {
+	int next = -1, s = currentIndex + 1;
+	while (next == -1 && s < socketWrapper.nbConnectedSockets) {
+		if (socketWrapper.connectedSockets[s]) {
+			next = s;
+			break;
+		}
+		++s;
+	}
+
+	return next;
+}
+
 void _parsePacket(s_TCPpacket *packet, char *message) {
 	packet->type = message[0];
 	packet->size = message[1];
