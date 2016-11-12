@@ -163,7 +163,10 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 		else {
 			socket = socketWrapper.connectedSockets[socketIndex];
 		}
-		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
+
+		if (socket != 0) {
+			SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
+		}
 	}
 }
 
