@@ -269,7 +269,7 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
  */
 char game_processIncomingPackets(s_Game *game) {
 	if (game->socketConnection.type == SERVER) {
-		return _processServerPackets(game);;
+		return _processServerPackets(game);
 	}
 	else {
 		return _processClientPackets(game);
