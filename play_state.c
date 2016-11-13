@@ -87,6 +87,9 @@ void play_state_update(s_Game *game) {
 		case GAME_UPDATE_RESULT_PLAYER_LOST:
 			g_state = STATE_FINISH_LOST;
 			break;
+		case GAME_UPDATE_RESULT_PLAYER_WON:
+			g_state = STATE_FINISH_WON;
+			break;
 		default:
 			break;
 	}
