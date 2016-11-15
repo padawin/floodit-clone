@@ -43,9 +43,15 @@ void play_state_init(s_Game *game) {
 		backKey = "ESCAPE";
 	}
 
-	snprintf(restartText, 23, "Press %s to restart", actionKey);
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		snprintf(restartText, 23, "Press %s to restart", actionKey);
+		utils_createTextTexture(renderer, game->endFont, restartText, g_White, &restartEndText);
+	}
+	else {
+		snprintf(restartText, 2, "");
+	}
+
 	snprintf(quitText, 21, "Press %s to quit", backKey);
-	utils_createTextTexture(renderer, game->endFont, restartText, g_White, &restartEndText);
 	utils_createTextTexture(renderer, game->endFont, quitText, g_White, &quitEndText);
 
 	currentTurnText = 0;
