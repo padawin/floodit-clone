@@ -29,17 +29,22 @@ void _renderEndScreen(s_Game* game, const char won);
 
 void play_state_init(s_Game *game) {
 	SDL_Renderer *renderer = game->renderer;
-	const char *restartText, *quitText;
+	char restartText[23], quitText[21];
+	const char *actionKey, *backKey;
 	utils_createTextTexture(renderer, game->endFont, "Congratulations!", g_White, &winEndText);
 	utils_createTextTexture(renderer, game->endFont, "You lost.", g_White, &loseEndText);
+
 	if (IS_GCW) {
-		restartText = "Press A to restart";
-		quitText = "Press SELECT to quit";
+		actionKey = "A";
+		backKey = "SELECT";
 	}
 	else {
-		restartText = "Press SPACE to restart";
-		quitText = "Press ESCAPE to quit";
+		actionKey = "SPACE";
+		backKey = "ESCAPE";
 	}
+
+	snprintf(restartText, 23, "Press %s to restart", actionKey);
+	snprintf(quitText, 21, "Press %s to quit", backKey);
 	utils_createTextTexture(renderer, game->endFont, restartText, g_White, &restartEndText);
 	utils_createTextTexture(renderer, game->endFont, quitText, g_White, &quitEndText);
 
