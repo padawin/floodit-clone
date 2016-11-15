@@ -19,6 +19,8 @@ void _setPlayersInitialPosition(s_Game *game);
 void _notifyCapturedPlayers(s_Game *game);
 int _getGridCellOwner(s_Game *game, int x, int y);
 void _setGridCellOwner(s_Game *game, int x, int y, int owner);
+char _hasWinner(s_Game *game);
+void _notifyWinner(s_Game *game);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -151,14 +153,26 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		}
 	}
 	else {
+		char hasWinner;
 		_notifyCapturedPlayers(game);
-		_notifyCurrentPlayerTurn(game, 0);
-		_selectNextPlayer(game);
-		_notifyCurrentPlayerTurn(game, 1);
-		_broadcastGrid(game);
+		hasWinner = _hasWinner(game);
+		// if only one player is remaining
+		if (hasWinner) {
+			_notifyWinner(game);
+		}
+		else {
+			_notifyCurrentPlayerTurn(game, 0);
+			_selectNextPlayer(game);
+			_notifyCurrentPlayerTurn(game, 1);
+			_broadcastGrid(game);
+		}
 		// the server lost
 		if (game->lost == 1) {
 			result = GAME_LOST;
+		}
+		// the host won
+		else if (hasWinner) {
+			result = GAME_WON;
 		}
 	}
 
@@ -255,7 +269,7 @@ void game_setGrid(s_Game* game, s_TCPpacket packet) {
  */
 char game_processIncomingPackets(s_Game *game) {
 	if (game->socketConnection.type == SERVER) {
-		return _processServerPackets(game);;
+		return _processServerPackets(game);
 	}
 	else {
 		return _processClientPackets(game);
@@ -388,13 +402,27 @@ void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 }
 
 void _selectNextPlayer(s_Game *game) {
-	if (game_is(game, MODE_MULTIPLAYER)) {
-		if (!game->lost) {
-			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % (game->socketConnection.nbConnectedSockets + 1);
-		}
-		else {
-			game->currentPlayerIndex = (game->currentPlayerIndex + 1) % game->socketConnection.nbConnectedSockets + 1;
-		}
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		return;
+	}
+
+	int nextSocketIndex = multiplayer_get_next_connected_socket_index(
+		game->socketConnection,
+		game->currentPlayerIndex - 1
+	);
+
+	// host's turn
+	if (nextSocketIndex == -1 && !game->lost) {
+		game->currentPlayerIndex = 0;
+	}
+	else if (game->lost) {
+		game->currentPlayerIndex = 1 + multiplayer_get_next_connected_socket_index(
+			game->socketConnection,
+			-1
+		);
+	}
+	else {
+		game->currentPlayerIndex = nextSocketIndex + 1;
 	}
 }
 
@@ -419,6 +447,9 @@ char _processServerPackets(s_Game *game) {
 		game_play_result result = game_play(game, packet.data[0]);
 		if (result == GAME_LOST) {
 			return GAME_UPDATE_RESULT_PLAYER_LOST;
+		}
+		else if (result == GAME_WON) {
+			return GAME_UPDATE_RESULT_PLAYER_WON;
 		}
 	}
 
@@ -448,6 +479,10 @@ char _processClientPackets(s_Game *game) {
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST) {
 			multiplayer_client_leave(&game->socketConnection);
 			return GAME_UPDATE_RESULT_PLAYER_LOST;
+		}
+		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_WON) {
+			multiplayer_client_leave(&game->socketConnection);
+			return GAME_UPDATE_RESULT_PLAYER_WON;
 		}
 	}
 
@@ -599,7 +634,29 @@ void _notifyCapturedPlayers(s_Game *game) {
 					p - 1,
 					packet
 				);
+
+				multiplayer_close_client(&game->socketConnection, p - 1);
 			}
 		}
 	}
+}
+
+void _notifyWinner(s_Game *game) {
+	if (game->currentPlayerIndex == 0) {
+		return;
+	}
+
+	s_TCPpacket packet;
+	packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_WON;
+	packet.size = 0;
+	multiplayer_send_message(
+		game->socketConnection,
+		game->currentPlayerIndex - 1,
+		packet
+	);
+}
+
+char _hasWinner(s_Game *game) {
+	int nbClients = multiplayer_get_number_clients(game->socketConnection);
+	return (game->lost && nbClients == 1) || (!game->lost && !nbClients);
 }

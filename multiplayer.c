@@ -163,7 +163,10 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 		else {
 			socket = socketWrapper.connectedSockets[socketIndex];
 		}
-		SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
+
+		if (socket != 0) {
+			SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
+		}
 	}
 }
 
@@ -176,6 +179,19 @@ int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
 	}
 
 	return nb;
+}
+
+int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper, int currentIndex) {
+	int next = -1, s = currentIndex + 1;
+	while (next == -1 && s < socketWrapper.nbConnectedSockets) {
+		if (socketWrapper.connectedSockets[s]) {
+			next = s;
+			break;
+		}
+		++s;
+	}
+
+	return next;
 }
 
 void _parsePacket(s_TCPpacket *packet, char *message) {

@@ -29,16 +29,30 @@ void _renderEndScreen(s_Game* game, const char won);
 
 void play_state_init(s_Game *game) {
 	SDL_Renderer *renderer = game->renderer;
+	char restartText[23], quitText[21];
+	const char *actionKey, *backKey;
 	utils_createTextTexture(renderer, game->endFont, "Congratulations!", g_White, &winEndText);
 	utils_createTextTexture(renderer, game->endFont, "You lost.", g_White, &loseEndText);
+
 	if (IS_GCW) {
-		utils_createTextTexture(renderer, game->endFont, "Press A to restart", g_White, &restartEndText);
-		utils_createTextTexture(renderer, game->endFont, "Press SELECT to quit", g_White, &quitEndText);
+		actionKey = "A";
+		backKey = "SELECT";
 	}
 	else {
-		utils_createTextTexture(renderer, game->endFont, "Press SPACE to restart", g_White, &restartEndText);
-		utils_createTextTexture(renderer, game->endFont, "PRESS ESCAPE to quit", g_White, &quitEndText);
+		actionKey = "SPACE";
+		backKey = "ESCAPE";
 	}
+
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		snprintf(restartText, 23, "Press %s to restart", actionKey);
+		utils_createTextTexture(renderer, game->endFont, restartText, g_White, &restartEndText);
+	}
+	else {
+		snprintf(restartText, 2, "");
+	}
+
+	snprintf(quitText, 21, "Press %s to quit", backKey);
+	utils_createTextTexture(renderer, game->endFont, quitText, g_White, &quitEndText);
 
 	currentTurnText = 0;
 	timerText = 0;
@@ -86,6 +100,9 @@ void play_state_update(s_Game *game) {
 			break;
 		case GAME_UPDATE_RESULT_PLAYER_LOST:
 			g_state = STATE_FINISH_LOST;
+			break;
+		case GAME_UPDATE_RESULT_PLAYER_WON:
+			g_state = STATE_FINISH_WON;
 			break;
 		default:
 			break;
