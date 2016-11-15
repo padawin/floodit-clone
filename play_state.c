@@ -48,7 +48,7 @@ void play_state_init(s_Game *game) {
 		utils_createTextTexture(renderer, game->endFont, restartText, g_White, &restartEndText);
 	}
 	else {
-		snprintf(restartText, 2, "");
+		restartText[0] = '\0';
 	}
 
 	snprintf(quitText, 21, "Press %s to quit", backKey);
