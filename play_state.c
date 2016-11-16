@@ -90,7 +90,7 @@ void play_state_handleEvent(s_Game* game, int key) {
 }
 
 void play_state_update(s_Game *game) {
-	if (!game_is(game, MODE_MULTIPLAYER)) {
+	if (!game_is(game, MODE_MULTIPLAYER) || g_state != STATE_ONGOING) {
 		return;
 	}
 
