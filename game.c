@@ -124,10 +124,6 @@ void game_clean(s_Game *game) {
 	game->highScoreFont = NULL;
 	TTF_CloseFont(game->highScoreTitleFont);
 	game->highScoreTitleFont = NULL;
-
-	if (game_is(game, MODE_MULTIPLAYER)) {
-		multiplayer_clean(&game->socketConnection);
-	}
 }
 
 game_play_result game_play(s_Game *game, int selectedColor) {

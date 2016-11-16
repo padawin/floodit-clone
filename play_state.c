@@ -132,14 +132,17 @@ void play_state_render(s_Game* game) {
 	}
 }
 
-void play_state_clean() {
+void play_state_clean(s_Game *game) {
 	SDL_DestroyTexture(winEndText);
 	SDL_DestroyTexture(loseEndText);
 	SDL_DestroyTexture(restartEndText);
 	SDL_DestroyTexture(quitEndText);
 	SDL_DestroyTexture(currentTurnText);
 	SDL_DestroyTexture(timerText);
-	// @TODO If is multiplayer, leave game
+
+	if (game_is(game, MODE_MULTIPLAYER) && g_state == STATE_ONGOING) {
+		multiplayer_clean(&game->socketConnection);
+	}
 }
 
 
