@@ -480,11 +480,11 @@ char _processClientPackets(s_Game *game) {
 			game->canPlay = 0;
 		}
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST) {
-			multiplayer_client_leave(&game->socketConnection);
+			multiplayer_clean(&game->socketConnection);
 			return GAME_UPDATE_RESULT_PLAYER_LOST;
 		}
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_WON) {
-			multiplayer_client_leave(&game->socketConnection);
+			multiplayer_clean(&game->socketConnection);
 			return GAME_UPDATE_RESULT_PLAYER_WON;
 		}
 	}
