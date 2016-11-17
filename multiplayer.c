@@ -27,6 +27,7 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 }
 
 void multiplayer_initClient(s_SocketConnection *socketWrapper) {
+	socketWrapper->nbConnectedSockets = 0;
 	socketWrapper->socketSet = SDLNet_AllocSocketSet(1);
 	SDLNet_TCP_AddSocket(socketWrapper->socketSet, socketWrapper->socket);
 	socketWrapper->type = CLIENT;
