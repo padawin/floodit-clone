@@ -439,6 +439,14 @@ char _processServerPackets(s_Game *game) {
 		0
 	);
 
+	// The current player left
+	if (game->currentPlayerIndex > 0
+		&& !multiplayer_is_client_connected(game->socketConnection, game->currentPlayerIndex - 1)
+	) {
+		_selectNextPlayer(game);
+		_notifyCurrentPlayerTurn(game, 1);
+	}
+
 	// the current player played and we received its choice
 	if (foundMessage == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
 		// check message comes from good socket

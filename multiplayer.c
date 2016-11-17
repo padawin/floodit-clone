@@ -194,6 +194,10 @@ int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper
 	return next;
 }
 
+char multiplayer_is_client_connected(s_SocketConnection socketWrapper, int clientIndex) {
+	return socketWrapper.connectedSockets[clientIndex] != 0;
+}
+
 void _parsePacket(s_TCPpacket *packet, char *message) {
 	packet->type = message[0];
 	packet->size = message[1];
