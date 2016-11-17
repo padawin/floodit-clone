@@ -439,6 +439,10 @@ char _processServerPackets(s_Game *game) {
 		0
 	);
 
+	if (!multiplayer_get_number_clients(game->socketConnection)) {
+		return GAME_UPDATE_RESULT_CONNECTION_LOST;
+	}
+
 	// The current player left
 	if (game->currentPlayerIndex > 0
 		&& !multiplayer_is_client_connected(game->socketConnection, game->currentPlayerIndex - 1)
