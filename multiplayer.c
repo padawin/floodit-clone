@@ -124,12 +124,9 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	SDLNet_TCP_Close(socketWrapper->socket);
 	while (socketWrapper->nbConnectedSockets--) {
-		SDLNet_TCP_DelSocket(
-			socketWrapper->socketSet,
-			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
-		);
-		SDLNet_TCP_Close(
-			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
+		multiplayer_close_client(
+			socketWrapper,
+			socketWrapper->nbConnectedSockets
 		);
 	}
 
