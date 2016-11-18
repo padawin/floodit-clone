@@ -123,6 +123,7 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	SDLNet_TCP_Close(socketWrapper->socket);
+	socketWrapper->socket = 0;
 	while (socketWrapper->nbConnectedSockets--) {
 		multiplayer_close_client(
 			socketWrapper,
@@ -134,7 +135,7 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 		free(socketWrapper->connectedSockets);
 	}
 	SDLNet_FreeSocketSet(socketWrapper->socketSet);
-	socketWrapper->socketSet = NULL;
+	socketWrapper->socketSet = 0;
 }
 
 char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
