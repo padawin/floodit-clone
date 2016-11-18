@@ -72,9 +72,9 @@ void game_start(s_Game *game) {
 	if (!isMultiplayer || (isMultiplayer && game->socketConnection.type == SERVER)) {
 		_generateGrid(game);
 
+		_setPlayersInitialPosition(game);
 		if (isMultiplayer) {
 			game->lost = 0;
-			_setPlayersInitialPosition(game);
 			//send grid to players
 			_broadcastGrid(game);
 		}
@@ -306,7 +306,14 @@ void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
 
 void _setPlayersInitialPosition(s_Game *game) {
 	int player;
-	for (player = 0; player < game->socketConnection.nbConnectedSockets + 1; ++player) {
+	int nbPlayers;
+	if (game_is(game, MODE_MULTIPLAYER)) {
+		nbPlayers = game->socketConnection.nbConnectedSockets + 1;
+	}
+	else {
+		nbPlayers = 1;
+	}
+	for (player = 0; player < nbPlayers; ++player) {
 		int startX = g_startPositionPlayers[player][0],
 			startY = g_startPositionPlayers[player][1];
 		_setGridCellOwner(game, startX, startY, player);
