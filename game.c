@@ -267,8 +267,11 @@ char game_processIncomingPackets(s_Game *game) {
 	if (game->socketConnection.type == SERVER) {
 		return _processServerPackets(game);
 	}
-	else {
+	else if (game->socketConnection.socket != 0) {
 		return _processClientPackets(game);
+	}
+	else {
+		return GAME_UPDATE_RESULT_IGNORE;
 	}
 }
 
