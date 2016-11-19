@@ -418,18 +418,14 @@ void _selectNextPlayer(s_Game *game) {
 	);
 
 	// host's turn
-	if (nextSocketIndex == -1 && !game->lost) {
-		game->currentPlayerIndex = 0;
-	}
-	else if (game->lost) {
-		game->currentPlayerIndex = 1 + multiplayer_get_next_connected_socket_index(
+	if (game->lost && nextSocketIndex == -1) {
+		nextSocketIndex = multiplayer_get_next_connected_socket_index(
 			game->socketConnection,
 			-1
 		);
 	}
-	else {
-		game->currentPlayerIndex = nextSocketIndex + 1;
-	}
+
+	game->currentPlayerIndex = nextSocketIndex + 1;
 }
 
 char _processServerPackets(s_Game *game) {
