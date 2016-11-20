@@ -39,6 +39,7 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber);
 void multiplayer_initClient(s_SocketConnection *socketWrapper);
 void multiplayer_accept_client(s_SocketConnection *socket);
+void multiplayer_reject_clients(s_SocketConnection socketWrapper, int messageType);
 char multiplayer_check_clients(
 	s_SocketConnection *socketWrapper,
 	s_TCPpacket *packet,

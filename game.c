@@ -429,6 +429,7 @@ void _selectNextPlayer(s_Game *game) {
 }
 
 char _processServerPackets(s_Game *game) {
+	multiplayer_reject_clients(game->socketConnection, MULTIPLAYER_MESSAGE_TYPE_SERVER_FULL);
 	s_TCPpacket packet;
 	int indexSocketSendingMessage = -1;
 	char foundMessage = multiplayer_check_clients(

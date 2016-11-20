@@ -47,7 +47,7 @@ void _handleIPSelectionEvent(s_Game *game, int key);
 char _addDigitToIP(s_Game *game);
 void _removeDigitFromIP(s_Game *game);
 void _createIPTexture(s_Game *game);
-void _setSetupError(s_Game *game);
+void _setSetupError(s_Game *game, const char *errorMessage);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -154,8 +154,15 @@ void multiplayer_setup_state_update(s_Game* game) {
 			multiplayer_clean(&game->socketConnection);
 			g_localState = STATE_HOST_JOIN;
 		}
-		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GAME_START) {
-			fsm_setState(game, play);
+		else if (state == MESSAGE_RECEIVED) {
+			if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GAME_START) {
+				fsm_setState(game, play);
+			}
+			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_SERVER_FULL) {
+				multiplayer_clean(&game->socketConnection);
+				g_localState = STATE_JOIN_SETUP;
+				_setSetupError(game, "Server full");
+			}
 		}
 	}
 }
@@ -280,7 +287,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
 			if (!multiplayer_create_connection(&game->socketConnection, 0)) {
-				_setSetupError(game);
+				_setSetupError(game, "Unable to create connection");
 			}
 			else {
 				game_setMode(game, MODE_MULTIPLAYER);
@@ -316,12 +323,12 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 	}
 }
 
-void _setSetupError(s_Game *game) {
+void _setSetupError(s_Game *game, const char *errorMessage) {
 	SDL_DestroyTexture(errorTexture);
 	utils_createTextTexture(
 		game->renderer,
 		game->menuFont,
-		"Unable to create connection",
+		errorMessage,
 		white,
 		&errorTexture
 	);
@@ -349,7 +356,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 			char ip[16];
 			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 			if (!multiplayer_create_connection(&game->socketConnection, ip)) {
-				_setSetupError(game);
+				_setSetupError(game, "Unable to create connection");
 			}
 			else {
 				multiplayer_initClient(&game->socketConnection);
