@@ -54,6 +54,26 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
+void multiplayer_reject_clients(s_SocketConnection socketWrapper, int messageType) {
+	// Accept the client connection to clear it from the incoming connections list
+	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper.socket);
+	if (socket == 0) {
+		return;
+	}
+
+	// Send a message to the client saying the server is full and to tell the
+	// client to go away
+	s_TCPpacket packet;
+	packet.type = messageType;
+	packet.size = 0;
+	char message[TCP_PACKET_MAX_SIZE];
+	_computePacket(packet, message);
+	SDLNet_TCP_Send(socket, message, TCP_PACKET_MAX_SIZE);
+
+	// Shutdown, disconnect, and close the socket to the client
+	SDLNet_TCP_Close(socket);
+}
+
 char multiplayer_check_clients(
 	s_SocketConnection *socketWrapper,
 	s_TCPpacket *packet,
