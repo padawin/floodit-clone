@@ -57,6 +57,7 @@ void game_init(s_Game *game) {
 	game->mode = MODE_CLASSIC;
 	game->canPlay = 0;
 	game->receivedGrid = 0;
+	game->notification.active = 0;
 }
 
 void game_start(s_Game *game) {
