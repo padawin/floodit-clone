@@ -154,8 +154,15 @@ void multiplayer_setup_state_update(s_Game* game) {
 			multiplayer_clean(&game->socketConnection);
 			g_localState = STATE_HOST_JOIN;
 		}
-		else if (state == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_GAME_START) {
-			fsm_setState(game, play);
+		else if (state == MESSAGE_RECEIVED) {
+			if (packet.type == MULTIPLAYER_MESSAGE_TYPE_GAME_START) {
+				fsm_setState(game, play);
+			}
+			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_SERVER_FULL) {
+				multiplayer_clean(&game->socketConnection);
+				g_localState = STATE_JOIN_SETUP;
+				_setSetupError(game, "Server full");
+			}
 		}
 	}
 }
