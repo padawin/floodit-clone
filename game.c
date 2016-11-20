@@ -463,6 +463,7 @@ char _processServerPackets(s_Game *game) {
 			return GAME_UPDATE_RESULT_PLAYER_LOST;
 		}
 		else if (result == GAME_WON) {
+			multiplayer_clean(&game->socketConnection);
 			return GAME_UPDATE_RESULT_PLAYER_WON;
 		}
 	}
