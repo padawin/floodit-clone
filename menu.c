@@ -9,10 +9,6 @@ void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 	) {
 		menu->pActions[menu->iSelectedItem](game);
 	}
-	// exit if ESCAPE is pressed
-	else if (key == SDLK_ESCAPE) {
-		game_setFlag(game, FLAG_DONE);
-	}
 	else if (key == SDLK_UP) {
 		menu->iSelectedItem = (menu->iNbItems + menu->iSelectedItem - 1) % menu->iNbItems;
 	}
@@ -21,8 +17,25 @@ void menu_handleEvent(s_Game *game, s_Menu* menu, int key) {
 	}
 }
 
+void menu_render(s_Game* game, s_Menu* menu) {
+	int i;
+	for (i = 0; i < menu->iNbItems; ++i) {
+		SDL_Texture *item;
+		if (i == menu->iSelectedItem) {
+			item = menu->pSelectedItems[i];
+		}
+		else {
+			item = menu->pItems[i];
+		}
+
+		int textWidth, textHeight;
+		SDL_QueryTexture(item, NULL, NULL, &textWidth, &textHeight);
+		SDL_Rect renderQuad = {50, 30 + i * 35, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, item, NULL, &renderQuad);
+	}
+}
+
 void menu_setActionsNumber(s_Menu* menu, int nbActions) {
-	menu_free(menu);
 	menu->iNbItems = nbActions;
 	menu->iNbActionsSet = 0;
 	menu->iSelectedItem = 0;

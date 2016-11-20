@@ -14,6 +14,7 @@ typedef struct {
 } s_Menu;
 
 void menu_handleEvent(s_Game* game, s_Menu* menu, int key);
+void menu_render(s_Game* game, s_Menu* menu);
 void menu_setActionsNumber(s_Menu* menu, int nbActions);
 void menu_addAction(
 	s_Menu* menu,

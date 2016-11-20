@@ -4,6 +4,7 @@
 #include "game.h"
 #include "play_state.h"
 #include "utils.h"
+#include "fsm.h"
 
 /**
  * Game font
@@ -12,29 +13,125 @@ SDL_Color g_White = {255, 255, 255};
 SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 	*currentTurnText, *timerText;
 
-void play(s_Game* game);
-void renderGrid(s_Game* game);
+#define STATE_ONGOING 1
+#define STATE_FINISH_WON 2
+#define STATE_FINISH_LOST 3
+
+int g_state;
+
+void _play(s_Game* game, int color);
+void _renderGrid(s_Game* game);
 void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom);
-void renderTimer(s_Game* game);
-void renderCurrentTurn(s_Game* game);
-void renderControls(s_Game* game);
-void renderEndScreen(s_Game* game, const char won);
+void _renderTimer(s_Game* game);
+void _renderCurrentTurn(s_Game* game);
+void _renderControls(s_Game* game);
+void _renderEndScreen(s_Game* game, const char won);
 
 void play_state_init(s_Game *game) {
 	SDL_Renderer *renderer = game->renderer;
+	char restartText[23], quitText[21];
+	const char *actionKey, *backKey;
 	utils_createTextTexture(renderer, game->endFont, "Congratulations!", g_White, &winEndText);
 	utils_createTextTexture(renderer, game->endFont, "You lost.", g_White, &loseEndText);
+
 	if (IS_GCW) {
-		utils_createTextTexture(renderer, game->endFont, "Press A to restart", g_White, &restartEndText);
-		utils_createTextTexture(renderer, game->endFont, "Press SELECT to quit", g_White, &quitEndText);
+		actionKey = "A";
+		backKey = "SELECT";
 	}
 	else {
-		utils_createTextTexture(renderer, game->endFont, "Press SPACE to restart", g_White, &restartEndText);
-		utils_createTextTexture(renderer, game->endFont, "PRESS ESCAPE to quit", g_White, &quitEndText);
+		actionKey = "SPACE";
+		backKey = "ESCAPE";
 	}
+
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		snprintf(restartText, 23, "Press %s to restart", actionKey);
+		utils_createTextTexture(renderer, game->endFont, restartText, g_White, &restartEndText);
+	}
+	else {
+		restartText[0] = '\0';
+	}
+
+	snprintf(quitText, 21, "Press %s to quit", backKey);
+	utils_createTextTexture(renderer, game->endFont, quitText, g_White, &quitEndText);
 
 	currentTurnText = 0;
 	timerText = 0;
+	g_state = STATE_ONGOING;
+	game_start(game);
+}
+
+void play_state_handleEvent(s_Game* game, int key) {
+	if (key == SDLK_ESCAPE) {
+		fsm_setState(game, mainmenu);
+	}
+	else if (!game->canPlay) {
+		return;
+	}
+	else if (
+		(IS_GCW && key == SDLK_LCTRL)
+		|| (!IS_GCW && key == SDLK_SPACE)
+	) {
+		_play(game, game->iSelectedColor);
+	}
+	else if (g_state == STATE_ONGOING) {
+		if (key == SDLK_UP) {
+			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
+		}
+		else if (key == SDLK_DOWN) {
+			game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
+		}
+		else if (key == SDLK_LEFT) {
+			game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
+		}
+		else if (key == SDLK_RIGHT) {
+			game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
+		}
+	}
+}
+
+void play_state_update(s_Game *game) {
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		return;
+	}
+
+	switch (game_processIncomingPackets(game)) {
+		case GAME_UPDATE_RESULT_CONNECTION_LOST:
+			if (g_state == STATE_ONGOING) {
+				fsm_setState(game, mainmenu);
+			}
+			break;
+		case GAME_UPDATE_RESULT_PLAYER_LOST:
+			g_state = STATE_FINISH_LOST;
+			break;
+		case GAME_UPDATE_RESULT_PLAYER_WON:
+			g_state = STATE_FINISH_WON;
+			break;
+		default:
+			break;
+	}
+}
+
+void play_state_render(s_Game* game) {
+	if (!game->receivedGrid) {
+		return;
+	}
+
+	_renderGrid(game);
+	if (!game_is(game, MODE_MULTIPLAYER)) {
+		_renderCurrentTurn(game);
+	}
+	_renderControls(game);
+
+	if (game_is(game, MODE_TIMED)) {
+		_renderTimer(game);
+	}
+
+	if (g_state == STATE_FINISH_WON) {
+		_renderEndScreen(game, 1);
+	}
+	else if (g_state == STATE_FINISH_LOST) {
+		_renderEndScreen(game, 0);
+	}
 }
 
 void play_state_clean(s_Game *game) {
@@ -44,24 +141,14 @@ void play_state_clean(s_Game *game) {
 	SDL_DestroyTexture(quitEndText);
 	SDL_DestroyTexture(currentTurnText);
 	SDL_DestroyTexture(timerText);
-}
 
-void play_render(s_Game* game) {
-	renderGrid(game);
-	renderCurrentTurn(game);
-	renderControls(game);
-
-	if (game->mode == MODE_TIMED) {
-		renderTimer(game);
-	}
-
-	if (game->iState == STATE_FINISH_WON) {
-		renderEndScreen(game, 1);
-	}
-	else if (game->iState == STATE_FINISH_LOST) {
-		renderEndScreen(game, 0);
+	if (game_is(game, MODE_MULTIPLAYER) && g_state == STATE_ONGOING) {
+		multiplayer_clean(&game->socketConnection);
 	}
 }
+
+
+/** PRIVATE FUNCTIONS **/
 
 void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom) {
 	int textX, textY,
@@ -79,7 +166,7 @@ void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int margi
 	SDL_RenderCopy(game->renderer, texture, NULL, &rect);
 }
 
-void renderTimer(s_Game *game) {
+void _renderTimer(s_Game *game) {
 	int textMarginRight, textMarginBottom;
 	char timer[6];
 
@@ -90,7 +177,7 @@ void renderTimer(s_Game *game) {
 	_renderText(game, timerText, timer, textMarginRight, textMarginBottom);
 }
 
-void renderCurrentTurn(s_Game* game) {
+void _renderCurrentTurn(s_Game* game) {
 	int textMarginRight, textMarginBottom;
 	char score[8];
 
@@ -102,19 +189,20 @@ void renderCurrentTurn(s_Game* game) {
 
 }
 
-void renderGrid(s_Game* game) {
+void _renderGrid(s_Game* game) {
 	int i, j, margin = 1;
-	for (j = 0; j < HEIGHT_GRID; ++j){
-		for (i = 0; i < WIDTH_GRID; ++i){
+	for (j = 0; j < HEIGHT_GRID; ++j) {
+		for (i = 0; i < WIDTH_GRID; ++i) {
 			SDL_Rect r;
-			int cR, cG,cB;
+			int cR, cG, cB, cellColor;
 			r.x = margin + i * WIDTH_GRID_PX;
 			r.y = margin + j * HEIGHT_GRID_PX;
 			r.w = WIDTH_GRID_PX;
 			r.h = HEIGHT_GRID_PX;
-			cR = game->colors[game->grid[j][i]][0];
-			cG = game->colors[game->grid[j][i]][1];
-			cB = game->colors[game->grid[j][i]][2];
+			cellColor = game_getGridCellColor(game, i, j);
+			cR = game->colors[cellColor][0];
+			cG = game->colors[cellColor][1];
+			cB = game->colors[cellColor][2];
 
 			SDL_SetRenderDrawColor(game->renderer, cR, cG, cB, 255);
 			SDL_RenderFillRect(game->renderer, &r);
@@ -122,11 +210,11 @@ void renderGrid(s_Game* game) {
 	}
 }
 
-void renderControls(s_Game* game) {
+void _renderControls(s_Game* game) {
 	int c,
 		thicknessSelectedX = (SELECTED_WIDTH_CONTROL_PX - WIDTH_CONTROL_PX) / 2,
 		thicknessSelectedY = (SELECTED_HEIGHT_CONTROL_PX - HEIGHT_CONTROL_PX) / 2;
-	for (c = 0; c < NB_COLORS; ++c){
+	for (c = 0; c < NB_COLORS; ++c) {
 		SDL_Rect r;
 		int cR, cG, cB;
 		if (c == game->iSelectedColor) {
@@ -153,10 +241,7 @@ void renderControls(s_Game* game) {
 	}
 }
 
-/**
- * Text dimension very hacked
- */
-void renderEndScreen(s_Game* game, const char won) {
+void _renderEndScreen(s_Game* game, const char won) {
 	int textWidth, textHeight, t;
 	SDL_Texture *texts[3];
 	SDL_Rect rect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
@@ -184,51 +269,19 @@ void renderEndScreen(s_Game* game, const char won) {
 	}
 }
 
-void play_handleEvent(s_Game* game, int key) {
-	if (
-		(IS_GCW && key == SDLK_LCTRL)
-		|| (!IS_GCW && key == SDLK_SPACE)
-	) {
-		play(game);
-	}
-	// exit if ESCAPE is pressed
-	else if (key == SDLK_ESCAPE) {
-		play_state_clean(game);
-		game_init(game);
-	}
-	else if (game->iState == STATE_PLAY) {
-		if (key == SDLK_UP) {
-			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
-		}
-		else if (key == SDLK_DOWN) {
-			game->iSelectedColor = (game->iSelectedColor + 2) % NB_COLORS;
-		}
-		else if (key == SDLK_LEFT) {
-			game->iSelectedColor = (game->iSelectedColor - 1 + NB_COLORS) % NB_COLORS;
-		}
-		else if (key == SDLK_RIGHT) {
-			game->iSelectedColor = (game->iSelectedColor + 1) % NB_COLORS;
-		}
-	}
-}
-
-void play(s_Game* game) {
-	if (game->iState != STATE_PLAY) {
+void _play(s_Game* game, int color) {
+	if (g_state != STATE_ONGOING && !game_is(game, MODE_MULTIPLAYER)) {
 		game_restart(game);
+		g_state = STATE_ONGOING;
 		return;
 	}
-	else if (game_selectColor(game)) {
-		char finished = game_checkBoard(game);
-		if (finished) {
-			game->iState = STATE_FINISH_WON;
-			game_finish(game, 1);
-		}
-		else if (game->iTurns == MAX_TURNS) {
-			game->iState = STATE_FINISH_LOST;
-			game_finish(game, 0);
-		}
-		else {
-			game->iTurns++;
-		}
+
+	game_play_result result = game_play(game, color);
+	if (result == GAME_WON) {
+		g_state = STATE_FINISH_WON;
 	}
+	else if (result == GAME_LOST) {
+		g_state = STATE_FINISH_LOST;
+	}
+
 }

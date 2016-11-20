@@ -1,9 +1,10 @@
 NAME := floodit
 TARGET := $(NAME)
 TARGETDIST := $(NAME).opk
+DISTFILES := $(TARGET) ClearSans-Medium.ttf resources
 OBJS := *.c
 OPTS := -g -O2 -Wall
-LIB := -lSDL2 -lSDL2_ttf
+LIB := -lSDL2 -lSDL2_ttf -lSDL2_net -lSDL2_image
 CC := $(CROSS_COMPILE)gcc
 
 SDL2CONF = $(shell which sdl2-config)
@@ -17,8 +18,9 @@ gcw: $(OBJS)
 	$(CC) $(OPTS) $(CFLAGS) -DGCW $^ -o $(NAME) $(LIB)
 
 opk:
-	cp floodit ClearSans-Medium.ttf dist/
+	cp -r $(DISTFILES) dist/
 	mksquashfs dist $(TARGETDIST) -all-root -noappend -no-exports -no-xattrs
 
 clean:
-	rm -f dist/$(TARGET) $(TARGET) $(TARGETDIST)
+	rm -f $(TARGET) $(TARGETDIST)
+	rm -rf dist/$(TARGET) dist/ClearSans-Medium.ttf dist/resources

@@ -4,17 +4,35 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "globals.h"
+#include "multiplayer.h"
 
-#define FLAG_DONE 0x1
-#define FLAG_NEEDS_RESTART 0x2
+#define MULTIPLAYER_MESSAGE_TYPE_GAME_START 0
+#define MULTIPLAYER_MESSAGE_TYPE_SERVER_FULL 1
+#define MULTIPLAYER_MESSAGE_TYPE_GRID 2
+#define MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN 3
+#define MULTIPLAYER_MESSAGE_TYPE_PLAYER_END_TURN 4
+#define MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST 5
+#define MULTIPLAYER_MESSAGE_TYPE_PLAYER_WON 6
 
-#define STATE_MAIN_MENU 1
-#define STATE_PLAY 2
-#define STATE_FINISH_WON 3
-#define STATE_FINISH_LOST 4
-#define STATE_HIGH_SCORES 5
+#define GAME_UPDATE_RESULT_IGNORE -1
+#define GAME_UPDATE_RESULT_CONTINUE 0
+#define GAME_UPDATE_RESULT_CONNECTION_LOST 1
+#define GAME_UPDATE_RESULT_PLAYER_LOST 2
+#define GAME_UPDATE_RESULT_PLAYER_WON 3
 
-typedef enum {MODE_CLASSIC, MODE_TIMED} game_mode;
+typedef enum {MODE_CLASSIC, MODE_TIMED, MODE_MULTIPLAYER} game_mode;
+typedef enum {
+	CLIENT_PLAYED,
+	INVALID_PLAY,
+	GAME_WON,
+	GAME_LOST,
+	END_TURN
+} game_play_result;
+
+typedef struct {
+	int color;
+	char owner;
+} s_GridCell;
 
 typedef struct {
 	SDL_Renderer* renderer;
@@ -25,27 +43,42 @@ typedef struct {
 	TTF_Font* selectedMenuFont;
 	TTF_Font* highScoreFont;
 	TTF_Font* highScoreTitleFont;
+	s_SocketConnection socketConnection;
 	game_mode mode;
 	Uint32 timeStarted;
 	Uint32 timeFinished;
-	int grid[HEIGHT_GRID][WIDTH_GRID];
+	s_GridCell grid[HEIGHT_GRID][WIDTH_GRID];
 	int colors[NB_COLORS][3];
 	int iTurns;
-	int iState;
 	int iSelectedColor;
-	char cFlags;
+	int currentPlayerIndex;
+	char canPlay;
+	char lost;
+	char receivedGrid;
 } s_Game;
 
+// Game flow
 void game_init(s_Game *game);
-void game_start(s_Game *game, game_mode mode);
+void game_start(s_Game *game);
 void game_restart(s_Game *game);
-char game_checkBoard(s_Game* game);
-char game_selectColor(s_Game* game);
-void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
-char game_is(s_Game *game, char flag);
-void game_setFlag(s_Game *game, char flag);
-void game_unSetFlag(s_Game *game, char flag);
 void game_finish(s_Game *game, const char won);
+void game_clean(s_Game *game);
+game_play_result game_play(s_Game *game, int selectedColor);
+
+// Game attributes
+char game_is(s_Game *game, game_mode mode);
+void game_setMode(s_Game* game, game_mode mode);
 void game_getTimer(s_Game *game, char *timer);
+int game_getGridCellColor(s_Game *game, int x, int y);
+void game_setGridCellColor(s_Game *game, int x, int y, int color);
+
+// Board manipulation and analysis
+char game_selectColor(s_Game* game, int color);
+void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
+void game_setGrid(s_Game* game, s_TCPpacket packet);
+
+// Multiplayer
+char game_processIncomingPackets(s_Game *game);
+
 
 #endif
