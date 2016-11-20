@@ -124,10 +124,6 @@ void game_clean(s_Game *game) {
 	game->highScoreFont = NULL;
 	TTF_CloseFont(game->highScoreTitleFont);
 	game->highScoreTitleFont = NULL;
-
-	if (game_is(game, MODE_MULTIPLAYER)) {
-		multiplayer_clean(&game->socketConnection);
-	}
 }
 
 game_play_result game_play(s_Game *game, int selectedColor) {
@@ -271,8 +267,11 @@ char game_processIncomingPackets(s_Game *game) {
 	if (game->socketConnection.type == SERVER) {
 		return _processServerPackets(game);
 	}
-	else {
+	else if (game->socketConnection.socket != 0) {
 		return _processClientPackets(game);
+	}
+	else {
+		return GAME_UPDATE_RESULT_IGNORE;
 	}
 }
 
@@ -419,18 +418,14 @@ void _selectNextPlayer(s_Game *game) {
 	);
 
 	// host's turn
-	if (nextSocketIndex == -1 && !game->lost) {
-		game->currentPlayerIndex = 0;
-	}
-	else if (game->lost) {
-		game->currentPlayerIndex = 1 + multiplayer_get_next_connected_socket_index(
+	if (game->lost && nextSocketIndex == -1) {
+		nextSocketIndex = multiplayer_get_next_connected_socket_index(
 			game->socketConnection,
 			-1
 		);
 	}
-	else {
-		game->currentPlayerIndex = nextSocketIndex + 1;
-	}
+
+	game->currentPlayerIndex = nextSocketIndex + 1;
 }
 
 char _processServerPackets(s_Game *game) {
@@ -442,6 +437,18 @@ char _processServerPackets(s_Game *game) {
 		&indexSocketSendingMessage,
 		0
 	);
+
+	if (!multiplayer_get_number_clients(game->socketConnection)) {
+		return GAME_UPDATE_RESULT_CONNECTION_LOST;
+	}
+
+	// The current player left
+	if (game->currentPlayerIndex > 0
+		&& !multiplayer_is_client_connected(game->socketConnection, game->currentPlayerIndex - 1)
+	) {
+		_selectNextPlayer(game);
+		_notifyCurrentPlayerTurn(game, 1);
+	}
 
 	// the current player played and we received its choice
 	if (foundMessage == MESSAGE_RECEIVED && packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
@@ -456,6 +463,7 @@ char _processServerPackets(s_Game *game) {
 			return GAME_UPDATE_RESULT_PLAYER_LOST;
 		}
 		else if (result == GAME_WON) {
+			multiplayer_clean(&game->socketConnection);
 			return GAME_UPDATE_RESULT_PLAYER_WON;
 		}
 	}
@@ -484,11 +492,11 @@ char _processClientPackets(s_Game *game) {
 			game->canPlay = 0;
 		}
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST) {
-			multiplayer_client_leave(&game->socketConnection);
+			multiplayer_clean(&game->socketConnection);
 			return GAME_UPDATE_RESULT_PLAYER_LOST;
 		}
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_WON) {
-			multiplayer_client_leave(&game->socketConnection);
+			multiplayer_clean(&game->socketConnection);
 			return GAME_UPDATE_RESULT_PLAYER_WON;
 		}
 	}

@@ -50,9 +50,9 @@ void multiplayer_clean(s_SocketConnection *socketWrapper);
 char multiplayer_is_room_full(s_SocketConnection socketWrapper);
 void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet);
 void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex, s_TCPpacket packet);
-void multiplayer_client_leave(s_SocketConnection *socketWrapper);
 void multiplayer_close_client(s_SocketConnection *socketWrapper, int socket);
 int multiplayer_get_number_clients(s_SocketConnection socketWrapper);
 int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper, int currentIndex);
+char multiplayer_is_client_connected(s_SocketConnection socketWrapper, int clientIndex);
 
 #endif

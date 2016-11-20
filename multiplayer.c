@@ -27,6 +27,7 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 }
 
 void multiplayer_initClient(s_SocketConnection *socketWrapper) {
+	socketWrapper->nbConnectedSockets = 0;
 	socketWrapper->socketSet = SDLNet_AllocSocketSet(1);
 	SDLNet_TCP_AddSocket(socketWrapper->socketSet, socketWrapper->socket);
 	socketWrapper->type = CLIENT;
@@ -122,13 +123,11 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	SDLNet_TCP_Close(socketWrapper->socket);
+	socketWrapper->socket = 0;
 	while (socketWrapper->nbConnectedSockets--) {
-		SDLNet_TCP_DelSocket(
-			socketWrapper->socketSet,
-			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
-		);
-		SDLNet_TCP_Close(
-			socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets]
+		multiplayer_close_client(
+			socketWrapper,
+			socketWrapper->nbConnectedSockets
 		);
 	}
 
@@ -136,7 +135,7 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 		free(socketWrapper->connectedSockets);
 	}
 	SDLNet_FreeSocketSet(socketWrapper->socketSet);
-	socketWrapper->socketSet = NULL;
+	socketWrapper->socketSet = 0;
 }
 
 char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
@@ -192,6 +191,10 @@ int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper
 	}
 
 	return next;
+}
+
+char multiplayer_is_client_connected(s_SocketConnection socketWrapper, int clientIndex) {
+	return socketWrapper.connectedSockets[clientIndex] != 0;
 }
 
 void _parsePacket(s_TCPpacket *packet, char *message) {
@@ -252,12 +255,4 @@ char _receiveMessage(TCPsocket socket, s_TCPpacket *packet) {
 			return MESSAGE_RECEIVED;
 		}
 	}
-}
-
-void multiplayer_client_leave(s_SocketConnection *socketWrapper) {
-	SDLNet_TCP_DelSocket(
-		socketWrapper->socketSet,
-		socketWrapper->socket
-	);
-	SDLNet_TCP_Close(socketWrapper->socket);
 }
