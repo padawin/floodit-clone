@@ -43,11 +43,13 @@ void _initIPs(s_Game *game);
 void _hostGameAction(s_Game *game);
 void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
+void _handleIPSelectionEventGCW(s_Game *game, int key);
 void _handleIPSelectionEvent(s_Game *game, int key);
-char _addDigitToIP(s_Game *game);
+void _addDigitToIP(s_Game *game, char digit);
 void _removeDigitFromIP(s_Game *game);
 void _createIPTexture(s_Game *game);
 void _setSetupError(s_Game *game, const char *errorMessage);
+void _connectToHost(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -317,6 +319,9 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			g_localState = STATE_HOST_JOIN;
 			SDL_DestroyTexture(errorTexture);
 		}
+		else if (IS_GCW) {
+			_handleIPSelectionEventGCW(game, key);
+		}
 		else {
 			_handleIPSelectionEvent(game, key);
 		}
@@ -349,24 +354,33 @@ void _backAction(s_Game *game) {
 }
 
 void _handleIPSelectionEvent(s_Game *game, int key) {
+	if ((SDLK_0 <= key && key <= SDLK_9) || key == SDLK_PERIOD) {
+		if (key != SDLK_PERIOD) {
+			key = key - '0';
+		}
+		_addDigitToIP(game, key);
+	}
+	else if (key == SDLK_SPACE && g_IPConfigurator.ipAddress > 0) {
+		_connectToHost(game);
+	}
+	else if (key == SDLK_BACKSPACE) {
+		_removeDigitFromIP(game);
+	}
+}
+
+void _handleIPSelectionEventGCW(s_Game *game, int key) {
 	int x = g_IPKeyboardSelectedValue % g_keypadWidth,
 		y = g_IPKeyboardSelectedValue / g_keypadWidth;
-	if ((IS_GCW && key == SDLK_LCTRL) || (!IS_GCW && key == SDLK_SPACE)) {
-		if (_addDigitToIP(game) && g_IPConfigurator.ipAddress > 0) {
-			char ip[16];
-			IPConfigurator_toString(&g_IPConfigurator, ip, 1);
-			if (!multiplayer_create_connection(&game->socketConnection, ip)) {
-				_setSetupError(game, "Unable to create connection");
-			}
-			else {
-				multiplayer_initClient(&game->socketConnection);
-				g_localState = STATE_WAIT_FOR_GAME;
-				game_setMode(game, MODE_MULTIPLAYER);
-			}
+	if (key == SDLK_LCTRL) {
+		if (g_IPKeyboardSelectedValue != 11) {
+			_addDigitToIP(game, g_ipCharMapping[g_IPKeyboardSelectedValue]);
+		}
+		else if (g_IPConfigurator.ipAddress > 0) {
+			_connectToHost(game);
 		}
 		return;
 	}
-	else if ((IS_GCW && key == SDLK_LSHIFT) || (!IS_GCW && key == SDLK_BACKSPACE)) {
+	else if (key == SDLK_LSHIFT) {
 		_removeDigitFromIP(game);
 	}
 	else if (key == SDLK_RIGHT) {
@@ -385,18 +399,22 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 	g_IPKeyboardSelectedValue = (y * g_keypadWidth + x);
 }
 
-char _addDigitToIP(s_Game *game) {
-	if (g_IPKeyboardSelectedValue == 11) {
-		return 1;
+void _connectToHost(s_Game *game) {
+	char ip[16];
+	IPConfigurator_toString(&g_IPConfigurator, ip, 1);
+	if (!multiplayer_create_connection(&game->socketConnection, ip)) {
+		_setSetupError(game, "Unable to create connection");
 	}
+	else {
+		multiplayer_initClient(&game->socketConnection);
+		g_localState = STATE_WAIT_FOR_GAME;
+		game_setMode(game, MODE_MULTIPLAYER);
+	}
+}
 
-	IPConfigurator_addChar(
-		&g_IPConfigurator,
-		g_ipCharMapping[g_IPKeyboardSelectedValue]
-	);
-
+void _addDigitToIP(s_Game *game, char digit) {
+	IPConfigurator_addChar(&g_IPConfigurator, digit);
 	_createIPTexture(game);
-	return 0;
 }
 
 void _removeDigitFromIP(s_Game *game) {
