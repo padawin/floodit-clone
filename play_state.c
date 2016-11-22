@@ -26,6 +26,7 @@ void _renderTimer(s_Game* game);
 void _renderCurrentTurn(s_Game* game);
 void _renderControls(s_Game* game);
 void _renderEndScreen(s_Game* game, const char won);
+void _renderNotification(s_Game* game);
 
 void play_state_init(s_Game *game) {
 	SDL_Renderer *renderer = game->renderer;
@@ -131,6 +132,9 @@ void play_state_render(s_Game* game) {
 	}
 	else if (g_state == STATE_FINISH_LOST) {
 		_renderEndScreen(game, 0);
+	}
+	else if (game_hasNotification(game)) {
+		_renderNotification(game);
 	}
 }
 
@@ -267,6 +271,10 @@ void _renderEndScreen(s_Game* game, const char won) {
 		rect.h = textHeight;
 		SDL_RenderCopy(game->renderer, texts[t], NULL, &rect);
 	}
+}
+
+void _renderNotification(s_Game* game) {
+	printf("notification: %s (%d)\n", game_getNotificationText(game), game_getNotificationAge(game));
 }
 
 void _play(s_Game* game, int color) {
