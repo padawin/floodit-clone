@@ -72,7 +72,12 @@ void play_state_handleEvent(s_Game* game, int key) {
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
-		_play(game, game->iSelectedColor);
+		if (game_hasNotification(game)) {
+			game_deleteNotification(game);
+		}
+		else {
+			_play(game, game->iSelectedColor);
+		}
 	}
 	else if (g_state == STATE_ONGOING) {
 		if (key == SDLK_UP) {
