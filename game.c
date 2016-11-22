@@ -276,6 +276,33 @@ char game_processIncomingPackets(s_Game *game) {
 	}
 }
 
+void game_addNotification(s_Game *game, const char *text) {
+	game->notification.text = text;
+	game->notification.timeStarted = SDL_GetTicks();
+	game->notification.active = 1;
+}
+
+char game_hasNotification(s_Game *game) {
+	return game->notification.active == 1;
+}
+
+void game_deleteNotification(s_Game *game) {
+	game->notification.text = "";
+	game->notification.active = 0;
+}
+
+const char *game_getNotificationText(s_Game *game) {
+	return game->notification.text;
+}
+
+uint32_t game_getNotificationAge(s_Game *game) {
+	if (!game->notification.active) {
+		return 0;
+	}
+
+	return SDL_GetTicks() - game->notification.timeStarted;
+}
+
 
 /** PRIVATE FUNCTIONS **/
 
