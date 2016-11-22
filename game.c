@@ -40,7 +40,7 @@ void game_init(s_Game *game) {
 	game->colors[0][1] = 0;
 	game->colors[0][2] = 0;
 	game->colors[1][0] = 17;
-	game->colors[1][1] = 0;
+	game->colors[1][1] = 87;
 	game->colors[1][2] = 205;
 	game->colors[2][0] = 21;
 	game->colors[2][1] = 127;
@@ -48,9 +48,9 @@ void game_init(s_Game *game) {
 	game->colors[3][0] = 255;
 	game->colors[3][1] = 251;
 	game->colors[3][2] = 15;
-	game->colors[4][0] = 38;
-	game->colors[4][1] = 196;
-	game->colors[4][2] = 217;
+	game->colors[4][0] = 42;
+	game->colors[4][1] = 206;
+	game->colors[4][2] = 225;
 	game->colors[5][0] = 243;
 	game->colors[5][1] = 132;
 	game->colors[5][2] = 48;
