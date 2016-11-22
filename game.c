@@ -416,6 +416,7 @@ void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix
 
 void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	if (game->currentPlayerIndex == 0) {
+		game_addNotification(game, "Your turn!");
 		game->canPlay = isTurn;
 		return;
 	}
@@ -514,6 +515,7 @@ char _processClientPackets(s_Game *game) {
 		// We received a message from the server telling us it is our turn
 		// to play
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+			game_addNotification(game, "Your turn!");
 			game->canPlay = 1;
 		}
 		// The server is now telling us it is not our turn anymore
