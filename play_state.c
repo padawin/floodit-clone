@@ -100,6 +100,11 @@ void play_state_update(s_Game *game) {
 		return;
 	}
 
+	// automatically delete the notification after 3seconds
+	if (game_hasNotification(game) && game_getNotificationAge(game) > 3000) {
+		game_deleteNotification(game);
+	}
+
 	switch (game_processIncomingPackets(game)) {
 		case GAME_UPDATE_RESULT_CONNECTION_LOST:
 			if (g_state == STATE_ONGOING) {
