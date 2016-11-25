@@ -416,7 +416,9 @@ void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix
 
 void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	if (game->currentPlayerIndex == 0) {
-		game_addNotification(game, "Your turn!");
+		if (isTurn) {
+			game_addNotification(game, "Your turn!");
+		}
 		game->canPlay = isTurn;
 		return;
 	}
