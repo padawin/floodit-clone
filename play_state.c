@@ -79,7 +79,7 @@ void play_state_handleEvent(s_Game* game, int key) {
 			_play(game, game->iSelectedColor);
 		}
 	}
-	else if (g_state == STATE_ONGOING) {
+	else if (g_state == STATE_ONGOING && !game_hasNotification(game)) {
 		if (key == SDLK_UP) {
 			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
 		}
