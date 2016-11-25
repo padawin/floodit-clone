@@ -82,16 +82,11 @@ void game_start(s_Game *game) {
 
 		_generateFirstPlayer(game);
 
-		if (game->currentPlayerIndex == 0) {
-			game->canPlay = 1;
-		}
-		else {
-			// notify first player
-			_notifyCurrentPlayerTurn(
-				game,
-				MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
-			);
-		}
+		// notify first player
+		_notifyCurrentPlayerTurn(
+			game,
+			MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
+		);
 	}
 
 	// program main loop
