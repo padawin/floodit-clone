@@ -11,11 +11,13 @@
  */
 SDL_Color g_White = {255, 255, 255};
 SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
-	*currentTurnText, *timerText;
+	*currentTurnText, *timerText, *notificationText;
 
 #define STATE_ONGOING 1
 #define STATE_FINISH_WON 2
 #define STATE_FINISH_LOST 3
+
+#define NOTIFICATION_LIFETIME 2000
 
 int g_state;
 
@@ -26,6 +28,8 @@ void _renderTimer(s_Game* game);
 void _renderCurrentTurn(s_Game* game);
 void _renderControls(s_Game* game);
 void _renderEndScreen(s_Game* game, const char won);
+void _renderNotification(s_Game* game);
+int _getNotificationPosition(s_Game *game);
 
 void play_state_init(s_Game *game) {
 	SDL_Renderer *renderer = game->renderer;
@@ -33,6 +37,7 @@ void play_state_init(s_Game *game) {
 	const char *actionKey, *backKey;
 	utils_createTextTexture(renderer, game->endFont, "Congratulations!", g_White, &winEndText);
 	utils_createTextTexture(renderer, game->endFont, "You lost.", g_White, &loseEndText);
+	notificationText = 0;
 
 	if (IS_GCW) {
 		actionKey = "A";
@@ -71,9 +76,17 @@ void play_state_handleEvent(s_Game* game, int key) {
 		(IS_GCW && key == SDLK_LCTRL)
 		|| (!IS_GCW && key == SDLK_SPACE)
 	) {
-		_play(game, game->iSelectedColor);
+		if (game_hasNotification(game)) {
+			game_deleteNotification(game);
+		}
+		else {
+			_play(game, game->iSelectedColor);
+		}
 	}
 	else if (g_state == STATE_ONGOING) {
+		if (game_hasNotification(game)) {
+			game_deleteNotification(game);
+		}
 		if (key == SDLK_UP) {
 			game->iSelectedColor = (game->iSelectedColor - 2 + NB_COLORS) % NB_COLORS;
 		}
@@ -92,6 +105,25 @@ void play_state_handleEvent(s_Game* game, int key) {
 void play_state_update(s_Game *game) {
 	if (!game_is(game, MODE_MULTIPLAYER)) {
 		return;
+	}
+
+	// automatically delete the notification after 3seconds
+	if (game_hasNotification(game)) {
+		if (game_getNotificationAge(game) > NOTIFICATION_LIFETIME) {
+			game_deleteNotification(game);
+			notificationText = 0;
+		}
+		else {
+			if (notificationText == 0) {
+				utils_createTextTexture(
+					game->renderer,
+					game->endFont,
+					game_getNotificationText(game),
+					g_White,
+					&notificationText
+				);
+			}
+		}
 	}
 
 	switch (game_processIncomingPackets(game)) {
@@ -131,6 +163,9 @@ void play_state_render(s_Game* game) {
 	}
 	else if (g_state == STATE_FINISH_LOST) {
 		_renderEndScreen(game, 0);
+	}
+	else if (game_hasNotification(game)) {
+		_renderNotification(game);
 	}
 }
 
@@ -266,6 +301,34 @@ void _renderEndScreen(s_Game* game, const char won) {
 		rect.w = textWidth;
 		rect.h = textHeight;
 		SDL_RenderCopy(game->renderer, texts[t], NULL, &rect);
+	}
+}
+
+void _renderNotification(s_Game* game) {
+	int textWidth, textHeight, topNotification, leftNotification;
+	leftNotification = _getNotificationPosition(game);
+
+	SDL_QueryTexture(notificationText, NULL, NULL, &textWidth, &textHeight);
+	topNotification = (SCREEN_HEIGHT - textHeight) / 2;
+	SDL_Rect rect = {leftNotification, topNotification, SCREEN_WIDTH, textHeight};
+	SDL_SetRenderDrawBlendMode(game->renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 170);
+	SDL_RenderFillRect(game->renderer, &rect);
+	rect.x = (SCREEN_WIDTH - textWidth) / 2 + leftNotification;
+	rect.y = topNotification;
+	rect.w = textWidth;
+	rect.h = textHeight;
+	SDL_RenderCopy(game->renderer, notificationText, NULL, &rect);
+}
+
+int _getNotificationPosition(s_Game *game) {
+	uint32_t notificationAge = game_getNotificationAge(game);
+	int endAnimTime = NOTIFICATION_LIFETIME / 6;
+	if (notificationAge > endAnimTime) {
+		return 0;
+	}
+	else {
+		return (int) ((SCREEN_WIDTH / (float) endAnimTime) * notificationAge) - SCREEN_WIDTH;
 	}
 }
 

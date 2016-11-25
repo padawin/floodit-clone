@@ -57,6 +57,7 @@ void game_init(s_Game *game) {
 	game->mode = MODE_CLASSIC;
 	game->canPlay = 0;
 	game->receivedGrid = 0;
+	game->notification.active = 0;
 }
 
 void game_start(s_Game *game) {
@@ -81,16 +82,11 @@ void game_start(s_Game *game) {
 
 		_generateFirstPlayer(game);
 
-		if (game->currentPlayerIndex == 0) {
-			game->canPlay = 1;
-		}
-		else {
-			// notify first player
-			_notifyCurrentPlayerTurn(
-				game,
-				MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
-			);
-		}
+		// notify first player
+		_notifyCurrentPlayerTurn(
+			game,
+			MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN
+		);
 	}
 
 	// program main loop
@@ -275,6 +271,33 @@ char game_processIncomingPackets(s_Game *game) {
 	}
 }
 
+void game_addNotification(s_Game *game, const char *text) {
+	game->notification.text = text;
+	game->notification.timeStarted = SDL_GetTicks();
+	game->notification.active = 1;
+}
+
+char game_hasNotification(s_Game *game) {
+	return game->notification.active == 1;
+}
+
+void game_deleteNotification(s_Game *game) {
+	game->notification.text = "";
+	game->notification.active = 0;
+}
+
+const char *game_getNotificationText(s_Game *game) {
+	return game->notification.text;
+}
+
+uint32_t game_getNotificationAge(s_Game *game) {
+	if (!game->notification.active) {
+		return 0;
+	}
+
+	return SDL_GetTicks() - game->notification.timeStarted;
+}
+
 
 /** PRIVATE FUNCTIONS **/
 
@@ -388,6 +411,9 @@ void _setRotatedGridPacket(s_Game *game, s_TCPpacket *packet, int rotationMatrix
 
 void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	if (game->currentPlayerIndex == 0) {
+		if (isTurn) {
+			game_addNotification(game, "Your turn!");
+		}
 		game->canPlay = isTurn;
 		return;
 	}
@@ -486,6 +512,7 @@ char _processClientPackets(s_Game *game) {
 		// We received a message from the server telling us it is our turn
 		// to play
 		else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN) {
+			game_addNotification(game, "Your turn!");
 			game->canPlay = 1;
 		}
 		// The server is now telling us it is not our turn anymore

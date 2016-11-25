@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <stdint.h>
 #include "globals.h"
 #include "multiplayer.h"
 
@@ -35,6 +36,12 @@ typedef struct {
 } s_GridCell;
 
 typedef struct {
+	const char *text;
+	uint32_t timeStarted;
+	char active;
+} s_Notification;
+
+typedef struct {
 	SDL_Renderer* renderer;
 	SDL_Window* window;
 	TTF_Font* scoreFont;
@@ -48,6 +55,7 @@ typedef struct {
 	Uint32 timeStarted;
 	Uint32 timeFinished;
 	s_GridCell grid[HEIGHT_GRID][WIDTH_GRID];
+	s_Notification notification;
 	int colors[NB_COLORS][3];
 	int iTurns;
 	int iSelectedColor;
@@ -80,5 +88,11 @@ void game_setGrid(s_Game* game, s_TCPpacket packet);
 // Multiplayer
 char game_processIncomingPackets(s_Game *game);
 
+void game_addNotification(s_Game *game, const char *text);
+const char *game_getNotificationText(s_Game *game);
+char game_hasNotification(s_Game *game);
+const char *game_getNotificationText(s_Game *game);
+uint32_t game_getNotificationAge(s_Game *game);
+void game_deleteNotification(s_Game *game);
 
 #endif
