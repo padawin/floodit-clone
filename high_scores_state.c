@@ -83,10 +83,10 @@ void high_scores_state_render(s_Game* game) {
 	}
 	else {
 		marginTitleX = 50;
-		marginTitleY = 50;
+		marginTitleY = 30;
 		marginTimeX = 50;
 		marginTurnsX = 200;
-		marginY = 100;
+		marginY = 80;
 	}
 
 	SDL_QueryTexture(highScoresTitle, NULL, NULL, &textWidth, &textHeight);
