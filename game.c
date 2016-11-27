@@ -655,8 +655,8 @@ void _notifyServerPlayerTurn(s_Game *game) {
 }
 
 void _notifyCapturedPlayers(s_Game *game) {
-	int nbCapturedPlayers = 0;
-	for (int p = 0; p < 4; ++p) {
+	int nbCapturedPlayers = 0, p;
+	for (p = 0; p < 4; ++p) {
 		if (p == game->currentPlayerIndex) {
 			continue;
 		}
