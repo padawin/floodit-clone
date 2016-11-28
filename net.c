@@ -10,8 +10,10 @@ int net_getIPs(struct ifaddrs **ifap) {
     return 0;
 }
 
-struct ifaddrs *net_getNextIP(struct ifaddrs **ifap, char **interface, char **addr) {
+char net_getNextIP(struct ifaddrs **ifap, char **interface, char **addr) {
     struct sockaddr_in *sa;
+	*interface = 0;
+	*addr = 0;
 
 	if (*ifap) {
 		if (
@@ -27,7 +29,7 @@ struct ifaddrs *net_getNextIP(struct ifaddrs **ifap, char **interface, char **ad
 		*addr = inet_ntoa(sa->sin_addr);
 		*ifap = (*ifap)->ifa_next;
 
-		return *ifap;
+		return 1;
 	}
 
 	return 0;
