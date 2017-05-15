@@ -1,7 +1,7 @@
 NAME := floodit
 TARGET := $(NAME)
 TARGETDIST := $(NAME).opk
-DISTFILES := $(TARGET) ClearSans-Medium.ttf resources
+DISTFILES := $(TARGET) ClearSans-Medium.ttf LICENCE.md README.md resources
 OBJS := *.c
 OPTS := -g -O2 -Wall
 LIB := -lSDL2 -lSDL2_ttf -lSDL2_net -lSDL2_image
