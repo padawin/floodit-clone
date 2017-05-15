@@ -52,4 +52,4 @@ To start the game, run the executable ```floodit```.
 ## Credits
 
 Font ClearSans from
-https://01.org/clear-sans/blogs/2013/clear-sans-new-font-optimized-small-screen-readability
+https://01.org/clear-sans/blogs/2013/clear-sans-new-font-optimized-small-screen-readability licenced under [Apache License v2.00](https://www.fontsquirrel.com/license/clear-sans)
