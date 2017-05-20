@@ -9,7 +9,7 @@
 /**
  * Game font
  */
-SDL_Color g_White = {255, 255, 255};
+SDL_Color g_White = {255, 255, 255, 255};
 SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 	*currentTurnText, *timerText, *notificationText;
 

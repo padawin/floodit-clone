@@ -14,7 +14,7 @@ void high_scores_state_init(s_Game *game) {
 	int times[MAX_HIGH_SCORES_NUMBER];
 	int turns[MAX_HIGH_SCORES_NUMBER];
 	int nbRows, i;
-	SDL_Color white = {255, 255, 255};
+	SDL_Color white = {255, 255, 255, 255};
 	utils_createTextTexture(
 		game->renderer,
 		game->highScoreTitleFont,

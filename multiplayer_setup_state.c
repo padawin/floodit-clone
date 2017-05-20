@@ -12,7 +12,7 @@
 #include "net.h"
 
 s_Menu g_hostJoinMenu;
-SDL_Color white = {255, 255, 255};
+SDL_Color white = {255, 255, 255, 255};
 SDL_Texture *selectPlayersTexture;
 SDL_Texture *serverIPTexture;
 SDL_Texture *IPTexture;
