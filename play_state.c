@@ -229,7 +229,8 @@ void _renderGrid(s_Game* game) {
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
 			SDL_Rect r;
-			int cR, cG, cB, cellColor;
+			unsigned char cR, cG, cB;
+			int cellColor;
 			r.x = margin + i * WIDTH_GRID_PX;
 			r.y = margin + j * HEIGHT_GRID_PX;
 			r.w = WIDTH_GRID_PX;
@@ -251,7 +252,7 @@ void _renderControls(s_Game* game) {
 		thicknessSelectedY = (SELECTED_HEIGHT_CONTROL_PX - HEIGHT_CONTROL_PX) / 2;
 	for (c = 0; c < NB_COLORS; ++c) {
 		SDL_Rect r;
-		int cR, cG, cB;
+		unsigned char cR, cG, cB;
 		if (c == game->iSelectedColor) {
 			// 480 + 0 +
 			r.x = SCREEN_HEIGHT + CONTROL_MARGIN_X + (c % 2) * SELECTED_WIDTH_CONTROL_PX;

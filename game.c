@@ -203,11 +203,11 @@ void game_getTimer(s_Game *game, char *timer) {
 	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }
 
-int game_getGridCellColor(s_Game *game, int x, int y) {
+char game_getGridCellColor(s_Game *game, int x, int y) {
 	return game->grid[y][x].color;
 }
 
-void game_setGridCellColor(s_Game *game, int x, int y, int color) {
+void game_setGridCellColor(s_Game *game, int x, int y, char color) {
 	game->grid[y][x].color = color;
 }
 

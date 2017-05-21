@@ -31,7 +31,7 @@ typedef enum {
 } game_play_result;
 
 typedef struct {
-	int color;
+	char color;
 	char owner;
 } s_GridCell;
 
@@ -56,7 +56,7 @@ typedef struct {
 	Uint32 timeFinished;
 	s_GridCell grid[HEIGHT_GRID][WIDTH_GRID];
 	s_Notification notification;
-	int colors[NB_COLORS][3];
+	unsigned char colors[NB_COLORS][3];
 	int iTurns;
 	int iSelectedColor;
 	int currentPlayerIndex;
@@ -77,8 +77,8 @@ game_play_result game_play(s_Game *game, int selectedColor);
 char game_is(s_Game *game, game_mode mode);
 void game_setMode(s_Game* game, game_mode mode);
 void game_getTimer(s_Game *game, char *timer);
-int game_getGridCellColor(s_Game *game, int x, int y);
-void game_setGridCellColor(s_Game *game, int x, int y, int color);
+char game_getGridCellColor(s_Game *game, int x, int y);
+void game_setGridCellColor(s_Game *game, int x, int y, char color);
 
 // Board manipulation and analysis
 char game_selectColor(s_Game* game, int color);
