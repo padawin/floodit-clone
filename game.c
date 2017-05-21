@@ -21,6 +21,7 @@ int _getGridCellOwner(s_Game *game, int x, int y);
 void _setGridCellOwner(s_Game *game, int x, int y, int owner);
 char _hasWinner(s_Game *game);
 void _notifyWinner(s_Game *game);
+char _selectColor(s_Game* game, int color);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -133,7 +134,7 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		_notifyServerPlayerTurn(game);
 		return CLIENT_PLAYED;
 	}
-	else if (game_selectColor(game, selectedColor) <= 0) {
+	else if (_selectColor(game, selectedColor) <= 0) {
 		return INVALID_PLAY;
 	}
 
@@ -212,7 +213,7 @@ void game_setGridCellColor(s_Game *game, int x, int y, char color) {
 }
 
 
-char game_selectColor(s_Game* game, int color) {
+char _selectColor(s_Game* game, int color) {
 	int startX, startY;
 	char ret;
 	startX = g_startPositionPlayers[game->currentPlayerIndex][0];

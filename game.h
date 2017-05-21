@@ -81,7 +81,6 @@ char game_getGridCellColor(s_Game *game, int x, int y);
 void game_setGridCellColor(s_Game *game, int x, int y, char color);
 
 // Board manipulation and analysis
-char game_selectColor(s_Game* game, int color);
 void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 void game_setGrid(s_Game* game, s_TCPpacket packet);
 
