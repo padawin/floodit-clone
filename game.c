@@ -17,8 +17,8 @@ void _selectNextPlayer(s_Game *game);
 char _checkBoard(s_Game* game);
 void _setPlayersInitialPosition(s_Game *game);
 void _notifyCapturedPlayers(s_Game *game);
-int _getGridCellOwner(s_Game *game, int x, int y);
-void _setGridCellOwner(s_Game *game, int x, int y, int owner);
+char _getGridCellOwner(s_Game *game, int x, int y);
+void _setGridCellOwner(s_Game *game, int x, int y, char owner);
 char _hasWinner(s_Game *game);
 void _notifyWinner(s_Game *game);
 char _selectColor(s_Game* game, int color);
@@ -325,11 +325,11 @@ char _checkBoard(s_Game* game) {
 	return 1;
 }
 
-int _getGridCellOwner(s_Game *game, int x, int y) {
+char _getGridCellOwner(s_Game *game, int x, int y) {
 	return game->grid[y][x].owner;
 }
 
-void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
+void _setGridCellOwner(s_Game *game, int x, int y, char owner) {
 	game->grid[y][x].owner = owner;
 }
 
@@ -345,7 +345,7 @@ void _setPlayersInitialPosition(s_Game *game) {
 	for (player = 0; player < nbPlayers; ++player) {
 		int startX = g_startPositionPlayers[player][0],
 			startY = g_startPositionPlayers[player][1];
-		_setGridCellOwner(game, startX, startY, player);
+		_setGridCellOwner(game, startX, startY, (char) player);
 		_spreadColor(
 			game,
 			game_getGridCellColor(game, startX, startY),
@@ -573,11 +573,11 @@ void _generateGrid(s_Game* game) {
  */
 char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char init) {
 	char toVisitFlag = 0x1,
-		 visitedFlag = 0x2;
+		 visitedFlag = 0x2,
+		 currentOwner;
 	int i, j, nbToVisit, oldColor;
 	int *toVisit;
 	int **visited;
-	int currentOwner;
 
 	oldColor = game_getGridCellColor(game, startX, startY);
 	currentOwner = _getGridCellOwner(game, startX, startY);
