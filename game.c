@@ -185,7 +185,7 @@ void game_setMode(s_Game *game, game_mode mode) {
 }
 
 void game_getTimer(s_Game *game, char *timer) {
-	Uint32 seconds = 0,
+	int seconds = 0,
 		minutes = 0,
 		totalSeconds,
 		endTime;
@@ -295,12 +295,13 @@ const char *game_getNotificationText(s_Game *game) {
 	return game->notification.text;
 }
 
-uint32_t game_getNotificationAge(s_Game *game) {
+int32_t game_getNotificationAge(s_Game *game) {
 	if (!game->notification.active) {
 		return 0;
 	}
 
-	return SDL_GetTicks() - game->notification.timeStarted;
+	uint32_t age = SDL_GetTicks() - game->notification.timeStarted;
+	return (signed) age;
 }
 
 

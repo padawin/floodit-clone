@@ -323,8 +323,8 @@ void _renderNotification(s_Game* game) {
 }
 
 int _getNotificationPosition(s_Game *game) {
-	uint32_t notificationAge = game_getNotificationAge(game);
-	uint32_t endAnimTime = NOTIFICATION_LIFETIME / 6;
+	int32_t notificationAge = game_getNotificationAge(game);
+	int32_t endAnimTime = NOTIFICATION_LIFETIME / 6;
 	if (notificationAge > endAnimTime) {
 		return 0;
 	}
