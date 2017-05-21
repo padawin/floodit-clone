@@ -561,7 +561,7 @@ void _generateGrid(s_Game* game) {
 	srand((unsigned) time(&t));
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
-			game_setGridCellColor(game, i, j, rand() % NB_COLORS);
+			game_setGridCellColor(game, i, j, (char) (rand() % NB_COLORS));
 			_setGridCellOwner(game, i, j, -1);
 		}
 	}
@@ -610,7 +610,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char 
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
 		visited[y][x] |= visitedFlag;
-		game_setGridCellColor(game, x, y, selectedColor);
+		game_setGridCellColor(game, x, y, (char) selectedColor);
 		_setGridCellOwner(game, x, y, currentOwner);
 
 		int neighbours[4][2];
