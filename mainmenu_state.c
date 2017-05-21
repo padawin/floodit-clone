@@ -13,7 +13,7 @@ s_Menu g_mainMenu;
 
 void mainmenu_state_init(s_Game *game) {
 	menu_setActionsNumber(&g_mainMenu, 5);
-	SDL_Color white = {255, 255, 255};
+	SDL_Color white = {255, 255, 255, 255};
 	utils_createTextTexture(game->renderer, game->menuFont, "Classic Mode", white, &classicModeTexture);
 	utils_createTextTexture(game->renderer, game->selectedMenuFont, "Classic Mode", white, &selectedClassicModeTexture);
 	utils_createTextTexture(game->renderer, game->menuFont, "Timed Mode", white, &timedModeTexture);

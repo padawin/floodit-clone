@@ -11,7 +11,7 @@ s_IpAddressConfigurator IPConfigurator_create() {
 	return configurator;
 }
 
-char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t c) {
+char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const char c) {
 	uint8_t quarterValue, newValue, shift;
 	if (configurator->currentQuarter <= 0) {
 		return 0;
@@ -22,15 +22,15 @@ char IPConfigurator_addChar(s_IpAddressConfigurator *configurator, const uint8_t
 		return 1;
 	}
 
-	shift = (configurator->currentQuarter - 1) * 8;
-	quarterValue = 255 & (configurator->ipAddress >> shift);
-	newValue = quarterValue * 10 + c;
+	shift = (uint8_t) ((configurator->currentQuarter - 1) * 8);
+	quarterValue = (uint8_t) (configurator->ipAddress >> shift);
+	newValue = (uint8_t) (quarterValue * 10 + c);
 	if (newValue < quarterValue) {
 		configurator->currentQuarter--;
 		return IPConfigurator_addChar(configurator, c);
 	}
-	configurator->ipAddress &= ~(255 << shift);
-	configurator->ipAddress |= newValue << shift;
+	configurator->ipAddress &= (unsigned) ~(255 << shift);
+	configurator->ipAddress |= (unsigned) (newValue << shift);
 
 	if (newValue > 25 || (c == 0 && !newValue)) {
 		configurator->currentQuarter--;
@@ -53,15 +53,15 @@ void IPConfigurator_removeChar(s_IpAddressConfigurator *configurator) {
 	}
 
 	newValue = quarterValue / 10;
-	configurator->ipAddress &= ~(255 << shift);
-	configurator->ipAddress |= newValue << shift;
+	configurator->ipAddress &= (unsigned) ~(255 << shift);
+	configurator->ipAddress |= (unsigned) (newValue << shift);
 }
 
 void _setQuarterValueAndShift(s_IpAddressConfigurator *configurator, uint8_t *quarterValue, uint8_t *shift) {
 	uint8_t quarter;
 	quarter = configurator->currentQuarter == 0 ? 1 : configurator->currentQuarter;
-	*shift = (quarter - 1) * 8;
-	*quarterValue = 255 & (configurator->ipAddress >> *shift);
+	*shift = (uint8_t) ((quarter - 1) * 8);
+	*quarterValue = (uint8_t) (configurator->ipAddress >> *shift);
 }
 
 void IPConfigurator_toString(s_IpAddressConfigurator *configurator, char *ip, char full) {
@@ -83,8 +83,8 @@ void IPConfigurator_toString(s_IpAddressConfigurator *configurator, char *ip, ch
 
 	ip[0] = '\0';
 	while (quarter && quarter >= configurator->currentQuarter) {
-		shift = (quarter - 1) * 8;
-		value = 255 & (configurator->ipAddress >> shift);
+		shift = (uint8_t) ((quarter - 1) * 8);
+		value = (uint8_t) (configurator->ipAddress >> shift);
 		sprintf(buff, "%d", value);
 		if (value || quarter > configurator->currentQuarter) {
 			strncat(ip, buff, 3);

@@ -39,9 +39,10 @@ void menu_setActionsNumber(s_Menu* menu, int nbActions) {
 	menu->iNbItems = nbActions;
 	menu->iNbActionsSet = 0;
 	menu->iSelectedItem = 0;
-	menu->pActions = (void (**)(s_Game*)) malloc(nbActions * sizeof(void (*)(s_Game*)));
-	menu->pItems = (SDL_Texture **) malloc(nbActions * sizeof(SDL_Texture *));
-	menu->pSelectedItems = (SDL_Texture **) malloc(nbActions * sizeof(SDL_Texture *));
+	unsigned long nmemb = (unsigned long) nbActions;
+	menu->pActions = (void (**)(s_Game*)) malloc(nmemb * sizeof(void (*)(s_Game*)));
+	menu->pItems = (SDL_Texture **) malloc(nmemb * sizeof(SDL_Texture *));
+	menu->pSelectedItems = (SDL_Texture **) malloc(nmemb * sizeof(SDL_Texture *));
 }
 
 void menu_addAction(

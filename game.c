@@ -17,10 +17,11 @@ void _selectNextPlayer(s_Game *game);
 char _checkBoard(s_Game* game);
 void _setPlayersInitialPosition(s_Game *game);
 void _notifyCapturedPlayers(s_Game *game);
-int _getGridCellOwner(s_Game *game, int x, int y);
-void _setGridCellOwner(s_Game *game, int x, int y, int owner);
+char _getGridCellOwner(s_Game *game, int x, int y);
+void _setGridCellOwner(s_Game *game, int x, int y, char owner);
 char _hasWinner(s_Game *game);
 void _notifyWinner(s_Game *game);
+char _selectColor(s_Game* game, int color);
 
 int g_startPositionPlayers[4][2] = {
 	{0, 0},
@@ -107,7 +108,8 @@ void game_finish(s_Game *game, const char won) {
 	if (game_is(game, MODE_TIMED)) {
 		game->timeFinished = SDL_GetTicks();
 		if (won) {
-			high_score_save(game->timeFinished - game->timeStarted, game->iTurns);
+			unsigned int duration = game->timeFinished - game->timeStarted;
+			high_score_save((signed) duration, game->iTurns);
 		}
 	}
 }
@@ -133,7 +135,7 @@ game_play_result game_play(s_Game *game, int selectedColor) {
 		_notifyServerPlayerTurn(game);
 		return CLIENT_PLAYED;
 	}
-	else if (game_selectColor(game, selectedColor) <= 0) {
+	else if (_selectColor(game, selectedColor) <= 0) {
 		return INVALID_PLAY;
 	}
 
@@ -185,7 +187,7 @@ void game_setMode(s_Game *game, game_mode mode) {
 }
 
 void game_getTimer(s_Game *game, char *timer) {
-	Uint32 seconds = 0,
+	uint32_t seconds = 0,
 		minutes = 0,
 		totalSeconds,
 		endTime;
@@ -203,16 +205,16 @@ void game_getTimer(s_Game *game, char *timer) {
 	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }
 
-int game_getGridCellColor(s_Game *game, int x, int y) {
+char game_getGridCellColor(s_Game *game, int x, int y) {
 	return game->grid[y][x].color;
 }
 
-void game_setGridCellColor(s_Game *game, int x, int y, int color) {
+void game_setGridCellColor(s_Game *game, int x, int y, char color) {
 	game->grid[y][x].color = color;
 }
 
 
-char game_selectColor(s_Game* game, int color) {
+char _selectColor(s_Game* game, int color) {
 	int startX, startY;
 	char ret;
 	startX = g_startPositionPlayers[game->currentPlayerIndex][0];
@@ -295,12 +297,13 @@ const char *game_getNotificationText(s_Game *game) {
 	return game->notification.text;
 }
 
-uint32_t game_getNotificationAge(s_Game *game) {
+int32_t game_getNotificationAge(s_Game *game) {
 	if (!game->notification.active) {
 		return 0;
 	}
 
-	return SDL_GetTicks() - game->notification.timeStarted;
+	uint32_t age = SDL_GetTicks() - (unsigned) game->notification.timeStarted;
+	return (signed) age;
 }
 
 
@@ -323,11 +326,11 @@ char _checkBoard(s_Game* game) {
 	return 1;
 }
 
-int _getGridCellOwner(s_Game *game, int x, int y) {
+char _getGridCellOwner(s_Game *game, int x, int y) {
 	return game->grid[y][x].owner;
 }
 
-void _setGridCellOwner(s_Game *game, int x, int y, int owner) {
+void _setGridCellOwner(s_Game *game, int x, int y, char owner) {
 	game->grid[y][x].owner = owner;
 }
 
@@ -343,7 +346,7 @@ void _setPlayersInitialPosition(s_Game *game) {
 	for (player = 0; player < nbPlayers; ++player) {
 		int startX = g_startPositionPlayers[player][0],
 			startY = g_startPositionPlayers[player][1];
-		_setGridCellOwner(game, startX, startY, player);
+		_setGridCellOwner(game, startX, startY, (char) player);
 		_spreadColor(
 			game,
 			game_getGridCellColor(game, startX, startY),
@@ -558,7 +561,7 @@ void _generateGrid(s_Game* game) {
 	srand((unsigned) time(&t));
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
-			game_setGridCellColor(game, i, j, rand() % NB_COLORS);
+			game_setGridCellColor(game, i, j, (char) (rand() % NB_COLORS));
 			_setGridCellOwner(game, i, j, -1);
 		}
 	}
@@ -571,11 +574,11 @@ void _generateGrid(s_Game* game) {
  */
 char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char init) {
 	char toVisitFlag = 0x1,
-		 visitedFlag = 0x2;
+		 visitedFlag = 0x2,
+		 currentOwner;
 	int i, j, nbToVisit, oldColor;
 	int *toVisit;
 	int **visited;
-	int currentOwner;
 
 	oldColor = game_getGridCellColor(game, startX, startY);
 	currentOwner = _getGridCellOwner(game, startX, startY);
@@ -607,7 +610,7 @@ char _spreadColor(s_Game *game, int selectedColor, int startX, int startY, char 
 		x = next % WIDTH_GRID;
 		y = next / WIDTH_GRID;
 		visited[y][x] |= visitedFlag;
-		game_setGridCellColor(game, x, y, selectedColor);
+		game_setGridCellColor(game, x, y, (char) selectedColor);
 		_setGridCellOwner(game, x, y, currentOwner);
 
 		int neighbours[4][2];
@@ -650,7 +653,7 @@ void _notifyServerPlayerTurn(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
 	packet.size = 1;
-	packet.data[0] = game->iSelectedColor;
+	packet.data[0] = (char) game->iSelectedColor;
 	multiplayer_send_message(game->socketConnection, -1, packet);
 }
 

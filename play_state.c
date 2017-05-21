@@ -9,7 +9,7 @@
 /**
  * Game font
  */
-SDL_Color g_White = {255, 255, 255};
+SDL_Color g_White = {255, 255, 255, 255};
 SDL_Texture *winEndText, *loseEndText, *restartEndText, *quitEndText,
 	*currentTurnText, *timerText, *notificationText;
 
@@ -23,7 +23,7 @@ int g_state;
 
 void _play(s_Game* game, int color);
 void _renderGrid(s_Game* game);
-void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom);
+void _renderText(s_Game *game, SDL_Texture *texture, int marginRight, int marginBottom);
 void _renderTimer(s_Game* game);
 void _renderCurrentTurn(s_Game* game);
 void _renderControls(s_Game* game);
@@ -185,15 +185,10 @@ void play_state_clean(s_Game *game) {
 
 /** PRIVATE FUNCTIONS **/
 
-void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int marginRight, int marginBottom) {
+void _renderText(s_Game *game, SDL_Texture *texture, int marginRight, int marginBottom) {
 	int textX, textY,
 		textWidth, textHeight;
 
-	if (timerText != 0) {
-		SDL_DestroyTexture(timerText);
-	}
-
-	utils_createTextTexture(game->renderer, game->scoreFont, text, g_White, &texture);
 	SDL_QueryTexture(texture, NULL, NULL, &textWidth, &textHeight);
 	textX = SCREEN_WIDTH - marginRight - textWidth;
 	textY = SCREEN_HEIGHT - marginBottom;
@@ -209,7 +204,21 @@ void _renderTimer(s_Game *game) {
 
 	textMarginRight = 10;
 	textMarginBottom = 50;
-	_renderText(game, timerText, timer, textMarginRight, textMarginBottom);
+	SDL_Surface* textSurface;
+	textSurface = TTF_RenderText_Solid(game->scoreFont, timer, g_White);
+	if (textSurface == NULL) {
+		printf(
+			"Unable to render text surface! SDL_ttf Error: %s\n",
+			TTF_GetError()
+		);
+	}
+	else {
+		SDL_DestroyTexture(timerText);
+
+		timerText = SDL_CreateTextureFromSurface(game->renderer, textSurface);
+		SDL_FreeSurface(textSurface);
+	}
+	_renderText(game, timerText, textMarginRight, textMarginBottom);
 }
 
 void _renderCurrentTurn(s_Game* game) {
@@ -220,7 +229,21 @@ void _renderCurrentTurn(s_Game* game) {
 
 	textMarginRight = 10;
 	textMarginBottom = 30;
-	_renderText(game, currentTurnText, score, textMarginRight, textMarginBottom);
+	SDL_Surface* textSurface;
+	textSurface = TTF_RenderText_Solid(game->scoreFont, score, g_White);
+	if (textSurface == NULL) {
+		printf(
+			"Unable to render text surface! SDL_ttf Error: %s\n",
+			TTF_GetError()
+		);
+	}
+	else {
+		SDL_DestroyTexture(currentTurnText);
+
+		currentTurnText = SDL_CreateTextureFromSurface(game->renderer, textSurface);
+		SDL_FreeSurface(textSurface);
+	}
+	_renderText(game, currentTurnText, textMarginRight, textMarginBottom);
 
 }
 
@@ -229,7 +252,8 @@ void _renderGrid(s_Game* game) {
 	for (j = 0; j < HEIGHT_GRID; ++j) {
 		for (i = 0; i < WIDTH_GRID; ++i) {
 			SDL_Rect r;
-			int cR, cG, cB, cellColor;
+			unsigned char cR, cG, cB;
+			int cellColor;
 			r.x = margin + i * WIDTH_GRID_PX;
 			r.y = margin + j * HEIGHT_GRID_PX;
 			r.w = WIDTH_GRID_PX;
@@ -251,7 +275,7 @@ void _renderControls(s_Game* game) {
 		thicknessSelectedY = (SELECTED_HEIGHT_CONTROL_PX - HEIGHT_CONTROL_PX) / 2;
 	for (c = 0; c < NB_COLORS; ++c) {
 		SDL_Rect r;
-		int cR, cG, cB;
+		unsigned char cR, cG, cB;
 		if (c == game->iSelectedColor) {
 			// 480 + 0 +
 			r.x = SCREEN_HEIGHT + CONTROL_MARGIN_X + (c % 2) * SELECTED_WIDTH_CONTROL_PX;
@@ -322,13 +346,13 @@ void _renderNotification(s_Game* game) {
 }
 
 int _getNotificationPosition(s_Game *game) {
-	uint32_t notificationAge = game_getNotificationAge(game);
-	int endAnimTime = NOTIFICATION_LIFETIME / 6;
+	int32_t notificationAge = game_getNotificationAge(game);
+	int32_t endAnimTime = NOTIFICATION_LIFETIME / 6;
 	if (notificationAge > endAnimTime) {
 		return 0;
 	}
 	else {
-		return (int) ((SCREEN_WIDTH / (float) endAnimTime) * notificationAge) - SCREEN_WIDTH;
+		return (int) ((SCREEN_WIDTH / (double) endAnimTime) * notificationAge) - SCREEN_WIDTH;
 	}
 }
 

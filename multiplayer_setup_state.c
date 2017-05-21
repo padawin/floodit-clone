@@ -12,7 +12,7 @@
 #include "net.h"
 
 s_Menu g_hostJoinMenu;
-SDL_Color white = {255, 255, 255};
+SDL_Color white = {255, 255, 255, 255};
 SDL_Texture *selectPlayersTexture;
 SDL_Texture *serverIPTexture;
 SDL_Texture *IPTexture;
@@ -25,7 +25,7 @@ SDL_Texture *errorTexture;
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
-uint8_t g_ipCharMapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.'};
+char g_ipCharMapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.'};
 int g_keypadWidth = 3,
 	g_keypadHeight = 4;
 s_IpAddressConfigurator g_IPConfigurator;
@@ -40,7 +40,7 @@ struct ifaddrs *g_ifap;
 
 void _initMenus(s_Game *game);
 void _initIPs(s_Game *game);
-void _hostGameAction(s_Game *game);
+void _hostGameAction();
 void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
 void _handleIPSelectionEventGCW(s_Game *game, int key);
@@ -176,8 +176,8 @@ void multiplayer_setup_state_render(s_Game* game) {
 	}
 	else if (g_localState == STATE_HOST_SETUP) {
 		SDL_QueryTexture(selectPlayersTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect rect = {50, 30, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, selectPlayersTexture, NULL, &rect);
+		SDL_Rect playersRect = {50, 30, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, selectPlayersTexture, NULL, &playersRect);
 
 		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, 30};
 		SDL_Rect destRect = {55 + textWidth, 30, 11, 30};
@@ -190,20 +190,20 @@ void multiplayer_setup_state_render(s_Game* game) {
 
 		if (errorTexture != 0) {
 			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
-			SDL_Rect rect = {50, 60, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, errorTexture, NULL, &rect);
+			SDL_Rect errorRect = {50, 60, textWidth, textHeight};
+			SDL_RenderCopy(game->renderer, errorTexture, NULL, &errorRect);
 		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
 		SDL_QueryTexture(hostIpTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect rect = {50, 30, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, hostIpTexture, NULL, &rect);
+		SDL_Rect hostIPRect = {50, 30, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, hostIpTexture, NULL, &hostIPRect);
 
-		int i, textWidth, textHeight;
+		int i;
 		for (i = 0; i < g_nbIps; ++i) {
 			SDL_QueryTexture(ipsTextures[i], NULL, NULL, &textWidth, &textHeight);
-			SDL_Rect rect = {50, 55 + 24 * i, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, ipsTextures[i], NULL, &rect);
+			SDL_Rect ipRect = {50, 55 + 24 * i, textWidth, textHeight};
+			SDL_RenderCopy(game->renderer, ipsTextures[i], NULL, &ipRect);
 		}
 
 		char connectedClientsText[25];
@@ -228,8 +228,8 @@ void multiplayer_setup_state_render(s_Game* game) {
 	}
 	else if (g_localState == STATE_JOIN_SETUP) {
 		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect rect = {50, 30, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, serverIPTexture, NULL, &rect);
+		SDL_Rect serverIPRect = {50, 30, textWidth, textHeight};
+		SDL_RenderCopy(game->renderer, serverIPTexture, NULL, &serverIPRect);
 
 		SDL_QueryTexture(IPTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect IPRect = {50, 60, textWidth, textHeight};
@@ -261,12 +261,11 @@ void multiplayer_setup_state_render(s_Game* game) {
 
 		if (errorTexture != 0) {
 			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
-			SDL_Rect rect = {50, 210, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, errorTexture, NULL, &rect);
+			SDL_Rect errorRect = {50, 210, textWidth, textHeight};
+			SDL_RenderCopy(game->renderer, errorTexture, NULL, &errorRect);
 		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
-		int textWidth, textHeight;
 		SDL_QueryTexture(waitForGameTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect rect = {50, 30, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, waitForGameTexture, NULL, &rect);
@@ -339,7 +338,7 @@ void _setSetupError(s_Game *game, const char *errorMessage) {
 	);
 }
 
-void _hostGameAction(s_Game *game) {
+void _hostGameAction() {
 	g_localState = STATE_HOST_SETUP;
 }
 
@@ -358,7 +357,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 		if (key != SDLK_PERIOD) {
 			key = key - '0';
 		}
-		_addDigitToIP(game, key);
+		_addDigitToIP(game, (char) key);
 	}
 	else if (key == SDLK_SPACE && g_IPConfigurator.ipAddress > 0) {
 		_connectToHost(game);

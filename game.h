@@ -31,7 +31,7 @@ typedef enum {
 } game_play_result;
 
 typedef struct {
-	int color;
+	char color;
 	char owner;
 } s_GridCell;
 
@@ -52,11 +52,11 @@ typedef struct {
 	TTF_Font* highScoreTitleFont;
 	s_SocketConnection socketConnection;
 	game_mode mode;
-	Uint32 timeStarted;
-	Uint32 timeFinished;
+	uint32_t timeStarted;
+	uint32_t timeFinished;
 	s_GridCell grid[HEIGHT_GRID][WIDTH_GRID];
 	s_Notification notification;
-	int colors[NB_COLORS][3];
+	unsigned char colors[NB_COLORS][3];
 	int iTurns;
 	int iSelectedColor;
 	int currentPlayerIndex;
@@ -77,11 +77,10 @@ game_play_result game_play(s_Game *game, int selectedColor);
 char game_is(s_Game *game, game_mode mode);
 void game_setMode(s_Game* game, game_mode mode);
 void game_getTimer(s_Game *game, char *timer);
-int game_getGridCellColor(s_Game *game, int x, int y);
-void game_setGridCellColor(s_Game *game, int x, int y, int color);
+char game_getGridCellColor(s_Game *game, int x, int y);
+void game_setGridCellColor(s_Game *game, int x, int y, char color);
 
 // Board manipulation and analysis
-char game_selectColor(s_Game* game, int color);
 void game_getNeighbours(int x, int y, int neighbours[4][2], int* nbNeighbours);
 void game_setGrid(s_Game* game, s_TCPpacket packet);
 
@@ -89,10 +88,9 @@ void game_setGrid(s_Game* game, s_TCPpacket packet);
 char game_processIncomingPackets(s_Game *game);
 
 void game_addNotification(s_Game *game, const char *text);
-const char *game_getNotificationText(s_Game *game);
 char game_hasNotification(s_Game *game);
 const char *game_getNotificationText(s_Game *game);
-uint32_t game_getNotificationAge(s_Game *game);
+int game_getNotificationAge(s_Game *game);
 void game_deleteNotification(s_Game *game);
 
 #endif

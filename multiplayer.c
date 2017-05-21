@@ -37,7 +37,8 @@ void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber) 
 	socketWrapper->socketSet = SDLNet_AllocSocketSet(playersNumber);
 	socketWrapper->nbMaxSockets = playersNumber - 1;
 	socketWrapper->nbConnectedSockets = 0;
-	socketWrapper->connectedSockets = (TCPsocket *) malloc(playersNumber * sizeof(TCPsocket));
+	long unsigned nmemb = (long unsigned) playersNumber;
+	socketWrapper->connectedSockets = (TCPsocket *) malloc(nmemb * sizeof(TCPsocket));
 	socketWrapper->type = SERVER;
 }
 
@@ -64,7 +65,7 @@ void multiplayer_reject_clients(s_SocketConnection socketWrapper, int messageTyp
 	// Send a message to the client saying the server is full and to tell the
 	// client to go away
 	s_TCPpacket packet;
-	packet.type = messageType;
+	packet.type = (unsigned char) messageType;
 	packet.size = 0;
 	char message[TCP_PACKET_MAX_SIZE];
 	_computePacket(packet, message);
@@ -218,8 +219,8 @@ char multiplayer_is_client_connected(s_SocketConnection socketWrapper, int clien
 }
 
 void _parsePacket(s_TCPpacket *packet, char *message) {
-	packet->type = message[0];
-	packet->size = message[1];
+	packet->type = (unsigned char) message[0];
+	packet->size = (unsigned char) message[1];
 
 	int current;
 	for (current = 0; current < TCP_PACKET_DATA_MAX_SIZE; ++current) {
@@ -239,8 +240,8 @@ char _computePacket(s_TCPpacket packet, char *message) {
 
 	// packet.size does not include the header (1 char for the type + 1 char
 	// for the size)
-	message[0] = packet.type;
-	message[1] = packet.size;
+	message[0] = (signed char) packet.type;
+	message[1] = (signed char) packet.size;
 
 	int current;
 	for (current = 0; current < TCP_PACKET_DATA_MAX_SIZE; ++current) {
