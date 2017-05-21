@@ -89,7 +89,6 @@ void game_setGrid(s_Game* game, s_TCPpacket packet);
 char game_processIncomingPackets(s_Game *game);
 
 void game_addNotification(s_Game *game, const char *text);
-const char *game_getNotificationText(s_Game *game);
 char game_hasNotification(s_Game *game);
 const char *game_getNotificationText(s_Game *game);
 uint32_t game_getNotificationAge(s_Game *game);
