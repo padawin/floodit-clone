@@ -40,7 +40,7 @@ struct ifaddrs *g_ifap;
 
 void _initMenus(s_Game *game);
 void _initIPs(s_Game *game);
-void _hostGameAction(s_Game *game);
+void _hostGameAction();
 void _joinGameAction(s_Game *game);
 void _backAction(s_Game *game);
 void _handleIPSelectionEventGCW(s_Game *game, int key);
@@ -339,7 +339,7 @@ void _setSetupError(s_Game *game, const char *errorMessage) {
 	);
 }
 
-void _hostGameAction(s_Game *game) {
+void _hostGameAction() {
 	g_localState = STATE_HOST_SETUP;
 }
 
