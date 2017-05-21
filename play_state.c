@@ -329,7 +329,7 @@ int _getNotificationPosition(s_Game *game) {
 		return 0;
 	}
 	else {
-		return (int) ((SCREEN_WIDTH / (float) endAnimTime) * notificationAge) - SCREEN_WIDTH;
+		return (int) ((SCREEN_WIDTH / (double) endAnimTime) * notificationAge) - SCREEN_WIDTH;
 	}
 }
 
