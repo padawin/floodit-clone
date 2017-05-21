@@ -98,6 +98,9 @@ void handleEvents() {
 			case SDL_KEYDOWN:
 				fsm_handleEvent(&g_game, event.key.keysym.sym);
 				break;
+
+			default:
+				continue;
 		}
 	}
 }
