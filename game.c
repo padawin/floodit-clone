@@ -653,7 +653,7 @@ void _notifyServerPlayerTurn(s_Game *game) {
 	s_TCPpacket packet;
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
 	packet.size = 1;
-	packet.data[0] = game->iSelectedColor;
+	packet.data[0] = (char) game->iSelectedColor;
 	multiplayer_send_message(game->socketConnection, -1, packet);
 }
 
