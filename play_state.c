@@ -189,8 +189,8 @@ void _renderText(s_Game *game, SDL_Texture *texture, const char *text, int margi
 	int textX, textY,
 		textWidth, textHeight;
 
-	if (timerText != 0) {
-		SDL_DestroyTexture(timerText);
+	if (texture != 0) {
+		SDL_DestroyTexture(texture);
 	}
 
 	utils_createTextTexture(game->renderer, game->scoreFont, text, g_White, &texture);
