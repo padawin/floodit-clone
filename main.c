@@ -46,7 +46,7 @@ int main() {
 
 int initSDL(const char* title, const int x, const int y, const int w, const int h) {
 	char l_bReturn = 1;
-	int flags;
+	unsigned int flags;
 
 	if (IS_GCW) {
 		flags = SDL_WINDOW_FULLSCREEN;
