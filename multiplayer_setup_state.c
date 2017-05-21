@@ -357,7 +357,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 		if (key != SDLK_PERIOD) {
 			key = key - '0';
 		}
-		_addDigitToIP(game, key);
+		_addDigitToIP(game, (char) key);
 	}
 	else if (key == SDLK_SPACE && g_IPConfigurator.ipAddress > 0) {
 		_connectToHost(game);
