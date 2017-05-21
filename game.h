@@ -37,7 +37,7 @@ typedef struct {
 
 typedef struct {
 	const char *text;
-	int timeStarted;
+	uint32_t timeStarted;
 	char active;
 } s_Notification;
 
@@ -52,8 +52,8 @@ typedef struct {
 	TTF_Font* highScoreTitleFont;
 	s_SocketConnection socketConnection;
 	game_mode mode;
-	int timeStarted;
-	int timeFinished;
+	uint32_t timeStarted;
+	uint32_t timeFinished;
 	s_GridCell grid[HEIGHT_GRID][WIDTH_GRID];
 	s_Notification notification;
 	unsigned char colors[NB_COLORS][3];

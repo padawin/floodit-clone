@@ -108,7 +108,8 @@ void game_finish(s_Game *game, const char won) {
 	if (game_is(game, MODE_TIMED)) {
 		game->timeFinished = SDL_GetTicks();
 		if (won) {
-			high_score_save(game->timeFinished - game->timeStarted, game->iTurns);
+			unsigned int duration = game->timeFinished - game->timeStarted;
+			high_score_save((signed) duration, game->iTurns);
 		}
 	}
 }
@@ -186,7 +187,7 @@ void game_setMode(s_Game *game, game_mode mode) {
 }
 
 void game_getTimer(s_Game *game, char *timer) {
-	int seconds = 0,
+	uint32_t seconds = 0,
 		minutes = 0,
 		totalSeconds,
 		endTime;
@@ -301,7 +302,7 @@ int32_t game_getNotificationAge(s_Game *game) {
 		return 0;
 	}
 
-	uint32_t age = SDL_GetTicks() - game->notification.timeStarted;
+	uint32_t age = SDL_GetTicks() - (unsigned) game->notification.timeStarted;
 	return (signed) age;
 }
 
