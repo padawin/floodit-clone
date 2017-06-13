@@ -57,9 +57,9 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
-void multiplayer_reject_clients(s_SocketConnection socketWrapper, int messageType) {
+void multiplayer_reject_clients(s_SocketConnection *socketWrapper, int messageType) {
 	// Accept the client connection to clear it from the incoming connections list
-	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper.socket);
+	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper->socket);
 	if (socket == 0) {
 		return;
 	}
@@ -161,18 +161,18 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	socketWrapper->socketSet = 0;
 }
 
-char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
-	return socketWrapper.nbConnectedSockets == socketWrapper.nbMaxSockets;
+char multiplayer_is_room_full(s_SocketConnection *socketWrapper) {
+	return socketWrapper->nbConnectedSockets == socketWrapper->nbMaxSockets;
 }
 
-void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet) {
+void multiplayer_broadcast(s_SocketConnection *socketWrapper, s_TCPpacket packet) {
 	int s;
-	for (s = 0; s < socketWrapper.nbConnectedSockets; ++s) {
+	for (s = 0; s < socketWrapper->nbConnectedSockets; ++s) {
 		multiplayer_send_message(socketWrapper, s, packet);
 	}
 }
 
-void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex, s_TCPpacket packet) {
+void multiplayer_send_message(s_SocketConnection *socketWrapper, int socketIndex, s_TCPpacket packet) {
 	char message[TCP_PACKET_MAX_SIZE];
 	if (_computePacket(packet, message) != 0) {
 		printf("Packet size too large\n");
@@ -180,10 +180,10 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 	else {
 		TCPsocket socket;
 		if (socketIndex == -1) {
-			socket = socketWrapper.socket;
+			socket = socketWrapper->socket;
 		}
 		else {
-			socket = socketWrapper.connectedSockets[socketIndex];
+			socket = socketWrapper->connectedSockets[socketIndex];
 		}
 
 		if (socket != 0) {
@@ -192,10 +192,10 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 	}
 }
 
-int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
+int multiplayer_get_number_clients(s_SocketConnection *socketWrapper) {
 	int nb = 0, client;
-	for (client = 0; client < socketWrapper.nbConnectedSockets; ++client) {
-		if (socketWrapper.connectedSockets[client]) {
+	for (client = 0; client < socketWrapper->nbConnectedSockets; ++client) {
+		if (socketWrapper->connectedSockets[client]) {
 			++nb;
 		}
 	}
@@ -203,10 +203,10 @@ int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
 	return nb;
 }
 
-int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper, int currentIndex) {
+int multiplayer_get_next_connected_socket_index(s_SocketConnection *socketWrapper, int currentIndex) {
 	int next = -1, s = currentIndex + 1;
-	while (next == -1 && s < socketWrapper.nbConnectedSockets) {
-		if (socketWrapper.connectedSockets[s]) {
+	while (next == -1 && s < socketWrapper->nbConnectedSockets) {
+		if (socketWrapper->connectedSockets[s]) {
 			next = s;
 			break;
 		}
@@ -216,8 +216,8 @@ int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper
 	return next;
 }
 
-char multiplayer_is_client_connected(s_SocketConnection socketWrapper, int clientIndex) {
-	return socketWrapper.connectedSockets[clientIndex] != 0;
+char multiplayer_is_client_connected(s_SocketConnection *socketWrapper, int clientIndex) {
+	return socketWrapper->connectedSockets[clientIndex] != 0;
 }
 
 void _parsePacket(s_TCPpacket *packet, char *message) {

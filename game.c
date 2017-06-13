@@ -397,7 +397,7 @@ void _broadcastGrid(s_Game *game) {
 			shift[1] = 0;
 		}
 		_setRotatedGridPacket(game, &packet, rotationMatrix, shift);
-		multiplayer_send_message(game->socketConnection, nbSockets, packet);
+		multiplayer_send_message(&game->socketConnection, nbSockets, packet);
 	}
 }
 
@@ -435,7 +435,7 @@ void _notifyCurrentPlayerTurn(s_Game *game, char isTurn) {
 	}
 	packet.size = 0;
 	multiplayer_send_message(
-		game->socketConnection,
+		&game->socketConnection,
 		game->currentPlayerIndex - 1,
 		packet
 	);
@@ -447,14 +447,14 @@ void _selectNextPlayer(s_Game *game) {
 	}
 
 	int nextSocketIndex = multiplayer_get_next_connected_socket_index(
-		game->socketConnection,
+		&game->socketConnection,
 		game->currentPlayerIndex - 1
 	);
 
 	// host's turn
 	if (game->lost && nextSocketIndex == -1) {
 		nextSocketIndex = multiplayer_get_next_connected_socket_index(
-			game->socketConnection,
+			&game->socketConnection,
 			-1
 		);
 	}
@@ -463,7 +463,7 @@ void _selectNextPlayer(s_Game *game) {
 }
 
 char _processServerPackets(s_Game *game) {
-	multiplayer_reject_clients(game->socketConnection, MULTIPLAYER_MESSAGE_TYPE_SERVER_FULL);
+	multiplayer_reject_clients(&game->socketConnection, MULTIPLAYER_MESSAGE_TYPE_SERVER_FULL);
 	s_TCPpacket packet;
 	int indexSocketSendingMessage = -1;
 	char foundMessage = multiplayer_check_clients(
@@ -473,13 +473,13 @@ char _processServerPackets(s_Game *game) {
 		0
 	);
 
-	if (!multiplayer_get_number_clients(game->socketConnection)) {
+	if (!multiplayer_get_number_clients(&game->socketConnection)) {
 		return GAME_UPDATE_RESULT_CONNECTION_LOST;
 	}
 
 	// The current player left
 	if (game->currentPlayerIndex > 0
-		&& !multiplayer_is_client_connected(game->socketConnection, game->currentPlayerIndex - 1)
+		&& !multiplayer_is_client_connected(&game->socketConnection, game->currentPlayerIndex - 1)
 	) {
 		_selectNextPlayer(game);
 		_notifyCurrentPlayerTurn(game, 1);
@@ -654,7 +654,7 @@ void _notifyServerPlayerTurn(s_Game *game) {
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_TURN;
 	packet.size = 1;
 	packet.data[0] = (char) game->iSelectedColor;
-	multiplayer_send_message(game->socketConnection, -1, packet);
+	multiplayer_send_message(&game->socketConnection, -1, packet);
 }
 
 void _notifyCapturedPlayers(s_Game *game) {
@@ -681,7 +681,7 @@ void _notifyCapturedPlayers(s_Game *game) {
 				packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_LOST;
 				packet.size = 0;
 				multiplayer_send_message(
-					game->socketConnection,
+					&game->socketConnection,
 					p - 1,
 					packet
 				);
@@ -701,13 +701,13 @@ void _notifyWinner(s_Game *game) {
 	packet.type = MULTIPLAYER_MESSAGE_TYPE_PLAYER_WON;
 	packet.size = 0;
 	multiplayer_send_message(
-		game->socketConnection,
+		&game->socketConnection,
 		game->currentPlayerIndex - 1,
 		packet
 	);
 }
 
 char _hasWinner(s_Game *game) {
-	int nbClients = multiplayer_get_number_clients(game->socketConnection);
+	int nbClients = multiplayer_get_number_clients(&game->socketConnection);
 	return (game->lost && nbClients == 1) || (!game->lost && !nbClients);
 }

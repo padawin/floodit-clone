@@ -141,11 +141,11 @@ void multiplayer_setup_state_update(s_Game* game) {
 		multiplayer_accept_client(&game->socketConnection);
 		multiplayer_check_clients(&game->socketConnection, 0, 0, 1);
 
-		if (multiplayer_is_room_full(game->socketConnection)) {
+		if (multiplayer_is_room_full(&game->socketConnection)) {
 			s_TCPpacket packet;
 			packet.type = MULTIPLAYER_MESSAGE_TYPE_GAME_START;
 			packet.size = 0;
-			multiplayer_broadcast(game->socketConnection, packet);
+			multiplayer_broadcast(&game->socketConnection, packet);
 			fsm_setState(game, play);
 		}
 	}
