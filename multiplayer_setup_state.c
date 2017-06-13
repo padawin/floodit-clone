@@ -287,7 +287,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			(IS_GCW && key == SDLK_LCTRL)
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
-			if (!multiplayer_create_connection(&game->socketConnection, 0)) {
+			if (!multiplayer_create_connection(&game->socketConnection, 0, TCP)) {
 				_setSetupError(game, "Unable to create connection");
 			}
 			else {
@@ -401,7 +401,7 @@ void _handleIPSelectionEventGCW(s_Game *game, int key) {
 void _connectToHost(s_Game *game) {
 	char ip[16];
 	IPConfigurator_toString(&g_IPConfigurator, ip, 1);
-	if (!multiplayer_create_connection(&game->socketConnection, ip)) {
+	if (!multiplayer_create_connection(&game->socketConnection, ip, TCP)) {
 		_setSetupError(game, "Unable to create connection");
 	}
 	else {

@@ -7,7 +7,7 @@ void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
 char _computePacket(s_TCPpacket packet, char *message);
 void _parsePacket(s_TCPpacket *packet, char *message);
 
-char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip) {
+char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip, E_ConnectionType type) {
 	int success = SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT);
 
 	if (success == -1) {
@@ -15,12 +15,14 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 		return 0;
 	}
 
-	// listen for new connections on 'port'
-	socketWrapper->socket = SDLNet_TCP_Open(&socketWrapper->ipAddress);
-	if (socketWrapper->socket == 0) {
-		printf("Failed to open port for listening: %d\n", MULTIPLAYER_PORT);
-		printf("Error: %s\n", SDLNet_GetError());
-		return 0;
+	if (type == TCP) {
+		// listen for new connections on 'port'
+		socketWrapper->socket = SDLNet_TCP_Open(&socketWrapper->ipAddress);
+		if (socketWrapper->socket == 0) {
+			printf("Failed to open port for listening: %d\n", MULTIPLAYER_PORT);
+			printf("Error: %s\n", SDLNet_GetError());
+			return 0;
+		}
 	}
 
 	return 1;

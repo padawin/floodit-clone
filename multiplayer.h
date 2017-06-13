@@ -35,7 +35,9 @@ typedef struct {
 	char data[196];
 } s_TCPpacket;
 
-char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip);
+typedef enum {TCP, PING} E_ConnectionType;
+
+char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip, E_ConnectionType type);
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber);
 void multiplayer_initClient(s_SocketConnection *socketWrapper);
 void multiplayer_accept_client(s_SocketConnection *socket);
