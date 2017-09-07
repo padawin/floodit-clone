@@ -6,6 +6,7 @@ char _receiveMessage(TCPsocket socket, s_TCPpacket *packet);
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
 char _computePacket(s_TCPpacket packet, char *message);
 void _parsePacket(s_TCPpacket *packet, char *message);
+char _ping_server(s_SocketConnection *socketWrapper);
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip, E_ConnectionType type) {
 	int success = SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT);
@@ -24,7 +25,52 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 			return 0;
 		}
 	}
+	else if (type == PING) {
+		printf("Opening port\n");
+		// Sets our socket with our local port
+		socketWrapper->pingSocket = SDLNet_UDP_Open(MULTIPLAYER_PORT_CLIENT);
 
+		if (socketWrapper->pingSocket == 0) {
+			printf("Error opening socket client\n");
+			return 0;
+		}
+
+		printf("Set remote IP %s and port %d\n", ip, MULTIPLAYER_PORT_SERVER);
+		if (SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT_SERVER) == -1) {
+			printf("SDLNet_ResolveHost failed\n");
+		}
+
+		_ping_server(socketWrapper);
+	}
+
+	return 1;
+}
+
+char _ping_server(s_SocketConnection *socketWrapper) {
+	printf("Creating packet\n");
+	// Allocate memory for the packet
+	UDPpacket* packet = SDLNet_AllocPacket(1);
+	if (packet == 0) {
+		printf("SDLNet_AllocPacket failed : %s\n", SDLNet_GetError());
+		return 0;
+	}
+
+	// Set the destination host and port
+	// We got these from calling SetIPAndPort()
+	packet->address.host = socketWrapper->ipAddress.host;
+	packet->address.port = socketWrapper->ipAddress.port;
+
+	memcpy(packet->data, "Hello", 6);
+	packet->len = 6;
+
+	// SDLNet_UDP_Send returns number of packets sent. 0 means error
+	if (SDLNet_UDP_Send(socketWrapper->pingSocket, -1, packet) == 0) {
+		printf("SDLNet_UDP_Send failed : %s\n", SDLNet_GetError());
+		SDLNet_FreePacket(packet);
+		return 0;
+	}
+
+	SDLNet_FreePacket(packet);
 	return 1;
 }
 
@@ -146,6 +192,9 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	SDLNet_TCP_Close(socketWrapper->socket);
+	if (socketWrapper->pingSocket) {
+		SDLNet_UDP_Close(socketWrapper->pingSocket);
+	}
 	socketWrapper->socket = 0;
 	while (socketWrapper->nbConnectedSockets--) {
 		multiplayer_close_client(

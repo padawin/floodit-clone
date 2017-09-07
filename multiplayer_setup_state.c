@@ -34,7 +34,8 @@ int STATE_HOST_JOIN = 1;
 int STATE_HOST_SETUP = 2;
 int STATE_WAIT_FOR_CLIENTS = 3;
 int STATE_JOIN_SETUP = 4;
-int STATE_WAIT_FOR_GAME = 5;
+int STATE_JOIN_SETUP_WAIT_PONG = 5;
+int STATE_WAIT_FOR_GAME = 6;
 int g_localState;
 struct ifaddrs *g_ifap;
 
@@ -50,6 +51,7 @@ void _removeDigitFromIP(s_Game *game);
 void _createIPTexture(s_Game *game);
 void _setSetupError(s_Game *game, const char *errorMessage);
 void _connectToHost(s_Game *game);
+void _setPingState(s_Game *game);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -226,7 +228,7 @@ void multiplayer_setup_state_render(s_Game* game) {
 		SDL_Rect connectedClientsRect = {50, 55 + 24 * g_nbIps + 14, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, connectedClientsTexture, NULL, &connectedClientsRect);
 	}
-	else if (g_localState == STATE_JOIN_SETUP) {
+	else if (g_localState == STATE_JOIN_SETUP || g_localState == STATE_JOIN_SETUP_WAIT_PONG) {
 		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
 		SDL_Rect serverIPRect = {50, 30, textWidth, textHeight};
 		SDL_RenderCopy(game->renderer, serverIPTexture, NULL, &serverIPRect);
@@ -325,6 +327,12 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			_handleIPSelectionEvent(game, key);
 		}
 	}
+	else if (g_localState == STATE_JOIN_SETUP_WAIT_PONG) {
+		if (key == SDLK_ESCAPE) {
+			g_localState = STATE_JOIN_SETUP;
+			SDL_DestroyTexture(errorTexture);
+		}
+	}
 }
 
 void _setSetupError(s_Game *game, const char *errorMessage) {
@@ -360,7 +368,7 @@ void _handleIPSelectionEvent(s_Game *game, int key) {
 		_addDigitToIP(game, (char) key);
 	}
 	else if (key == SDLK_SPACE && g_IPConfigurator.ipAddress > 0) {
-		_connectToHost(game);
+		_setPingState(game);
 	}
 	else if (key == SDLK_BACKSPACE) {
 		_removeDigitFromIP(game);
@@ -375,6 +383,7 @@ void _handleIPSelectionEventGCW(s_Game *game, int key) {
 			_addDigitToIP(game, g_ipCharMapping[g_IPKeyboardSelectedValue]);
 		}
 		else if (g_IPConfigurator.ipAddress > 0) {
+			_setPingState(game);
 			_connectToHost(game);
 		}
 		return;
@@ -396,6 +405,18 @@ void _handleIPSelectionEventGCW(s_Game *game, int key) {
 	}
 
 	g_IPKeyboardSelectedValue = (y * g_keypadWidth + x);
+}
+
+void _setPingState(s_Game *game) {
+	g_localState = STATE_JOIN_SETUP_WAIT_PONG;
+	char ip[16];
+	IPConfigurator_toString(&g_IPConfigurator, ip, 1);
+	if (!multiplayer_create_connection(&game->socketConnection, ip, PING)) {
+		_setSetupError(game, "Unable to contact server");
+	}
+	else {
+		_setSetupError(game, "Trying to connect...");
+	}
 }
 
 void _connectToHost(s_Game *game) {

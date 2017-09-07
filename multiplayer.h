@@ -20,6 +20,7 @@ typedef struct {
 	e_SocketType type;
 	// current socket
 	TCPsocket socket;
+	UDPsocket pingSocket;
 	SDLNet_SocketSet socketSet;
 	TCPsocket *connectedSockets;
 	int nbConnectedSockets;
