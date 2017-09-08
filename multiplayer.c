@@ -1,6 +1,8 @@
 #include "multiplayer.h"
 #include "globals.h"
 #include "string.h"
+#include <ifaddrs.h>
+#include "net.h"
 
 #define SIZE_PING_PACKET 16
 
@@ -62,7 +64,11 @@ char _ping_server(s_SocketConnection *socketWrapper) {
 	packet->address.host = socketWrapper->ipAddress.host;
 	packet->address.port = socketWrapper->ipAddress.port;
 
-	memcpy(packet->data, "Hello", SIZE_PING_PACKET);
+	struct ifaddrs *ifap;
+	net_getIPs(&ifap);
+	char *interface, *address;
+	net_getNextIP(&ifap, &interface, &address);
+	memcpy(packet->data, address, SIZE_PING_PACKET);
 	packet->len = SIZE_PING_PACKET;
 
 	// SDLNet_UDP_Send returns number of packets sent. 0 means error
