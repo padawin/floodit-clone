@@ -28,6 +28,12 @@ int g_IPKeyboardSelectedValue = 0;
 char g_ipCharMapping[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '.'};
 int g_keypadWidth = 3,
 	g_keypadHeight = 4;
+
+unsigned int g_pongTimeout = 3000,
+	g_timestampWaitForServer = 0,
+	g_timestampLastPing = 0,
+	g_pingTimeout = 500;
+
 s_IpAddressConfigurator g_IPConfigurator;
 
 int STATE_HOST_JOIN = 1;
@@ -149,6 +155,20 @@ void multiplayer_setup_state_update(s_Game* game) {
 			packet.size = 0;
 			multiplayer_broadcast(&game->socketConnection, packet);
 			fsm_setState(game, play);
+		}
+	}
+	else if (g_localState == STATE_JOIN_SETUP_WAIT_PONG) {
+		// multiplayer_interrogate_server
+		// printf("check if server answered\n");
+		unsigned int ticks = SDL_GetTicks();
+		if (ticks - g_timestampWaitForServer > g_pongTimeout) {
+			_setSetupError(game, "Unable to create connection");
+		}
+		else if (ticks - g_timestampLastPing > g_pingTimeout) {
+			g_timestampLastPing = ticks;
+			if (multiplayer_check_server_pong(&game->socketConnection)) {
+				_connectToHost(game);
+			}
 		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
@@ -384,7 +404,6 @@ void _handleIPSelectionEventGCW(s_Game *game, int key) {
 		}
 		else if (g_IPConfigurator.ipAddress > 0) {
 			_setPingState(game);
-			_connectToHost(game);
 		}
 		return;
 	}
@@ -409,6 +428,7 @@ void _handleIPSelectionEventGCW(s_Game *game, int key) {
 
 void _setPingState(s_Game *game) {
 	g_localState = STATE_JOIN_SETUP_WAIT_PONG;
+	g_timestampWaitForServer = SDL_GetTicks();
 	char ip[16];
 	IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 	if (!multiplayer_create_connection(&game->socketConnection, ip, PING)) {
