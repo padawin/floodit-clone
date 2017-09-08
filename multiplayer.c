@@ -2,6 +2,8 @@
 #include "globals.h"
 #include "string.h"
 
+#define SIZE_PING_PACKET 16
+
 char _receiveMessage(TCPsocket socket, s_TCPpacket *packet);
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
 char _computePacket(s_TCPpacket packet, char *message);
@@ -49,7 +51,7 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 char _ping_server(s_SocketConnection *socketWrapper) {
 	printf("Creating packet\n");
 	// Allocate memory for the packet
-	UDPpacket* packet = SDLNet_AllocPacket(1);
+	UDPpacket* packet = SDLNet_AllocPacket(SIZE_PING_PACKET);
 	if (packet == 0) {
 		printf("SDLNet_AllocPacket failed : %s\n", SDLNet_GetError());
 		return 0;
@@ -60,8 +62,8 @@ char _ping_server(s_SocketConnection *socketWrapper) {
 	packet->address.host = socketWrapper->ipAddress.host;
 	packet->address.port = socketWrapper->ipAddress.port;
 
-	memcpy(packet->data, "Hello", 6);
-	packet->len = 6;
+	memcpy(packet->data, "Hello", SIZE_PING_PACKET);
+	packet->len = SIZE_PING_PACKET;
 
 	// SDLNet_UDP_Send returns number of packets sent. 0 means error
 	if (SDLNet_UDP_Send(socketWrapper->pingSocket, -1, packet) == 0) {
