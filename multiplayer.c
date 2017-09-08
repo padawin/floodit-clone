@@ -57,7 +57,6 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 }
 
 char _ping_server(s_SocketConnection *socketWrapper) {
-	printf("Creating packet\n");
 	// Allocate memory for the packet
 	UDPpacket* packet = SDLNet_AllocPacket(SIZE_PING_PACKET);
 	if (packet == 0) {
@@ -137,13 +136,10 @@ void _checkForClientPing(s_SocketConnection *socketWrapper) {
 		return;
 	}
 
-	printf("Packet received: %s\n", packet->data);
-
 	char ip[SIZE_PING_PACKET];
 	memcpy(ip, packet->data, SIZE_PING_PACKET);
 	IPaddress ipAddress;
 	if (SDLNet_ResolveHost(&ipAddress, ip, MULTIPLAYER_PORT_CLIENT) == -1) {
-		printf("SDLNet_ResolveHost failed\n");
 		return;
 	}
 
