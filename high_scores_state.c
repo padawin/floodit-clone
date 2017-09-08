@@ -53,9 +53,10 @@ void high_scores_state_init(s_Game *game) {
 }
 
 void _format_time(const int time, char timeFormatted[10]) {
-	int min = time / 60000,
-		sec = (time / 1000) % 60,
-		msec = time % 1000;
+	unsigned int utime = (unsigned) time;
+	unsigned int min = (utime / 60000) % 60,
+		sec = (utime / 1000) % 60,
+		msec = utime % 1000;
 	snprintf(timeFormatted, 10, "%02d:%02d.%03d", min, sec, msec);
 }
 

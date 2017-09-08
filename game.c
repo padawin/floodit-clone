@@ -201,7 +201,7 @@ void game_getTimer(s_Game *game, char *timer) {
 
 	totalSeconds = (endTime - game->timeStarted) / 1000;
 	seconds = totalSeconds % 60;
-	minutes = totalSeconds / 60;
+	minutes = (totalSeconds / 60) % 60;
 	snprintf(timer, 6, "%02d:%02d", minutes, seconds);
 }
 
