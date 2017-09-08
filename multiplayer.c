@@ -1,13 +1,19 @@
 #include "multiplayer.h"
 #include "globals.h"
 #include "string.h"
+#include <ifaddrs.h>
+#include "net.h"
+
+#define SIZE_PING_PACKET 16
 
 char _receiveMessage(TCPsocket socket, s_TCPpacket *packet);
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
 char _computePacket(s_TCPpacket packet, char *message);
 void _parsePacket(s_TCPpacket *packet, char *message);
+void _checkForClientPing(s_SocketConnection *socketWrapper);
+char _ping_server(s_SocketConnection *socketWrapper);
 
-char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip) {
+char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip, E_ConnectionType type) {
 	int success = SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT);
 
 	if (success == -1) {
@@ -15,15 +21,81 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 		return 0;
 	}
 
-	// listen for new connections on 'port'
-	socketWrapper->socket = SDLNet_TCP_Open(&socketWrapper->ipAddress);
-	if (socketWrapper->socket == 0) {
-		printf("Failed to open port for listening: %d\n", MULTIPLAYER_PORT);
-		printf("Error: %s\n", SDLNet_GetError());
-		return 0;
+	if (type == TCP) {
+		if (ip == 0) {
+			printf("Open UDP socket server\n");
+			socketWrapper->pingSocket = SDLNet_UDP_Open(MULTIPLAYER_PORT_SERVER);
+		}
+
+		// listen for new connections on 'port'
+		socketWrapper->socket = SDLNet_TCP_Open(&socketWrapper->ipAddress);
+		if (socketWrapper->socket == 0) {
+			printf("Failed to open port for listening: %d\n", MULTIPLAYER_PORT);
+			printf("Error: %s\n", SDLNet_GetError());
+			return 0;
+		}
+	}
+	else if (type == PING) {
+		if (socketWrapper->pingSocket == 0) {
+			printf("Opening port\n");
+			// Sets our socket with our local port
+			socketWrapper->pingSocket = SDLNet_UDP_Open(MULTIPLAYER_PORT_CLIENT);
+		}
+
+		if (socketWrapper->pingSocket == 0) {
+			printf("Error opening socket client\n");
+			return 0;
+		}
+
+		printf("Set remote IP %s and port %d\n", ip, MULTIPLAYER_PORT_SERVER);
+		if (SDLNet_ResolveHost(&socketWrapper->ipAddress, ip, MULTIPLAYER_PORT_SERVER) == -1) {
+			printf("SDLNet_ResolveHost failed\n");
+		}
+
+		_ping_server(socketWrapper);
 	}
 
 	return 1;
+}
+
+char _ping_server(s_SocketConnection *socketWrapper) {
+	// Allocate memory for the packet
+	UDPpacket* packet = SDLNet_AllocPacket(SIZE_PING_PACKET);
+	if (packet == 0) {
+		printf("SDLNet_AllocPacket failed : %s\n", SDLNet_GetError());
+		return 0;
+	}
+
+	packet->address = socketWrapper->ipAddress;
+
+	struct ifaddrs *ifap;
+	net_getIPs(&ifap);
+	char *interface, *address;
+	net_getNextIP(&ifap, &interface, &address);
+	memcpy(packet->data, address, SIZE_PING_PACKET);
+	packet->len = SIZE_PING_PACKET;
+
+	// SDLNet_UDP_Send returns number of packets sent. 0 means error
+	if (SDLNet_UDP_Send(socketWrapper->pingSocket, -1, packet) == 0) {
+		printf("SDLNet_UDP_Send failed : %s\n", SDLNet_GetError());
+		SDLNet_FreePacket(packet);
+		return 0;
+	}
+
+	SDLNet_FreePacket(packet);
+	return 1;
+}
+
+int multiplayer_check_server_pong(s_SocketConnection *socketWrapper) {
+	UDPpacket* packet = SDLNet_AllocPacket(SIZE_PING_PACKET);
+	if (SDLNet_UDP_Recv(socketWrapper->pingSocket, packet)) {
+		printf("Received response from server\n");
+		return 1;
+	}
+	else {
+		_ping_server(socketWrapper);
+		return 0;
+	}
 }
 
 void multiplayer_initClient(s_SocketConnection *socketWrapper) {
@@ -47,6 +119,8 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 		return;
 	}
 
+	_checkForClientPing(socketWrapper);
+
 	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper->socket);
 	if (socket != 0) {
 		SDLNet_TCP_AddSocket(socketWrapper->socketSet, socket);
@@ -55,9 +129,40 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 	}
 }
 
-void multiplayer_reject_clients(s_SocketConnection socketWrapper, int messageType) {
+void _checkForClientPing(s_SocketConnection *socketWrapper) {
+	UDPpacket *packet = SDLNet_AllocPacket(SIZE_PING_PACKET);
+	int res = SDLNet_UDP_Recv(socketWrapper->pingSocket, packet);
+	if (res < 0) {
+		printf("Error received when trying to receive message\n");
+		printf("Error: %s\n", SDLNet_GetError());
+		return;
+	}
+
+	char ip[SIZE_PING_PACKET];
+	memcpy(ip, packet->data, SIZE_PING_PACKET);
+	IPaddress ipAddress;
+	if (SDLNet_ResolveHost(&ipAddress, ip, MULTIPLAYER_PORT_CLIENT) == -1) {
+		return;
+	}
+
+	UDPpacket *pongPacket = SDLNet_AllocPacket(3);
+	if (pongPacket == 0) {
+		printf("SDLNet_AllocPacket failed : %s\n", SDLNet_GetError());
+		return;
+	}
+
+	pongPacket->address = ipAddress;
+
+	memcpy(packet->data, "ok", 3);
+	packet->len = 3;
+	if (SDLNet_UDP_Send(socketWrapper->pingSocket, -1, pongPacket) == 0) {
+		printf("Packet received but could not be sent back\n");
+	}
+}
+
+void multiplayer_reject_clients(s_SocketConnection *socketWrapper, int messageType) {
 	// Accept the client connection to clear it from the incoming connections list
-	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper.socket);
+	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper->socket);
 	if (socket == 0) {
 		return;
 	}
@@ -144,6 +249,9 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	SDLNet_TCP_Close(socketWrapper->socket);
+	if (socketWrapper->pingSocket) {
+		SDLNet_UDP_Close(socketWrapper->pingSocket);
+	}
 	socketWrapper->socket = 0;
 	while (socketWrapper->nbConnectedSockets--) {
 		multiplayer_close_client(
@@ -159,18 +267,18 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	socketWrapper->socketSet = 0;
 }
 
-char multiplayer_is_room_full(s_SocketConnection socketWrapper) {
-	return socketWrapper.nbConnectedSockets == socketWrapper.nbMaxSockets;
+char multiplayer_is_room_full(s_SocketConnection *socketWrapper) {
+	return socketWrapper->nbConnectedSockets == socketWrapper->nbMaxSockets;
 }
 
-void multiplayer_broadcast(s_SocketConnection socketWrapper, s_TCPpacket packet) {
+void multiplayer_broadcast(s_SocketConnection *socketWrapper, s_TCPpacket packet) {
 	int s;
-	for (s = 0; s < socketWrapper.nbConnectedSockets; ++s) {
+	for (s = 0; s < socketWrapper->nbConnectedSockets; ++s) {
 		multiplayer_send_message(socketWrapper, s, packet);
 	}
 }
 
-void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex, s_TCPpacket packet) {
+void multiplayer_send_message(s_SocketConnection *socketWrapper, int socketIndex, s_TCPpacket packet) {
 	char message[TCP_PACKET_MAX_SIZE];
 	if (_computePacket(packet, message) != 0) {
 		printf("Packet size too large\n");
@@ -178,10 +286,10 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 	else {
 		TCPsocket socket;
 		if (socketIndex == -1) {
-			socket = socketWrapper.socket;
+			socket = socketWrapper->socket;
 		}
 		else {
-			socket = socketWrapper.connectedSockets[socketIndex];
+			socket = socketWrapper->connectedSockets[socketIndex];
 		}
 
 		if (socket != 0) {
@@ -190,10 +298,10 @@ void multiplayer_send_message(s_SocketConnection socketWrapper, int socketIndex,
 	}
 }
 
-int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
+int multiplayer_get_number_clients(s_SocketConnection *socketWrapper) {
 	int nb = 0, client;
-	for (client = 0; client < socketWrapper.nbConnectedSockets; ++client) {
-		if (socketWrapper.connectedSockets[client]) {
+	for (client = 0; client < socketWrapper->nbConnectedSockets; ++client) {
+		if (socketWrapper->connectedSockets[client]) {
 			++nb;
 		}
 	}
@@ -201,10 +309,10 @@ int multiplayer_get_number_clients(s_SocketConnection socketWrapper) {
 	return nb;
 }
 
-int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper, int currentIndex) {
+int multiplayer_get_next_connected_socket_index(s_SocketConnection *socketWrapper, int currentIndex) {
 	int next = -1, s = currentIndex + 1;
-	while (next == -1 && s < socketWrapper.nbConnectedSockets) {
-		if (socketWrapper.connectedSockets[s]) {
+	while (next == -1 && s < socketWrapper->nbConnectedSockets) {
+		if (socketWrapper->connectedSockets[s]) {
 			next = s;
 			break;
 		}
@@ -214,8 +322,8 @@ int multiplayer_get_next_connected_socket_index(s_SocketConnection socketWrapper
 	return next;
 }
 
-char multiplayer_is_client_connected(s_SocketConnection socketWrapper, int clientIndex) {
-	return socketWrapper.connectedSockets[clientIndex] != 0;
+char multiplayer_is_client_connected(s_SocketConnection *socketWrapper, int clientIndex) {
+	return socketWrapper->connectedSockets[clientIndex] != 0;
 }
 
 void _parsePacket(s_TCPpacket *packet, char *message) {
