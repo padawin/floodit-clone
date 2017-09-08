@@ -10,6 +10,7 @@ char _receiveMessage(TCPsocket socket, s_TCPpacket *packet);
 void _removeDisconnectedSockets(s_SocketConnection *socketWrapper);
 char _computePacket(s_TCPpacket packet, char *message);
 void _parsePacket(s_TCPpacket *packet, char *message);
+void _checkForClientPing(s_SocketConnection *socketWrapper);
 char _ping_server(s_SocketConnection *socketWrapper);
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip, E_ConnectionType type) {
@@ -21,6 +22,11 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 	}
 
 	if (type == TCP) {
+		if (ip == 0) {
+			printf("Open UDP socket server\n");
+			socketWrapper->pingSocket = SDLNet_UDP_Open(MULTIPLAYER_PORT_SERVER);
+		}
+
 		// listen for new connections on 'port'
 		socketWrapper->socket = SDLNet_TCP_Open(&socketWrapper->ipAddress);
 		if (socketWrapper->socket == 0) {
@@ -59,10 +65,7 @@ char _ping_server(s_SocketConnection *socketWrapper) {
 		return 0;
 	}
 
-	// Set the destination host and port
-	// We got these from calling SetIPAndPort()
-	packet->address.host = socketWrapper->ipAddress.host;
-	packet->address.port = socketWrapper->ipAddress.port;
+	packet->address = socketWrapper->ipAddress;
 
 	struct ifaddrs *ifap;
 	net_getIPs(&ifap);
@@ -80,6 +83,18 @@ char _ping_server(s_SocketConnection *socketWrapper) {
 
 	SDLNet_FreePacket(packet);
 	return 1;
+}
+
+int multiplayer_check_server_pong(s_SocketConnection *socketWrapper) {
+	UDPpacket* packet = SDLNet_AllocPacket(SIZE_PING_PACKET);
+	if (SDLNet_UDP_Recv(socketWrapper->pingSocket, packet)) {
+		printf("Received response from server\n");
+		return 1;
+	}
+	else {
+		_ping_server(socketWrapper);
+		return 0;
+	}
 }
 
 void multiplayer_initClient(s_SocketConnection *socketWrapper) {
@@ -103,11 +118,47 @@ void multiplayer_accept_client(s_SocketConnection *socketWrapper) {
 		return;
 	}
 
+	_checkForClientPing(socketWrapper);
+
 	TCPsocket socket = SDLNet_TCP_Accept(socketWrapper->socket);
 	if (socket != 0) {
 		SDLNet_TCP_AddSocket(socketWrapper->socketSet, socket);
 		socketWrapper->connectedSockets[socketWrapper->nbConnectedSockets] = socket;
 		socketWrapper->nbConnectedSockets++;
+	}
+}
+
+void _checkForClientPing(s_SocketConnection *socketWrapper) {
+	UDPpacket *packet = SDLNet_AllocPacket(SIZE_PING_PACKET);
+	int res = SDLNet_UDP_Recv(socketWrapper->pingSocket, packet);
+	if (res < 0) {
+		printf("Error received when trying to receive message\n");
+		printf("Error: %s\n", SDLNet_GetError());
+		return;
+	}
+
+	printf("Packet received: %s\n", packet->data);
+
+	char ip[SIZE_PING_PACKET];
+	memcpy(ip, packet->data, SIZE_PING_PACKET);
+	IPaddress ipAddress;
+	if (SDLNet_ResolveHost(&ipAddress, ip, MULTIPLAYER_PORT_CLIENT) == -1) {
+		printf("SDLNet_ResolveHost failed\n");
+		return;
+	}
+
+	UDPpacket *pongPacket = SDLNet_AllocPacket(3);
+	if (pongPacket == 0) {
+		printf("SDLNet_AllocPacket failed : %s\n", SDLNet_GetError());
+		return;
+	}
+
+	pongPacket->address = ipAddress;
+
+	memcpy(packet->data, "ok", 3);
+	packet->len = 3;
+	if (SDLNet_UDP_Send(socketWrapper->pingSocket, -1, pongPacket) == 0) {
+		printf("Packet received but could not be sent back\n");
 	}
 }
 

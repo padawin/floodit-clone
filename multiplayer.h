@@ -39,6 +39,7 @@ typedef struct {
 typedef enum {TCP, PING} E_ConnectionType;
 
 char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char* ip, E_ConnectionType type);
+int multiplayer_check_server_pong();
 void multiplayer_initHost(s_SocketConnection *socketWrapper, int playersNumber);
 void multiplayer_initClient(s_SocketConnection *socketWrapper);
 void multiplayer_accept_client(s_SocketConnection *socket);
