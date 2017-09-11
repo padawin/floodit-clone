@@ -3,7 +3,7 @@ TARGET := $(NAME)
 TARGETDIST := $(NAME).opk
 DISTFILES := $(TARGET) ClearSans-Medium.ttf LICENCE.md README.md resources
 OBJS := *.c
-OPTS := -g -O2 -Wall -Wextra -Wmissing-declarations \
+OPTS := -g -Wall -Wextra -Wmissing-declarations \
          -Wcast-qual -Wconversion -Wsign-conversion \
          -Wdisabled-optimization \
          -Werror -Wfloat-equal -Wformat=2 \
@@ -22,20 +22,33 @@ OPTS := -g -O2 -Wall -Wextra -Wmissing-declarations \
          -Wunreachable-code -Wunused \
          -Wunused-parameter \
          -Wvariadic-macros \
-         -Wwrite-strings \
+         -Wwrite-strings
+
+ifdef DEBUG
+OPTS += -ggdb
+else
+OPTS += -O2
+endif
 
 LIB := -lSDL2 -lSDL2_ttf -lSDL2_net -lSDL2_image
 CC := $(CROSS_COMPILE)gcc
+STRIP := $(CROSS_COMPILE)strip
 
 SDL2CONF = $(shell which sdl2-config)
 CFLAGS += $(shell $(SDL2CONF) --cflags)
 LDFLAGS += $(shell $(SDL2CONF) --libs)
 
 $(TARGET): $(OBJS)
-	    $(CC) $(OPTS) $(CFLAGS) $^ -o $(NAME) $(LIB)
+	$(CC) $(OPTS) $(CFLAGS) $^ -o $(NAME) $(LIB)
+ifndef DEBUG
+	$(STRIP) $(NAME)
+endif
 
 gcw: $(OBJS)
 	$(CC) $(OPTS) $(CFLAGS) -DGCW $^ -o $(NAME) $(LIB)
+ifndef DEBUG
+	$(STRIP) $(NAME)
+endif
 
 opk:
 	cp -r $(DISTFILES) dist/
