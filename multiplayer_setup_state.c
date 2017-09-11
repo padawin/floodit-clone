@@ -210,7 +210,7 @@ void multiplayer_setup_state_render(s_Game* game) {
 			0, 0, 0
 		);
 
-		if (errorTexture != 0) {
+		if (errorTexture != NULL) {
 			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
 			SDL_Rect errorRect = {50, 60, textWidth, textHeight};
 			SDL_RenderCopy(game->renderer, errorTexture, NULL, &errorRect);
@@ -281,7 +281,7 @@ void multiplayer_setup_state_render(s_Game* game) {
 			);
 		}
 
-		if (errorTexture != 0) {
+		if (errorTexture != NULL) {
 			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
 			SDL_Rect errorRect = {50, 210, textWidth, textHeight};
 			SDL_RenderCopy(game->renderer, errorTexture, NULL, &errorRect);
