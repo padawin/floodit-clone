@@ -17,7 +17,7 @@ void render();
 void clean();
 
 int main() {
-	const int SCREEN_FPS = 60;
+	const unsigned int SCREEN_FPS = 60;
 	const unsigned int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 
 	initSDL("Floodit", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
