@@ -339,6 +339,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
 			SDL_DestroyTexture(errorTexture);
+			errorTexture = NULL;
 		}
 		else if (IS_GCW) {
 			_handleIPSelectionEventGCW(game, key);
@@ -351,6 +352,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_JOIN_SETUP;
 			SDL_DestroyTexture(errorTexture);
+			errorTexture = NULL;
 		}
 	}
 }
@@ -358,6 +360,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 void _setSetupError(s_Game *game, const char *errorMessage) {
 	if (errorTexture != NULL) {
 		SDL_DestroyTexture(errorTexture);
+		errorTexture = NULL;
 	}
 
 	utils_createTextTexture(
