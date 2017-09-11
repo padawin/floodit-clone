@@ -3,7 +3,7 @@ TARGET := $(NAME)
 TARGETDIST := $(NAME).opk
 DISTFILES := $(TARGET) ClearSans-Medium.ttf LICENCE.md README.md resources
 OBJS := *.c
-OPTS := -g -Wall -Wextra -Wmissing-declarations \
+OPTS := -Wall -Wextra -Wmissing-declarations \
          -Wcast-qual -Wconversion -Wsign-conversion \
          -Wdisabled-optimization \
          -Werror -Wfloat-equal -Wformat=2 \
