@@ -356,7 +356,10 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 }
 
 void _setSetupError(s_Game *game, const char *errorMessage) {
-	SDL_DestroyTexture(errorTexture);
+	if (errorTexture != NULL) {
+		SDL_DestroyTexture(errorTexture);
+	}
+
 	utils_createTextTexture(
 		game->renderer,
 		game->menuFont,
