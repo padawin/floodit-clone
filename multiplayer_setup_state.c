@@ -62,6 +62,7 @@ void _createIPTexture(s_Game *game);
 void _setSetupError(SDL_Texture **error);
 void _connectToHost(s_Game *game);
 void _setPingState(s_Game *game);
+void _multiplayerRenderText(s_Game *game, SDL_Texture *text, int x, int y, int *textWidthOut);
 
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
@@ -190,14 +191,12 @@ void multiplayer_setup_state_update(s_Game* game) {
 }
 
 void multiplayer_setup_state_render(s_Game* game) {
-	int textWidth, textHeight;
+	int textWidth;
 	if (g_localState == STATE_HOST_JOIN) {
 		menu_render(game, &g_hostJoinMenu);
 	}
 	else if (g_localState == STATE_HOST_SETUP) {
-		SDL_QueryTexture(selectPlayersTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect playersRect = {50, 30, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, selectPlayersTexture, NULL, &playersRect);
+		_multiplayerRenderText(game, selectPlayersTexture, 50, 30, &textWidth);
 
 		SDL_Rect srcRect = {11 * (g_playersNumber - 2), 0, 11, 30};
 		SDL_Rect destRect = {55 + textWidth, 30, 11, 30};
@@ -209,21 +208,15 @@ void multiplayer_setup_state_render(s_Game* game) {
 		);
 
 		if (currentError != NULL) {
-			SDL_QueryTexture(*currentError, NULL, NULL, &textWidth, &textHeight);
-			SDL_Rect errorRect = {50, 60, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, *currentError, NULL, &errorRect);
+			_multiplayerRenderText(game, *currentError, 50, 60, NULL);
 		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
-		SDL_QueryTexture(hostIpTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect hostIPRect = {50, 30, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, hostIpTexture, NULL, &hostIPRect);
+		_multiplayerRenderText(game, hostIpTexture, 50, 30, NULL);
 
 		int i;
 		for (i = 0; i < g_nbIps; ++i) {
-			SDL_QueryTexture(ipsTextures[i], NULL, NULL, &textWidth, &textHeight);
-			SDL_Rect ipRect = {50, 55 + 24 * i, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, ipsTextures[i], NULL, &ipRect);
+			_multiplayerRenderText(game, ipsTextures[i], 50, 55 + 24 * i, NULL);
 		}
 
 		char connectedClientsText[25];
@@ -242,18 +235,11 @@ void multiplayer_setup_state_render(s_Game* game) {
 			white,
 			&connectedClientsTexture
 		);
-		SDL_QueryTexture(connectedClientsTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect connectedClientsRect = {50, 55 + 24 * g_nbIps + 14, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, connectedClientsTexture, NULL, &connectedClientsRect);
+		_multiplayerRenderText(game, connectedClientsTexture, 50, 55 + 24 * g_nbIps + 14, NULL);
 	}
 	else if (g_localState == STATE_JOIN_SETUP || g_localState == STATE_JOIN_SETUP_WAIT_PONG) {
-		SDL_QueryTexture(serverIPTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect serverIPRect = {50, 30, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, serverIPTexture, NULL, &serverIPRect);
-
-		SDL_QueryTexture(IPTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect IPRect = {50, 60, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, IPTexture, NULL, &IPRect);
+		_multiplayerRenderText(game, serverIPTexture, 50, 30, NULL);
+		_multiplayerRenderText(game, IPTexture, 50, 60, NULL);
 
 		if (IS_GCW) {
 			SDL_Rect srcRect = {0, 30, 69, 120};
@@ -280,15 +266,11 @@ void multiplayer_setup_state_render(s_Game* game) {
 		}
 
 		if (currentError != NULL) {
-			SDL_QueryTexture(*currentError, NULL, NULL, &textWidth, &textHeight);
-			SDL_Rect errorRect = {50, 210, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, *currentError, NULL, &errorRect);
+			_multiplayerRenderText(game, *currentError, 50, 210, NULL);
 		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
-		SDL_QueryTexture(waitForGameTexture, NULL, NULL, &textWidth, &textHeight);
-		SDL_Rect rect = {50, 30, textWidth, textHeight};
-		SDL_RenderCopy(game->renderer, waitForGameTexture, NULL, &rect);
+		_multiplayerRenderText(game, waitForGameTexture, 50, 30, NULL);
 	}
 }
 
@@ -355,6 +337,17 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 
 void _setSetupError(SDL_Texture **error) {
 	currentError = error;
+}
+
+void _multiplayerRenderText(s_Game *game, SDL_Texture *text, int x, int y, int *textWidthOut) {
+	int textWidth = 0,
+		textHeight = 0;
+	SDL_QueryTexture(text, NULL, NULL, &textWidth, &textHeight);
+	SDL_Rect rect = {x, y, textWidth, textHeight};
+	SDL_RenderCopy(game->renderer, text, NULL, &rect);
+	if (textWidthOut != NULL) {
+		*textWidthOut = textWidth;
+	}
 }
 
 void _hostGameAction() {
