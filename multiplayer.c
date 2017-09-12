@@ -36,13 +36,13 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 		}
 	}
 	else if (type == PING) {
-		if (socketWrapper->pingSocket == 0) {
+		if (socketWrapper->pingSocket == NULL) {
 			printf("Opening port\n");
 			// Sets our socket with our local port
 			socketWrapper->pingSocket = SDLNet_UDP_Open(MULTIPLAYER_PORT_CLIENT);
 		}
 
-		if (socketWrapper->pingSocket == 0) {
+		if (socketWrapper->pingSocket == NULL) {
 			printf("Error opening socket client\n");
 			return 0;
 		}
