@@ -21,11 +21,11 @@ SDL_Texture *hostIpTexture;
 SDL_Texture *ipsTextures[5];
 SDL_Texture *connectedClientsTexture;
 SDL_Texture *waitForGameTexture;
-SDL_Texture *errorTexture;
 SDL_Texture *noConnectionTexture;
 SDL_Texture *attemptConnectTexture;
 SDL_Texture *serverFullTexture;
 SDL_Texture *errorContactServerTexture;
+SDL_Texture **currentError = NULL;
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -59,7 +59,7 @@ void _handleIPSelectionEvent(s_Game *game, int key);
 void _addDigitToIP(s_Game *game, char digit);
 void _removeDigitFromIP(s_Game *game);
 void _createIPTexture(s_Game *game);
-void _setSetupError(s_Game *game, const char *errorMessage);
+void _setSetupError(SDL_Texture **error);
 void _connectToHost(s_Game *game);
 void _setPingState(s_Game *game);
 
@@ -132,7 +132,6 @@ void multiplayer_setup_state_clean() {
 	SDL_DestroyTexture(hostIpTexture);
 	SDL_DestroyTexture(connectedClientsTexture);
 	SDL_DestroyTexture(waitForGameTexture);
-	SDL_DestroyTexture(errorTexture);
 	SDL_DestroyTexture(noConnectionTexture);
 	SDL_DestroyTexture(attemptConnectTexture);
 	SDL_DestroyTexture(serverFullTexture);
@@ -161,7 +160,7 @@ void multiplayer_setup_state_update(s_Game* game) {
 		// printf("check if server answered\n");
 		unsigned int ticks = SDL_GetTicks();
 		if (ticks - g_timestampWaitForServer > g_pongTimeout) {
-			_setSetupError(game, "Unable to create connection");
+			_setSetupError(&noConnectionTexture);
 		}
 		else if (ticks - g_timestampLastPing > g_pingTimeout) {
 			g_timestampLastPing = ticks;
@@ -184,7 +183,7 @@ void multiplayer_setup_state_update(s_Game* game) {
 			else if (packet.type == MULTIPLAYER_MESSAGE_TYPE_SERVER_FULL) {
 				multiplayer_clean(&game->socketConnection);
 				g_localState = STATE_JOIN_SETUP;
-				_setSetupError(game, "Server full");
+				_setSetupError(&serverFullTexture);
 			}
 		}
 	}
@@ -209,10 +208,10 @@ void multiplayer_setup_state_render(s_Game* game) {
 			0, 0, 0
 		);
 
-		if (errorTexture != NULL) {
-			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
+		if (currentError != NULL) {
+			SDL_QueryTexture(*currentError, NULL, NULL, &textWidth, &textHeight);
 			SDL_Rect errorRect = {50, 60, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, errorTexture, NULL, &errorRect);
+			SDL_RenderCopy(game->renderer, *currentError, NULL, &errorRect);
 		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_CLIENTS) {
@@ -280,10 +279,10 @@ void multiplayer_setup_state_render(s_Game* game) {
 			);
 		}
 
-		if (errorTexture != NULL) {
-			SDL_QueryTexture(errorTexture, NULL, NULL, &textWidth, &textHeight);
+		if (currentError != NULL) {
+			SDL_QueryTexture(*currentError, NULL, NULL, &textWidth, &textHeight);
 			SDL_Rect errorRect = {50, 210, textWidth, textHeight};
-			SDL_RenderCopy(game->renderer, errorTexture, NULL, &errorRect);
+			SDL_RenderCopy(game->renderer, *currentError, NULL, &errorRect);
 		}
 	}
 	else if (g_localState == STATE_WAIT_FOR_GAME) {
@@ -309,7 +308,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 			|| (!IS_GCW && key == SDLK_SPACE)
 		) {
 			if (!multiplayer_create_connection(&game->socketConnection, 0, TCP)) {
-				_setSetupError(game, "Unable to create connection");
+				_setSetupError(&noConnectionTexture);
 			}
 			else {
 				game_setMode(game, MODE_MULTIPLAYER);
@@ -337,8 +336,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 	else if (g_localState == STATE_JOIN_SETUP) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_HOST_JOIN;
-			SDL_DestroyTexture(errorTexture);
-			errorTexture = NULL;
+			currentError = NULL;
 		}
 		else if (IS_GCW) {
 			_handleIPSelectionEventGCW(game, key);
@@ -350,25 +348,13 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 	else if (g_localState == STATE_JOIN_SETUP_WAIT_PONG) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_JOIN_SETUP;
-			SDL_DestroyTexture(errorTexture);
-			errorTexture = NULL;
+			currentError = NULL;
 		}
 	}
 }
 
-void _setSetupError(s_Game *game, const char *errorMessage) {
-	if (errorTexture != NULL) {
-		SDL_DestroyTexture(errorTexture);
-		errorTexture = NULL;
-	}
-
-	utils_createTextTexture(
-		game->renderer,
-		game->menuFont,
-		errorMessage,
-		white,
-		&errorTexture
-	);
+void _setSetupError(SDL_Texture **error) {
+	currentError = error;
 }
 
 void _hostGameAction() {
@@ -437,10 +423,10 @@ void _setPingState(s_Game *game) {
 	char ip[16];
 	IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 	if (!multiplayer_create_connection(&game->socketConnection, ip, PING)) {
-		_setSetupError(game, "Unable to contact server");
+		_setSetupError(&errorContactServerTexture);
 	}
 	else {
-		_setSetupError(game, "Trying to connect...");
+		_setSetupError(&attemptConnectTexture);
 	}
 }
 
@@ -448,7 +434,7 @@ void _connectToHost(s_Game *game) {
 	char ip[16];
 	IPConfigurator_toString(&g_IPConfigurator, ip, 1);
 	if (!multiplayer_create_connection(&game->socketConnection, ip, TCP)) {
-		_setSetupError(game, "Unable to create connection");
+		_setSetupError(&noConnectionTexture);
 	}
 	else {
 		multiplayer_initClient(&game->socketConnection);
