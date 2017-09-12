@@ -36,13 +36,13 @@ char multiplayer_create_connection(s_SocketConnection *socketWrapper, const char
 		}
 	}
 	else if (type == PING) {
-		if (socketWrapper->pingSocket == 0) {
+		if (socketWrapper->pingSocket == NULL) {
 			printf("Opening port\n");
 			// Sets our socket with our local port
 			socketWrapper->pingSocket = SDLNet_UDP_Open(MULTIPLAYER_PORT_CLIENT);
 		}
 
-		if (socketWrapper->pingSocket == 0) {
+		if (socketWrapper->pingSocket == NULL) {
 			printf("Error opening socket client\n");
 			return 0;
 		}
@@ -249,8 +249,10 @@ char multiplayer_check_server(s_SocketConnection *socketWrapper, s_TCPpacket *pa
 
 void multiplayer_clean(s_SocketConnection *socketWrapper) {
 	SDLNet_TCP_Close(socketWrapper->socket);
+	socketWrapper->socket = NULL;
 	if (socketWrapper->pingSocket) {
 		SDLNet_UDP_Close(socketWrapper->pingSocket);
+		socketWrapper->pingSocket = NULL;
 	}
 	socketWrapper->socket = 0;
 	while (socketWrapper->nbConnectedSockets--) {
@@ -259,9 +261,11 @@ void multiplayer_clean(s_SocketConnection *socketWrapper) {
 			socketWrapper->nbConnectedSockets
 		);
 	}
+	socketWrapper->nbConnectedSockets = 0;
 
 	if (socketWrapper->connectedSockets != 0) {
 		free(socketWrapper->connectedSockets);
+		socketWrapper->connectedSockets = 0;
 	}
 	SDLNet_FreeSocketSet(socketWrapper->socketSet);
 	socketWrapper->socketSet = 0;
