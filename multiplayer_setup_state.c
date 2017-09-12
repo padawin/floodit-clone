@@ -22,6 +22,10 @@ SDL_Texture *ipsTextures[5];
 SDL_Texture *connectedClientsTexture;
 SDL_Texture *waitForGameTexture;
 SDL_Texture *errorTexture;
+SDL_Texture *noConnectionTexture;
+SDL_Texture *attemptConnectTexture;
+SDL_Texture *serverFullTexture;
+SDL_Texture *errorContactServerTexture;
 int g_nbIps;
 int g_playersNumber = 2;
 int g_IPKeyboardSelectedValue = 0;
@@ -108,6 +112,10 @@ void _initMenus(s_Game *game) {
 	utils_createTextTexture(game->renderer, game->selectedMenuFont, "Back", white, &selectedBackTexture);
 	utils_createTextTexture(game->renderer, game->menuFont, "Players:", white, &selectPlayersTexture);
 	utils_createTextTexture(game->renderer, game->menuFont, "Server IP:", white, &serverIPTexture);
+	utils_createTextTexture(game->renderer, game->menuFont, "Unable to create connection", white, &noConnectionTexture);
+	utils_createTextTexture(game->renderer, game->menuFont, "Unable to contact server", white, &errorContactServerTexture);
+	utils_createTextTexture(game->renderer, game->menuFont, "Trying to connect...", white, &attemptConnectTexture);
+	utils_createTextTexture(game->renderer, game->menuFont, "Server full", white, &serverFullTexture);
 	menu_addAction(&g_hostJoinMenu, _hostGameAction, hostGameTexture, selectedHostGameTexture);
 	menu_addAction(&g_hostJoinMenu, _joinGameAction, joinGameTexture, selectedJoinGameTexture);
 	menu_addAction(&g_hostJoinMenu, _backAction, backTexture, selectedBackTexture);
@@ -125,6 +133,10 @@ void multiplayer_setup_state_clean() {
 	SDL_DestroyTexture(connectedClientsTexture);
 	SDL_DestroyTexture(waitForGameTexture);
 	SDL_DestroyTexture(errorTexture);
+	SDL_DestroyTexture(noConnectionTexture);
+	SDL_DestroyTexture(attemptConnectTexture);
+	SDL_DestroyTexture(serverFullTexture);
+	SDL_DestroyTexture(errorContactServerTexture);
 	net_freeIfAddr(g_ifap);
 	while (g_nbIps--) {
 		SDL_DestroyTexture(ipsTextures[g_nbIps]);
