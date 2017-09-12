@@ -23,7 +23,7 @@ int g_state;
 
 void _play(s_Game* game, int color);
 void _renderGrid(s_Game* game);
-void _renderText(s_Game *game, SDL_Texture *texture, int marginRight, int marginBottom);
+void _playRenderText(s_Game *game, SDL_Texture *texture, int marginRight, int marginBottom);
 void _renderTimer(s_Game* game);
 void _renderCurrentTurn(s_Game* game);
 void _renderControls(s_Game* game);
@@ -185,7 +185,7 @@ void play_state_clean(s_Game *game) {
 
 /** PRIVATE FUNCTIONS **/
 
-void _renderText(s_Game *game, SDL_Texture *texture, int marginRight, int marginBottom) {
+void _playRenderText(s_Game *game, SDL_Texture *texture, int marginRight, int marginBottom) {
 	int textX, textY,
 		textWidth, textHeight;
 
@@ -218,7 +218,7 @@ void _renderTimer(s_Game *game) {
 		timerText = SDL_CreateTextureFromSurface(game->renderer, textSurface);
 		SDL_FreeSurface(textSurface);
 	}
-	_renderText(game, timerText, textMarginRight, textMarginBottom);
+	_playRenderText(game, timerText, textMarginRight, textMarginBottom);
 }
 
 void _renderCurrentTurn(s_Game* game) {
@@ -243,7 +243,7 @@ void _renderCurrentTurn(s_Game* game) {
 		currentTurnText = SDL_CreateTextureFromSurface(game->renderer, textSurface);
 		SDL_FreeSurface(textSurface);
 	}
-	_renderText(game, currentTurnText, textMarginRight, textMarginBottom);
+	_playRenderText(game, currentTurnText, textMarginRight, textMarginBottom);
 
 }
 
