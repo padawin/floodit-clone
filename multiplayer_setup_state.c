@@ -62,7 +62,6 @@ void _setPingState(s_Game *game);
 void multiplayer_setup_state_init(s_Game *game) {
 	_initMenus(game);
 	_initIPs(game);
-	utils_createTextTexture(game->renderer, game->menuFont, "Wait for game to start...", white, &waitForGameTexture);
 	g_localState = STATE_HOST_JOIN;
 }
 
@@ -100,31 +99,19 @@ void _initMenus(s_Game *game) {
 	SDL_Texture *hostGameTexture, *selectedHostGameTexture,
 		*joinGameTexture, *selectedJoinGameTexture,
 		*backTexture, *selectedBackTexture;
+	utils_createTextTexture(game->renderer, game->menuFont, "Wait for game to start...", white, &waitForGameTexture);
 	utils_createTextTexture(game->renderer, game->menuFont, "Host game", white, &hostGameTexture);
 	utils_createTextTexture(game->renderer, game->selectedMenuFont, "Host game", white, &selectedHostGameTexture);
 	utils_createTextTexture(game->renderer, game->menuFont, "Join game", white, &joinGameTexture);
 	utils_createTextTexture(game->renderer, game->selectedMenuFont, "Join game", white, &selectedJoinGameTexture);
 	utils_createTextTexture(game->renderer, game->menuFont, "Back", white, &backTexture);
 	utils_createTextTexture(game->renderer, game->selectedMenuFont, "Back", white, &selectedBackTexture);
+	utils_createTextTexture(game->renderer, game->menuFont, "Players:", white, &selectPlayersTexture);
+	utils_createTextTexture(game->renderer, game->menuFont, "Server IP:", white, &serverIPTexture);
 	menu_addAction(&g_hostJoinMenu, _hostGameAction, hostGameTexture, selectedHostGameTexture);
 	menu_addAction(&g_hostJoinMenu, _joinGameAction, joinGameTexture, selectedJoinGameTexture);
 	menu_addAction(&g_hostJoinMenu, _backAction, backTexture, selectedBackTexture);
 
-	utils_createTextTexture(
-		game->renderer,
-		game->menuFont,
-		"Players:",
-		white,
-		&selectPlayersTexture
-	);
-
-	utils_createTextTexture(
-		game->renderer,
-		game->menuFont,
-		"Server IP:",
-		white,
-		&serverIPTexture
-	);
 	utils_loadImageTexture(game->renderer, "resources/text-atlas.png", &selectNumberTexture);
 }
 
