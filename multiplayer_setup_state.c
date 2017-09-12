@@ -330,6 +330,7 @@ void multiplayer_setup_state_handleEvent(s_Game* game, int key) {
 	else if (g_localState == STATE_JOIN_SETUP_WAIT_PONG) {
 		if (key == SDLK_ESCAPE) {
 			g_localState = STATE_JOIN_SETUP;
+			multiplayer_clean(&game->socketConnection);
 			currentError = NULL;
 		}
 	}
