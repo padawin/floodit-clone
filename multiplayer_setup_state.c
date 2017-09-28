@@ -125,6 +125,7 @@ void _initMenus(s_Game *game) {
 }
 
 void multiplayer_setup_state_clean() {
+	currentError = NULL;
 	menu_free(&g_hostJoinMenu);
 	SDL_DestroyTexture(selectNumberTexture);
 	SDL_DestroyTexture(selectPlayersTexture);
