@@ -1,5 +1,28 @@
 # Floodit
 
+## About
+
+### Gameplay
+
+At each turn, select a color. The top left cell of the board will be changed to
+this color along with all the adjacent cells of the same color it was before.
+
+### Normal mode
+
+In this mode, you have to fill the grid with a single color in less than 25
+turns.
+
+### Timed mode
+
+Same as the Normal mode, except that a timer is running and if the game is won,
+the time is stored in the high scores, for eternal fame and glory.
+
+### Multiplayer
+
+Following the same gameplay as the single player, each player starts in a
+corner of the board and their goal is to expand their area and capture the
+other players' areas.
+
 ## Screenshots
 
 ![screenshot](screenshots/main-menu.png "Main menu")
